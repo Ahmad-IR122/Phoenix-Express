@@ -39,7 +39,6 @@ export default function AppRoutes() {
       <Routes>          
         <Route path="/" element={<App />} />
         {/* Customer public routes */}
-        {/* <Route element={<CustomerLayout />}> */}
           <Route path="/HomePage" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/tracking" element={<TrackingPage />} />
@@ -51,7 +50,7 @@ export default function AppRoutes() {
             path="/request-delivery"
             element={<RequestDeliveryServicePage />}
           />
-        {/* </Route> */}
+
 
         {/* Auth routes */}
         <Route element={<AuthLayout />}>
