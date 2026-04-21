@@ -1,0 +1,63 @@
+*{
+    font-size: 20px;
+}
+@font-face {
+  font-family: "Alarabiya";
+  src: url("../assets/fonts/alarabiya-font-normal.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+
+}
+
+.mobix-navbar {
+  font-family: "Alarabiya", sans-serif;
+}
+
+.mobix-nav-link,
+.mobix-btn {
+  transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.mobix-nav-link:hover,
+.mobix-nav-link:focus {
+  color: #38b6ff !important;
+}
+
+.mobix-btn {
+  white-space: nowrap;
+}
+
+.mobix-btn:hover,
+.mobix-btn:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 0.5rem 1rem rgba(10, 10, 10, 0.12);
+}
+
+.mobix-btn-primary {
+  background-color: #38b6ff;
+  min-width: 210px;
+}
+
+.mobix-btn-primary:hover,
+.mobix-btn-primary:focus {
+  background-color: #1fa8f5;
+  color: #ffffff;
+}
+
+.mobix-btn-dark {
+  background-color: #0a0a0a;
+  min-width: 150px;
+}
+
+.mobix-btn-dark:hover,
+.mobix-btn-dark:focus {
+  background-color: #222222;
+  color: #ffffff;
+}
+
+@media (max-width: 991.98px) {
+  .mobix-navbar .navbar-collapse {
+    padding-top: 1rem;
+  }
+}
