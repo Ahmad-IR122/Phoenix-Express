@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/static/css/main.9c2fcca4.css",
+    "main.js": "/static/js/main.838734a4.js",
+    "static/js/453.18bc878d.chunk.js": "/static/js/453.18bc878d.chunk.js",
+    "static/media/alarabiya-font-normal.ttf": "/static/media/alarabiya-font-normal.ef441a48f2e37db5e507.ttf",
+    "index.html": "/index.html",
+    "main.9c2fcca4.css.map": "/static/css/main.9c2fcca4.css.map",
+    "main.838734a4.js.map": "/static/js/main.838734a4.js.map",
+    "453.18bc878d.chunk.js.map": "/static/js/453.18bc878d.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.9c2fcca4.css",
+    "static/js/main.838734a4.js"
+  ]
+}

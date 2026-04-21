@@ -1,6 +1,7 @@
 import React from 'react';
 import Navbar from '../../../Components/Navbar';
-const RequestDeliveryServicePage = () => {
+
+const ReviewsPage = () => {
   return (
     <div>
       <Navbar/>
@@ -8,4 +9,4 @@ const RequestDeliveryServicePage = () => {
   );
 }
 
-export default RequestDeliveryServicePage;
+export default ReviewsPage;

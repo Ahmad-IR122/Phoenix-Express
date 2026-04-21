@@ -14,7 +14,7 @@ import PhotoGalleryPage from "../features/customuer/pages/PhotoGalleryPage";
 import FeedbackPage from "../features/customuer/pages/FeedbackPage";
 import BlogPage from "../features/customuer/pages/BlogPage";
 import RequestDeliveryServicePage from "../features/customuer/pages/RequestDeliveryServicePage";
-
+import ReviewsPage from "../features/customuer/pages/ReviewsPage";
 import SignInPage from "../features/auth/pages/SignInPage";
 import LoginPage from "../features/auth/pages/LoginPage";
 import ForgotPasswordPage from "../features/auth/pages/ForgotPasswordPage";
@@ -39,18 +39,19 @@ export default function AppRoutes() {
       <Routes>          
         <Route path="/" element={<App />} />
         {/* Customer public routes */}
-        <Route element={<CustomerLayout />}>
+        {/* <Route element={<CustomerLayout />}> */}
           <Route path="/HomePage" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/tracking" element={<TrackingPage />} />
           <Route path="/gallery" element={<PhotoGalleryPage />} />
           <Route path="/feedback" element={<FeedbackPage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route path="/reviews" element={<ReviewsPage/>} />
           <Route
             path="/request-delivery"
             element={<RequestDeliveryServicePage />}
           />
-        </Route>
+        {/* </Route> */}
 
         {/* Auth routes */}
         <Route element={<AuthLayout />}>

@@ -36,3 +36,14 @@
     transform: rotate(360deg);
   }
 }
+
+@font-face {
+  font-family: 'Alarabiya';
+  src: url('./assets/fonts/alarabiya-font-normal.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+body {
+  font-family: 'Alarabiya', sans-serif;
+}
