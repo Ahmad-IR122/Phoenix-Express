@@ -19,16 +19,6 @@ module.exports = (sequelize, DataTypes) => {
         as: 'documents',
       });
 
-      Employee.hasMany(models.Order, {
-        foreignKey: 'employee_id',
-        as: 'orders',
-      });
-
-      Employee.hasMany(models.Feedback, {
-        foreignKey: 'employee_id',
-        as: 'feedbacks',
-      });
-
       Employee.hasOne(models.EmployeeWallet, {
         foreignKey: 'employee_id',
         as: 'wallet',
