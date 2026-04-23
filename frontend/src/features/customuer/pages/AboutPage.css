@@ -1,0 +1,109 @@
+.about-page {
+  min-height: 100vh;
+  background-color: #f3f3f3;
+  font-family: "Cairo", "Segoe UI", sans-serif;
+}
+
+.about-page__section {
+  background-color: #f3f3f3;
+}
+
+.about-page__title {
+  color: #38b6ff;
+  font-size: clamp(2.8rem, 6vw, 4.8rem);
+  line-height: 1.15;
+}
+
+.about-page__subtitle {
+  max-width: 58rem;
+  color: #39424e;
+  font-size: clamp(1.05rem, 2vw, 1.8rem);
+  line-height: 1.8;
+}
+
+.about-page__story-card {
+  background: #f8fbff;
+  box-shadow: 0 1rem 2.5rem rgba(10, 10, 10, 0.08) !important;
+}
+
+.about-page__values-card {
+  background: #f8fbff;
+  box-shadow: 0 1rem 2.5rem rgba(10, 10, 10, 0.08) !important;
+}
+
+.about-page__story-title {
+  color: #38b6ff;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+}
+
+.about-page__story-text {
+  color: #0a0a0a;
+  font-size: clamp(1rem, 1.8vw, 1.65rem);
+  line-height: 1.95;
+}
+
+.about-page__value-item {
+  min-height: 7rem;
+}
+
+.about-page__value-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.75rem;
+  height: 3.75rem;
+  border-radius: 50%;
+  background: #38b6ff;
+  color: #ffffff;
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.about-page__value-title {
+  color: #0a0a0a;
+  font-size: clamp(1.5rem, 2vw, 2.25rem);
+}
+
+.about-page__value-text {
+  color: #39424e;
+  font-size: clamp(1rem, 1.5vw, 1.45rem);
+  line-height: 1.8;
+}
+
+.about-page__stat-card {
+  background: #38b6ff;
+  color: #ffffff;
+  box-shadow: 0 1rem 2.5rem rgba(56, 182, 255, 0.18);
+}
+
+.about-page__stat-number {
+  font-size: clamp(2.75rem, 5vw, 4.25rem);
+  line-height: 1;
+}
+
+.about-page__stat-label {
+  font-size: clamp(1.25rem, 2vw, 2rem);
+  line-height: 1.5;
+}
+
+@media (max-width: 767.98px) {
+  .about-page__story-card,
+  .about-page__values-card {
+    border-radius: 2rem !important;
+  }
+
+  .about-page__value-item {
+    min-height: auto;
+  }
+
+  .about-page__value-badge {
+    width: 3.25rem;
+    height: 3.25rem;
+    font-size: 1.55rem;
+  }
+
+  .about-page__stat-card {
+    border-radius: 2rem !important;
+  }
+}
