@@ -1,0 +1,80 @@
+.tracking-page {
+  background-color: #f5f7fa !important;
+  font-family: "Cairo", "Segoe UI", sans-serif;
+}
+
+.tracking-shell {
+  max-width: 1080px;
+}
+
+.tracking-title {
+  color: #38b6ff;
+  font-size: clamp(2.25rem, 4vw, 3.75rem);
+  line-height: 1.15;
+}
+
+.tracking-subtitle {
+  color: #5c667a;
+  font-size: clamp(1.15rem, 2vw, 1.95rem);
+  font-weight: 500;
+}
+
+.tracking-search-card {
+  max-width: 1020px;
+  border-radius: 1.5rem;
+  background-color: #ffffff;
+  box-shadow: 0 1rem 2.5rem rgba(34, 48, 73, 0.12);
+}
+
+.tracking-input {
+  min-height: 4.1rem;
+  border: 1px solid #d3d9e3;
+  border-radius: 1rem;
+  color: #536079;
+  text-align: right;
+  box-shadow: none !important;
+}
+
+.tracking-input::placeholder {
+  color: #8a93a5;
+}
+
+.tracking-search-btn {
+  min-width: 138px;
+  min-height: 4.1rem;
+  border: none;
+  border-radius: 1rem;
+  background-color: #38b6ff !important;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.tracking-search-btn:hover,
+.tracking-search-btn:focus {
+  background-color: #1fa8f5 !important;
+}
+
+.tracking-empty-state {
+  max-width: 420px;
+  padding: 5rem 1rem 2rem;
+}
+
+.tracking-empty-icon {
+  color: #d2d8e4;
+}
+
+.tracking-empty-text {
+  color: #5c667a;
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  font-weight: 500;
+}
+
+@media (max-width: 767.98px) {
+  .tracking-search-btn {
+    width: 100%;
+  }
+
+  .tracking-empty-state {
+    padding-top: 3rem;
+  }
+}

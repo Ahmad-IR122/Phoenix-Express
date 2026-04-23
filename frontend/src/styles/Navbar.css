@@ -1,13 +1,6 @@
 *{
     font-size: 16px;
 }
-@font-face {
-  font-family: "Alarabiya";
-  src: url("../assets/fonts/alarabiya-font-normal.ttf") format("truetype");
-  font-weight: 500;
-  font-style: normal;
-
-}
 
 .mobix-navbar {
   font-family: "Cairo", "Segoe UI", sans-serif;
