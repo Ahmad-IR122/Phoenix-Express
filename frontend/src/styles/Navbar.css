@@ -1,20 +1,23 @@
 *{
-    font-size: 20px;
+    font-size: 16px;
 }
 @font-face {
   font-family: "Alarabiya";
   src: url("../assets/fonts/alarabiya-font-normal.ttf") format("truetype");
-  font-weight: 600;
+  font-weight: 500;
   font-style: normal;
 
 }
 
 .mobix-navbar {
-  font-family: "Alarabiya", sans-serif;
+  font-family: "Cairo", "Segoe UI", sans-serif;
+  font-weight: 600;
 }
 
 .mobix-nav-link,
 .mobix-btn {
+  font-family: inherit;
+  font-weight: 600;
   transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease,
     box-shadow 0.2s ease;
 }
