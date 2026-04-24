@@ -231,10 +231,6 @@ function DelegatesPage() {
         <div className="phoenix-delegates__hero-copy">
           <span className="phoenix-delegates__eyebrow">Phoenix Admin</span>
           <h1 className="phoenix-delegates__title">إدارة المناديب</h1>
-          <p className="phoenix-delegates__subtitle">
-            مركز تشغيلي متكامل لمتابعة أداء المناديب، إدارة حالاتهم، وتتبّع المؤشرات
-            التشغيلية والمالية لكل مندوب.
-          </p>
         </div>
       </div>
 
@@ -247,7 +243,6 @@ function DelegatesPage() {
             <div className="phoenix-delegates__summary-content">
               <span className="phoenix-delegates__summary-label">{card.label}</span>
               <strong className="phoenix-delegates__summary-value">{card.value}</strong>
-              <small className="phoenix-delegates__summary-note">{card.note}</small>
             </div>
           </article>
         ))}
@@ -255,11 +250,7 @@ function DelegatesPage() {
 
       <article className="phoenix-delegates__action-bar">
         <div className="phoenix-delegates__action-copy">
-          <h2>إجراءات الإدارة</h2>
-          <p>
-            إضافة مندوب جديد أو تحديث بياناته أو ضبط حالته التشغيلية ضمن نفس الصفحة
-            بدون الحاجة للتنقل بين شاشات منفصلة.
-          </p>
+          <h2 > إجراءات الإدارة</h2>
         </div>
 
         <button
@@ -268,7 +259,7 @@ function DelegatesPage() {
           onClick={openCreateModal}
         >
           <i className="bi bi-plus-lg"></i>
-          إضافة مندوب جديد
+          إضافة مندوب
         </button>
       </article>
 
@@ -276,10 +267,6 @@ function DelegatesPage() {
         <div className="phoenix-delegates__panel-head">
           <div>
             <h2 className="phoenix-delegates__panel-title">الفلاتر المتقدمة</h2>
-            <p className="phoenix-delegates__panel-subtitle">
-              ابحث وفلتر حسب اسم المندوب، الهاتف، المنطقة، الحالة، نوع المركبة، أو
-              النشاط الإداري.
-            </p>
           </div>
 
           <div className="phoenix-delegates__panel-badges">
@@ -381,10 +368,6 @@ function DelegatesPage() {
         <div className="phoenix-delegates__panel-head">
           <div>
             <h2 className="phoenix-delegates__panel-title">جدول المناديب</h2>
-            <p className="phoenix-delegates__panel-subtitle">
-              عرض تشغيلي موحّد لحالة كل مندوب مع الإنجازات، المرتجعات،
-              والإجراءات الإدارية.
-            </p>
           </div>
           <span className="phoenix-delegates__mini-badge phoenix-delegates__mini-badge--soft">
             جدول الإدارة الرئيسي
@@ -547,8 +530,7 @@ function DelegatesPage() {
                     type="button"
                     className="phoenix-delegates__secondary-btn phoenix-delegates__secondary-btn--compact"
                     onClick={() => handleToggleCourierStatus(courier)}
-                    disabled={isMutating}
-                  >
+                    disabled={isMutating}>
                     {courier.isActive ? "تعطيل" : "تفعيل"}
                   </button>
                 </div>
@@ -568,7 +550,6 @@ function DelegatesPage() {
             <div className="phoenix-delegates__modal-head">
               <div>
                 <h3>{editingCourier ? "تعديل بيانات المندوب" : "إضافة مندوب جديد"}</h3>
-                <p>أدخل بيانات المندوب الأساسية ثم احفظ التغييرات.</p>
               </div>
               <button type="button" onClick={closeFormModal}>
                 <i className="bi bi-x-lg"></i>

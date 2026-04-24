@@ -35,14 +35,6 @@
   line-height: 1.2;
 }
 
-.phoenix-delegates__subtitle {
-  margin: 0;
-  max-width: 620px;
-  color: #64748b;
-  font-size: 0.78rem;
-  line-height: 1.65;
-}
-
 .phoenix-delegates__summary-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
@@ -122,12 +114,6 @@
   line-height: 1.2;
 }
 
-.phoenix-delegates__summary-note {
-  color: #94a3b8;
-  font-size: 0.66rem;
-  line-height: 1.45;
-}
-
 .phoenix-delegates__action-bar,
 .phoenix-delegates__panel {
   padding: 16px;
@@ -150,14 +136,6 @@
   margin: 0;
   font-size: 0.92rem;
   font-weight: 800;
-}
-
-.phoenix-delegates__action-copy p,
-.phoenix-delegates__panel-subtitle {
-  margin: 0;
-  color: #64748b;
-  font-size: 0.76rem;
-  line-height: 1.6;
 }
 
 .phoenix-delegates__panel-head {
@@ -549,12 +527,6 @@
   margin: 0;
   font-size: 0.92rem;
   font-weight: 800;
-}
-
-.phoenix-delegates__modal-head p {
-  margin: 6px 0 0;
-  color: #64748b;
-  font-size: 0.69rem;
 }
 
 .phoenix-delegates__modal-head button {
