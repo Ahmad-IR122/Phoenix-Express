@@ -1,8 +1,10 @@
+@import "./AdminTheme.css";
+
 .admin-distribution {
   direction: rtl;
   text-align: right;
   display: grid;
-  gap: 24px;
+  gap: 20px;
   color: #0f172a;
 }
 
@@ -22,17 +24,12 @@
 .admin-distribution__eyebrow {
   display: inline-flex;
   width: fit-content;
-  border-radius: 999px;
-  background: #eff6ff;
-  color: #2563eb;
-  padding: 7px 12px;
-  font-size: 0.8rem;
-  font-weight: 800;
+  padding: 6px 11px;
 }
 
 .admin-distribution__title {
   margin: 0;
-  font-size: 2rem;
+  font-size: var(--phoenix-admin-title);
   font-weight: 800;
   line-height: 1.15;
 }
@@ -40,7 +37,7 @@
 .admin-distribution__subtitle {
   margin: 0;
   color: #64748b;
-  font-size: 0.95rem;
+  font-size: var(--phoenix-admin-body);
 }
 
 .admin-distribution__summary-grid {
@@ -51,10 +48,10 @@
 
 .admin-distribution__summary-card {
   background: #fff;
-  border-radius: 20px;
-  padding: 18px;
-  border: 1px solid #e5eefc;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+  border-radius: var(--phoenix-admin-radius-xl);
+  padding: 16px;
+  border: 1px solid var(--phoenix-admin-border);
+  box-shadow: var(--phoenix-admin-shadow);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -77,15 +74,15 @@
 }
 
 .admin-distribution__summary-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #eff6ff;
   color: #2563eb;
-  font-size: 1.2rem;
+  font-size: 1rem;
   flex-shrink: 0;
 }
 
@@ -106,13 +103,13 @@
 
 .admin-distribution__summary-content span {
   color: #64748b;
-  font-size: 0.84rem;
+  font-size: var(--phoenix-admin-body);
   font-weight: 700;
 }
 
 .admin-distribution__summary-content strong {
   color: #0f172a;
-  font-size: 1.25rem;
+  font-size: var(--phoenix-admin-stat-sm);
   font-weight: 800;
 }
 
@@ -131,10 +128,10 @@
 
 .admin-distribution__card {
   background: #fff;
-  border: 1px solid #dbeafe;
-  border-radius: 22px;
-  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.05);
-  padding: 24px;
+  border: 1px solid var(--phoenix-admin-border);
+  border-radius: var(--phoenix-admin-radius-xl);
+  box-shadow: var(--phoenix-admin-shadow);
+  padding: 20px;
 }
 
 .admin-distribution__section-head {
@@ -147,21 +144,21 @@
 
 .admin-distribution__section-title {
   margin: 0;
-  font-size: 1.18rem;
+  font-size: var(--phoenix-admin-heading);
   font-weight: 800;
 }
 
 .admin-distribution__section-subtitle {
   margin: 8px 0 0;
   color: #64748b;
-  font-size: 0.9rem;
+  font-size: var(--phoenix-admin-body);
   line-height: 1.6;
 }
 
 .admin-distribution__count {
-  min-width: 42px;
-  height: 42px;
-  border-radius: 14px;
+  min-width: 38px;
+  height: 38px;
+  border-radius: 12px;
   background: #eff6ff;
   color: #2563eb;
   display: flex;
@@ -182,14 +179,14 @@
 .admin-distribution__assigned-card,
 .admin-distribution__driver-row,
 .admin-distribution__modal-driver {
-  border: 1px solid #e5eefc;
-  border-radius: 18px;
+  border: 1px solid var(--phoenix-admin-border);
+  border-radius: var(--phoenix-admin-radius-lg);
   background: #f8fbff;
 }
 
 .admin-distribution__parcel-card,
 .admin-distribution__assigned-card {
-  padding: 18px;
+  padding: 16px;
   display: grid;
   gap: 16px;
 }
@@ -205,14 +202,14 @@
 .admin-distribution__parcel-id {
   margin: 0;
   color: #0f172a;
-  font-size: 1.03rem;
+  font-size: 0.92rem;
   font-weight: 800;
 }
 
 .admin-distribution__parcel-merchant {
   margin: 6px 0 0;
   color: #475569;
-  font-size: 0.92rem;
+  font-size: var(--phoenix-admin-body);
   font-weight: 700;
 }
 
@@ -223,7 +220,7 @@
   justify-content: center;
   border-radius: 999px;
   padding: 8px 12px;
-  font-size: 0.78rem;
+  font-size: var(--phoenix-admin-caption);
   font-weight: 800;
   white-space: nowrap;
 }
@@ -253,7 +250,7 @@
   display: block;
   margin-bottom: 6px;
   color: #64748b;
-  font-size: 0.79rem;
+  font-size: var(--phoenix-admin-caption);
   font-weight: 800;
 }
 
@@ -263,17 +260,16 @@
 .admin-distribution__modal-driver p {
   margin: 0;
   color: #0f172a;
-  font-size: 0.91rem;
+  font-size: var(--phoenix-admin-body);
   line-height: 1.6;
   font-weight: 700;
 }
 
 .admin-distribution__action-btn {
   border: none;
-  border-radius: 14px;
   font: inherit;
   font-weight: 800;
-  padding: 12px 16px;
+  padding: 11px 15px;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -311,7 +307,7 @@
 .admin-distribution__driver-row h3,
 .admin-distribution__modal-driver h3 {
   margin: 0;
-  font-size: 0.97rem;
+  font-size: 0.88rem;
   font-weight: 800;
 }
 
@@ -320,7 +316,7 @@
   text-align: center;
   border-radius: 999px;
   padding: 8px 12px;
-  font-size: 0.8rem;
+  font-size: var(--phoenix-admin-caption);
   font-weight: 800;
 }
 
@@ -358,14 +354,14 @@
 
 .admin-distribution__insight-head h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.94rem;
   font-weight: 800;
 }
 
 .admin-distribution__insight-head p {
   margin: 6px 0 0;
   color: #64748b;
-  font-size: 0.9rem;
+  font-size: var(--phoenix-admin-body);
   line-height: 1.6;
 }
 
@@ -387,13 +383,13 @@
 
 .admin-distribution__insight-metrics span {
   color: #64748b;
-  font-size: 0.82rem;
+  font-size: var(--phoenix-admin-caption);
   font-weight: 700;
 }
 
 .admin-distribution__insight-metrics strong {
   color: #0f172a;
-  font-size: 1.2rem;
+  font-size: var(--phoenix-admin-stat-sm);
   font-weight: 800;
 }
 
@@ -407,21 +403,21 @@
 }
 
 .admin-distribution__state-card i {
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   color: #2563eb;
 }
 
 .admin-distribution__state-card h2 {
   margin: 0;
   color: #0f172a;
-  font-size: 1.12rem;
+  font-size: var(--phoenix-admin-heading);
 }
 
 .admin-distribution__state-card p,
 .admin-distribution__modal-head p,
 .admin-distribution__empty {
   margin: 0;
-  font-size: 0.92rem;
+  font-size: var(--phoenix-admin-body);
 }
 
 .admin-distribution__modal {
@@ -440,9 +436,9 @@
   max-height: min(88vh, 900px);
   overflow: auto;
   background: #fff;
-  border-radius: 24px;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
-  padding: 24px;
+  border-radius: var(--phoenix-admin-radius-xl);
+  box-shadow: var(--phoenix-admin-shadow-strong);
+  padding: 20px;
   display: grid;
   gap: 18px;
 }
@@ -456,7 +452,7 @@
 
 .admin-distribution__modal-head h2 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: var(--phoenix-admin-heading);
   font-weight: 800;
 }
 
@@ -481,7 +477,7 @@
   gap: 10px;
   justify-items: end;
   color: #2563eb;
-  font-size: 0.88rem;
+  font-size: var(--phoenix-admin-body);
   font-weight: 800;
 }
 
@@ -493,7 +489,7 @@
 .admin-distribution__modal-error {
   margin: 0;
   color: #dc2626;
-  font-size: 0.9rem;
+  font-size: var(--phoenix-admin-body);
   font-weight: 700;
 }
 

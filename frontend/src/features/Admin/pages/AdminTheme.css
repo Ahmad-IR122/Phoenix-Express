@@ -1,0 +1,175 @@
+.admin-dashboard,
+.admin-distribution,
+.phoenix-merchants,
+.phoenix-delegates,
+.phoenix-delegates-page,
+.phoenix-reports {
+  --phoenix-admin-bg: #f8fbff;
+  --phoenix-admin-surface: #ffffff;
+  --phoenix-admin-border: #e3edf9;
+  --phoenix-admin-border-strong: #d5e4f6;
+  --phoenix-admin-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  --phoenix-admin-shadow-strong: 0 18px 38px rgba(15, 23, 42, 0.14);
+  --phoenix-admin-radius-xl: 18px;
+  --phoenix-admin-radius-lg: 16px;
+  --phoenix-admin-radius-md: 14px;
+  --phoenix-admin-radius-sm: 12px;
+  --phoenix-admin-title: 1.45rem;
+  --phoenix-admin-heading: 1rem;
+  --phoenix-admin-body: 0.84rem;
+  --phoenix-admin-caption: 0.76rem;
+  --phoenix-admin-micro: 0.7rem;
+  --phoenix-admin-stat: 1.55rem;
+  --phoenix-admin-stat-sm: 1.15rem;
+  --phoenix-admin-line: 1.7;
+  background: var(--phoenix-admin-bg);
+  color: #0f172a;
+}
+
+.admin-dashboard *,
+.admin-distribution *,
+.phoenix-merchants *,
+.phoenix-delegates *,
+.phoenix-delegates-page *,
+.phoenix-reports * {
+  box-sizing: border-box;
+}
+
+.phoenix-merchants__eyebrow,
+.phoenix-delegates__eyebrow,
+.admin-distribution__eyebrow,
+.phoenix-reports__eyebrow {
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 6px 11px;
+  font-size: var(--phoenix-admin-micro);
+  font-weight: 800;
+}
+
+.phoenix-merchants__title,
+.phoenix-delegates__title,
+.admin-distribution__title,
+.phoenix-reports__title,
+.phoenix-delegates-hero h1 {
+  font-size: var(--phoenix-admin-title);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.phoenix-merchants__subtitle,
+.phoenix-delegates__subtitle,
+.admin-distribution__subtitle,
+.phoenix-reports__subtitle,
+.phoenix-delegates-hero p {
+  color: #64748b;
+  font-size: var(--phoenix-admin-body);
+  line-height: var(--phoenix-admin-line);
+}
+
+.admin-dashboard__stat-card,
+.admin-dashboard__card,
+.admin-distribution__summary-card,
+.admin-distribution__card,
+.phoenix-merchants__summary-card,
+.phoenix-delegates__summary-card,
+.phoenix-merchants__table-wrapper,
+.phoenix-merchants__modal,
+.phoenix-delegates-stat-card,
+.phoenix-delegates-toolbar,
+.phoenix-delegates-table-card,
+.phoenix-delegates-modal,
+.phoenix-reports__summary-card,
+.phoenix-reports__panel,
+.phoenix-reports__mobile-card,
+.phoenix-reports__return-card,
+.phoenix-reports__modal {
+  background: var(--phoenix-admin-surface);
+  border: 1px solid var(--phoenix-admin-border);
+  border-radius: var(--phoenix-admin-radius-xl);
+  box-shadow: var(--phoenix-admin-shadow);
+}
+
+.admin-dashboard__card-title,
+.phoenix-delegates__panel-title,
+.admin-distribution__section-title,
+.phoenix-reports__panel-title {
+  font-size: var(--phoenix-admin-heading);
+  font-weight: 800;
+}
+
+.admin-dashboard__card-subtitle,
+.phoenix-delegates__panel-subtitle,
+.admin-distribution__section-subtitle,
+.phoenix-reports__panel-subtitle {
+  font-size: var(--phoenix-admin-body);
+  line-height: var(--phoenix-admin-line);
+  color: #64748b;
+}
+
+.admin-dashboard__table th,
+.admin-distribution__label,
+.phoenix-merchants__table th,
+.phoenix-delegates__table th,
+.phoenix-reports__table th,
+.phoenix-delegates__table td,
+.phoenix-merchants__table td,
+.phoenix-reports__table td,
+.admin-dashboard__table td {
+  font-size: var(--phoenix-admin-caption);
+}
+
+.admin-dashboard__status,
+.admin-distribution__priority,
+.admin-distribution__status-chip,
+.admin-distribution__driver-badge,
+.phoenix-merchants__badge,
+.phoenix-delegates__badge,
+.phoenix-delegates__filter-chip,
+.phoenix-reports__mini-badge,
+.phoenix-reports__status-badge {
+  font-size: var(--phoenix-admin-caption);
+}
+
+.admin-distribution__action-btn,
+.admin-dashboard__view-all,
+.phoenix-merchants__details-btn,
+.phoenix-delegates__primary-btn,
+.phoenix-delegates__secondary-btn,
+.phoenix-delegates__link-btn,
+.phoenix-delegates__ghost-btn,
+.phoenix-delegates__danger-btn,
+.phoenix-delegates__table-btn,
+.phoenix-delegates__form-btn,
+.add-delegate-btn,
+.details-btn,
+.edit-btn,
+.deactivate-btn,
+.cancel-form-btn,
+.save-form-btn,
+.phoenix-reports__action-btn,
+.phoenix-reports__reset-btn,
+.phoenix-reports__link-btn,
+.phoenix-reports__return-action {
+  border-radius: var(--phoenix-admin-radius-md);
+  font-size: var(--phoenix-admin-caption);
+  font-weight: 800;
+}
+
+.admin-distribution__modal-dialog,
+.phoenix-delegates__details-panel,
+.phoenix-delegates__modal,
+.phoenix-delegates-modal,
+.phoenix-reports__modal {
+  box-shadow: var(--phoenix-admin-shadow-strong);
+}
+
+@media (max-width: 768px) {
+  .phoenix-merchants__title,
+  .phoenix-delegates__title,
+  .admin-distribution__title,
+  .phoenix-reports__title,
+  .phoenix-delegates-hero h1 {
+    font-size: 1.2rem;
+  }
+}
