@@ -1,0 +1,547 @@
+.admin-distribution {
+  direction: rtl;
+  text-align: right;
+  display: grid;
+  gap: 24px;
+  color: #0f172a;
+}
+
+.admin-distribution__hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 6px 2px 0;
+}
+
+.admin-distribution__hero-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-distribution__eyebrow {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 7px 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.admin-distribution__title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.admin-distribution__subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.admin-distribution__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-distribution__summary-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 18px;
+  border: 1px solid #e5eefc;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-distribution__summary-card--blue {
+  border-color: #bfdbfe;
+}
+
+.admin-distribution__summary-card--sky {
+  border-color: #c7e6ff;
+}
+
+.admin-distribution__summary-card--green {
+  border-color: #bbf7d0;
+}
+
+.admin-distribution__summary-card--red {
+  border-color: #fecaca;
+}
+
+.admin-distribution__summary-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.admin-distribution__summary-card--green .admin-distribution__summary-icon {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.admin-distribution__summary-card--red .admin-distribution__summary-icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.admin-distribution__summary-content {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-distribution__summary-content span {
+  color: #64748b;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.admin-distribution__summary-content strong {
+  color: #0f172a;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.admin-distribution__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.95fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.admin-distribution__main,
+.admin-distribution__side {
+  display: grid;
+  gap: 20px;
+}
+
+.admin-distribution__card {
+  background: #fff;
+  border: 1px solid #dbeafe;
+  border-radius: 22px;
+  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.05);
+  padding: 24px;
+}
+
+.admin-distribution__section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.admin-distribution__section-title {
+  margin: 0;
+  font-size: 1.18rem;
+  font-weight: 800;
+}
+
+.admin-distribution__section-subtitle {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.admin-distribution__count {
+  min-width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.admin-distribution__parcel-list,
+.admin-distribution__assigned-list,
+.admin-distribution__drivers,
+.admin-distribution__modal-list {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-distribution__parcel-card,
+.admin-distribution__assigned-card,
+.admin-distribution__driver-row,
+.admin-distribution__modal-driver {
+  border: 1px solid #e5eefc;
+  border-radius: 18px;
+  background: #f8fbff;
+}
+
+.admin-distribution__parcel-card,
+.admin-distribution__assigned-card {
+  padding: 18px;
+  display: grid;
+  gap: 16px;
+}
+
+.admin-distribution__parcel-top,
+.admin-distribution__assigned-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.admin-distribution__parcel-id {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.03rem;
+  font-weight: 800;
+}
+
+.admin-distribution__parcel-merchant {
+  margin: 6px 0 0;
+  color: #475569;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.admin-distribution__priority,
+.admin-distribution__status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.admin-distribution__priority {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.admin-distribution__status-chip {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.admin-distribution__parcel-grid,
+.admin-distribution__assigned-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+}
+
+.admin-distribution__parcel-grid-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-distribution__label {
+  display: block;
+  margin-bottom: 6px;
+  color: #64748b;
+  font-size: 0.79rem;
+  font-weight: 800;
+}
+
+.admin-distribution__parcel-grid p,
+.admin-distribution__assigned-grid p,
+.admin-distribution__driver-row p,
+.admin-distribution__modal-driver p {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.91rem;
+  line-height: 1.6;
+  font-weight: 700;
+}
+
+.admin-distribution__action-btn {
+  border: none;
+  border-radius: 14px;
+  font: inherit;
+  font-weight: 800;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-distribution__action-btn:hover {
+  transform: translateY(-1px);
+}
+
+.admin-distribution__action-btn--primary {
+  background: #2563eb;
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+}
+
+.admin-distribution__action-btn--secondary {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.admin-distribution__driver-row,
+.admin-distribution__modal-driver {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-distribution__driver-copy,
+.admin-distribution__modal-driver-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-distribution__driver-row h3,
+.admin-distribution__modal-driver h3 {
+  margin: 0;
+  font-size: 0.97rem;
+  font-weight: 800;
+}
+
+.admin-distribution__driver-badge {
+  min-width: 72px;
+  text-align: center;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.admin-distribution__driver-badge--available {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.admin-distribution__driver-badge--busy {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.admin-distribution__insight-card {
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+}
+
+.admin-distribution__insight-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.admin-distribution__insight-head i {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+}
+
+.admin-distribution__insight-head h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.admin-distribution__insight-head p {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.admin-distribution__insight-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.admin-distribution__insight-metrics div {
+  border-radius: 16px;
+  background: #f8fbff;
+  border: 1px solid #e5eefc;
+  padding: 14px 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.admin-distribution__insight-metrics span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.admin-distribution__insight-metrics strong {
+  color: #0f172a;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.admin-distribution__empty,
+.admin-distribution__state-card {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  text-align: center;
+  color: #64748b;
+}
+
+.admin-distribution__state-card i {
+  font-size: 1.8rem;
+  color: #2563eb;
+}
+
+.admin-distribution__state-card h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.12rem;
+}
+
+.admin-distribution__state-card p,
+.admin-distribution__modal-head p,
+.admin-distribution__empty {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.admin-distribution__modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1050;
+}
+
+.admin-distribution__modal-dialog {
+  width: min(720px, 100%);
+  max-height: min(88vh, 900px);
+  overflow: auto;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+  padding: 24px;
+  display: grid;
+  gap: 18px;
+}
+
+.admin-distribution__modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-distribution__modal-head h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.admin-distribution__close-btn {
+  border: none;
+  background: #eff6ff;
+  color: #2563eb;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.admin-distribution__modal-driver {
+  width: 100%;
+  text-align: right;
+  cursor: pointer;
+}
+
+.admin-distribution__modal-driver-meta {
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+  color: #2563eb;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.admin-distribution__modal-driver:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.admin-distribution__modal-error {
+  margin: 0;
+  color: #dc2626;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.admin-distribution__modal-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+@media (max-width: 1180px) {
+  .admin-distribution__summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-distribution__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .admin-distribution__hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-distribution__summary-grid,
+  .admin-distribution__insight-metrics,
+  .admin-distribution__parcel-grid,
+  .admin-distribution__assigned-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-distribution__section-head,
+  .admin-distribution__parcel-top,
+  .admin-distribution__assigned-top,
+  .admin-distribution__modal-head,
+  .admin-distribution__driver-row,
+  .admin-distribution__modal-driver {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-distribution__modal-driver-meta {
+    justify-items: stretch;
+  }
+
+  .admin-distribution__modal {
+    padding: 12px;
+  }
+}

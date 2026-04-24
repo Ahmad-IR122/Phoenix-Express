@@ -8,6 +8,15 @@ const {
   EmployeeWallet,
   WithdrawalRequest,
 } = require('../models');
+const { getEmployeeDashboardData } = require('../services/employee-dashboard.service');
+const {
+  getEmployeeOrdersData,
+  getEmployeeOrderDetailsData,
+  updateEmployeeOrderStatus,
+  getEmployeeProfileData,
+  getEmployeeWalletData,
+  createEmployeeWithdrawalRequest,
+} = require('../services/employee-portal.service');
 
 const employeeIncludes = [
   {
@@ -180,10 +189,180 @@ const deleteEmployee = async (req, res) => {
   }
 };
 
+const getEmployeeDashboard = async (req, res) => {
+  try {
+    const dashboardData = await getEmployeeDashboardData({
+      userId: req.user.id,
+    });
+
+    if (!dashboardData) {
+      return res.status(404).json({
+        success: false,
+        message: 'Employee profile not found for the authenticated user',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: dashboardData,
+      mockAuth: Boolean(req.user?.isMockAuth),
+      fallbackMockAuth: Boolean(req.user?.isFallbackMockAuth),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch employee dashboard',
+      errors: [error.message],
+    });
+  }
+};
+
+const getAuthenticatedEmployeeProfile = async (req, res) => {
+  try {
+    const profileData = await getEmployeeProfileData({
+      userId: req.user.id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: profileData,
+      mockAuth: Boolean(req.user.isMockAuth),
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to fetch employee profile',
+      errors: error.errors ? error.errors.map((err) => err.message) : undefined,
+    });
+  }
+};
+
+const getAuthenticatedEmployeeOrders = async (req, res) => {
+  try {
+    const ordersData = await getEmployeeOrdersData({
+      userId: req.user.id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: ordersData,
+      mockAuth: Boolean(req.user.isMockAuth),
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to fetch employee orders',
+    });
+  }
+};
+
+const getAuthenticatedEmployeeOrderDetails = async (req, res) => {
+  try {
+    const orderDetails = await getEmployeeOrderDetailsData({
+      userId: req.user.id,
+      shipmentId: Number(req.params.shipmentId),
+    });
+
+    if (!orderDetails) {
+      return res.status(404).json({
+        success: false,
+        message: 'Employee order not found',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: orderDetails,
+      mockAuth: Boolean(req.user.isMockAuth),
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to fetch employee order details',
+    });
+  }
+};
+
+const updateAuthenticatedEmployeeOrderStatus = async (req, res) => {
+  try {
+    const updatedOrder = await updateEmployeeOrderStatus({
+      userId: req.user.id,
+      shipmentId: Number(req.params.shipmentId),
+      status: req.body.status,
+      currentLocation: req.body.currentLocation,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Employee order status updated successfully',
+      data: updatedOrder,
+      mockAuth: Boolean(req.user.isMockAuth),
+    });
+  } catch (error) {
+    console.error('Employee order status update error:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Validation errors:', error.errors);
+
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to update employee order status',
+    });
+  }
+};
+
+const getAuthenticatedEmployeeWallet = async (req, res) => {
+  try {
+    const walletData = await getEmployeeWalletData({
+      userId: req.user.id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: walletData,
+      mockAuth: Boolean(req.user.isMockAuth),
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to fetch employee wallet',
+    });
+  }
+};
+
+const submitAuthenticatedEmployeeWithdrawal = async (req, res) => {
+  try {
+    const requestData = await createEmployeeWithdrawalRequest({
+      userId: req.user.id,
+      amount: req.body.amount,
+      withdrawalMethod: req.body.withdrawalMethod,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Withdrawal request created successfully',
+      data: requestData,
+      mockAuth: Boolean(req.user.isMockAuth),
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to create withdrawal request',
+    });
+  }
+};
+
 module.exports = {
   createEmployee,
   getAllEmployees,
   findEmployeeById,
   updateEmployee,
   deleteEmployee,
+  getEmployeeDashboard,
+  getAuthenticatedEmployeeProfile,
+  getAuthenticatedEmployeeOrders,
+  getAuthenticatedEmployeeOrderDetails,
+  updateAuthenticatedEmployeeOrderStatus,
+  getAuthenticatedEmployeeWallet,
+  submitAuthenticatedEmployeeWithdrawal,
 };

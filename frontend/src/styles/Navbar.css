@@ -1,16 +1,9 @@
 *{
     font-size: 20px;
 }
-@font-face {
-  font-family: "Alarabiya";
-  src: url("../assets/fonts/alarabiya-font-normal.ttf") format("truetype");
-  font-weight: 600;
-  font-style: normal;
-
-}
 
 .mobix-navbar {
-  font-family: "Alarabiya", sans-serif;
+  font-family: "Cairo", sans-serif;
 }
 
 .mobix-nav-link,

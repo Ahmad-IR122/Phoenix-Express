@@ -1,0 +1,518 @@
+.phoenix-merchants {
+  direction: rtl;
+  text-align: right;
+  display: grid;
+  gap: 24px;
+  color: #0f172a;
+}
+
+/* Header */
+.phoenix-merchants__hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 6px 2px 0;
+}
+
+.phoenix-merchants__hero-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.phoenix-merchants__eyebrow {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 5px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.phoenix-merchants__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.phoenix-merchants__subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+/* Summary Cards */
+.phoenix-merchants__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.phoenix-merchants__summary-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px;
+  border: 1px solid #e5eefc;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.04);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.phoenix-merchants__summary-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.phoenix-merchants__summary-icon--blue {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.phoenix-merchants__summary-icon--purple {
+  background: #f3e8ff;
+  color: #9333ea;
+}
+
+.phoenix-merchants__summary-icon--green {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.phoenix-merchants__summary-icon--orange {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.phoenix-merchants__summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phoenix-merchants__summary-value {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.phoenix-merchants__summary-label {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+/* Search and Filters */
+.phoenix-merchants__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.phoenix-merchants__search-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 280px;
+  max-width: 400px;
+}
+
+.phoenix-merchants__search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.phoenix-merchants__search-input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.phoenix-merchants__search-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.phoenix-merchants__search-input::placeholder {
+  color: #94a3b8;
+}
+
+.phoenix-merchants__filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.phoenix-merchants__filter-chip {
+  padding: 5px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.phoenix-merchants__filter-chip:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.phoenix-merchants__filter-chip--active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.phoenix-merchants__filter-chip--active:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff;
+}
+
+/* Table */
+.phoenix-merchants__table-wrapper {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e5eefc;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
+
+.phoenix-merchants__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.phoenix-merchants__table thead {
+  background: #f8fafc;
+}
+
+.phoenix-merchants__table th {
+  padding: 12px 14px;
+  text-align: right;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.phoenix-merchants__table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.phoenix-merchants__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.phoenix-merchants__table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* Merchant Cell */
+.phoenix-merchants__merchant-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.phoenix-merchants__merchant-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.phoenix-merchants__merchant-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phoenix-merchants__merchant-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.phoenix-merchants__merchant-phone {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* Location */
+.phoenix-merchants__location {
+  color: #475569;
+  font-size: 0.8rem;
+}
+
+/* Stats */
+.phoenix-merchants__stat {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.phoenix-merchants__stat--success {
+  color: #16a34a;
+}
+
+.phoenix-merchants__stat--warning {
+  color: #ea580c;
+}
+
+.phoenix-merchants__stat--danger {
+  color: #dc2626;
+}
+
+/* Status Badges */
+.phoenix-merchants__badge {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.phoenix-merchants__badge--active {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.phoenix-merchants__badge--pending {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.phoenix-merchants__badge--inactive {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Details Button */
+.phoenix-merchants__details-btn {
+  padding: 6px 12px;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  background: transparent;
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.phoenix-merchants__details-btn:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
+/* Empty State */
+.phoenix-merchants__empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+/* Modal */
+.phoenix-merchants__modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.phoenix-merchants__modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.25);
+}
+
+.phoenix-merchants__modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.phoenix-merchants__modal-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.phoenix-merchants__modal-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.phoenix-merchants__modal-close:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.phoenix-merchants__modal-body {
+  padding: 20px;
+  display: grid;
+  gap: 20px;
+}
+
+.phoenix-merchants__modal-section {
+  display: grid;
+  gap: 12px;
+}
+
+.phoenix-merchants__modal-section-title {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.phoenix-merchants__modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.phoenix-merchants__modal-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.phoenix-merchants__modal-label {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.phoenix-merchants__modal-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.phoenix-merchants__modal-value--success {
+  color: #16a34a;
+}
+
+.phoenix-merchants__modal-value--warning {
+  color: #ea580c;
+}
+
+.phoenix-merchants__modal-value--danger {
+  color: #dc2626;
+}
+
+.phoenix-merchants__modal-status {
+  display: flex;
+  align-items: center;
+}
+
+.phoenix-merchants__modal-section--financial {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 12px;
+  margin-top: 8px;
+}
+
+.phoenix-merchants__modal-financial-note {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .phoenix-merchants__summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .phoenix-merchants__title {
+    font-size: 1.5rem;
+  }
+
+  .phoenix-merchants__summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .phoenix-merchants__controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .phoenix-merchants__search-wrapper {
+    max-width: none;
+  }
+
+  .phoenix-merchants__filters {
+    justify-content: flex-start;
+  }
+
+  .phoenix-merchants__table-wrapper {
+    overflow-x: auto;
+  }
+
+  .phoenix-merchants__table {
+    min-width: 800px;
+  }
+
+  .phoenix-merchants__modal-grid {
+    grid-template-columns: 1fr;
+  }
+}
