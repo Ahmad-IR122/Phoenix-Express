@@ -12,6 +12,8 @@ const {
   Shipment,
   Order,
   Region,
+  TrackingUpdate,
+  sequelize,
 } = require('../models');
 const { STATUS_LABELS } = require('./employee-dashboard.service');
 
@@ -69,6 +71,43 @@ const WITHDRAWAL_METHOD_MAP = {
   ewallet: 'ewallet',
 };
 
+const SHIPMENT_PICKED_UP_NOTE = 'تم استلام الطرد من نقطة الاستلام';
+const SHIPMENT_DELIVERED_NOTE = 'تم تسليم الطرد بنجاح';
+
+const PACKAGE_SIZE_LABELS = {
+  small: 'طرد صغير',
+  medium: 'طرد متوسط',
+  large: 'طرد كبير',
+};
+
+const STATUS_TRANSITIONS = {
+  accepted: {
+    nextStatus: 'picked_up',
+    orderStatus: 'picked_up',
+    note: SHIPMENT_PICKED_UP_NOTE,
+  },
+  picked_up: {
+    nextStatus: 'delivered',
+    orderStatus: 'delivered',
+    note: SHIPMENT_DELIVERED_NOTE,
+  },
+  in_transit: {
+    nextStatus: 'delivered',
+    orderStatus: 'delivered',
+    note: SHIPMENT_DELIVERED_NOTE,
+  },
+  arrived_to_destination_city: {
+    nextStatus: 'delivered',
+    orderStatus: 'delivered',
+    note: SHIPMENT_DELIVERED_NOTE,
+  },
+  out_for_delivery: {
+    nextStatus: 'delivered',
+    orderStatus: 'delivered',
+    note: SHIPMENT_DELIVERED_NOTE,
+  },
+};
+
 const getWeekRange = () => {
   const end = new Date();
   const start = new Date();
@@ -79,6 +118,32 @@ const getWeekRange = () => {
 };
 
 const buildAddressLine = (...parts) => parts.filter(Boolean).join(' - ') || null;
+
+const formatTime = (value) => {
+  if (!value) {
+    return '-';
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return '-';
+  }
+
+  return new Intl.DateTimeFormat('ar-PS', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(date);
+};
+
+const fallbackValue = (value) => {
+  if (value === undefined || value === null || value === '') {
+    return '-';
+  }
+
+  return value;
+};
 
 const resolveEmployeeByUserId = async (userId) => {
   return Employee.findOne({
@@ -136,18 +201,29 @@ const mapOrderCard = (shipment) => {
   const mappedStatus = mapShipmentStatus(shipment.current_status);
 
   return {
+    id: order?.id || shipment.id,
     shipmentId: shipment.id,
     orderId: order?.id || null,
-    shipmentNumber: shipment.tracking_number,
+    shipmentNumber: fallbackValue(shipment.tracking_number || `PHX-${shipment.id}`),
     status: mappedStatus.status,
     statusLabel: mappedStatus.statusLabel,
     shipmentStatus: shipment.current_status,
     shipmentStatusLabel: STATUS_LABELS[shipment.current_status] || shipment.current_status,
     price: region?.price !== undefined && region?.price !== null ? Number(region.price) : 0,
-    pickupAddress: order?.sender_address || null,
-    deliveryAddress: order?.receiver_address || null,
-    customerName: order?.receiver_name || null,
-    parcelType: order?.package_size || null,
+    time: formatTime(shipment.estimated_delivery_date || order?.createdAt),
+    pickupAddress: fallbackValue(order?.sender_address),
+    deliveryAddress: fallbackValue(order?.receiver_address),
+    senderName: fallbackValue(order?.sender_name),
+    senderPhone: fallbackValue(order?.sender_phone),
+    receiverName: fallbackValue(order?.receiver_name),
+    receiverPhone: fallbackValue(order?.receiver_phone),
+    customerName: fallbackValue(order?.receiver_name),
+    parcelType: PACKAGE_SIZE_LABELS[order?.package_size] || fallbackValue(order?.package_size),
+    parcelDescription: fallbackValue(order?.package_description),
+    specialNotes: order?.is_fragile ? 'الطرد قابل للكسر ويحتاج إلى عناية أثناء النقل' : '-',
+    proofImage: null,
+    originCity: fallbackValue(order?.origin_city),
+    destinationCity: fallbackValue(order?.destination_city),
     timeWindow: shipment.estimated_delivery_date,
   };
 };
@@ -253,6 +329,106 @@ const getEmployeeOrderDetailsData = async ({ userId, shipmentId }) => {
   }
 
   return mapOrderDetails(shipment);
+};
+
+const updateEmployeeOrderStatus = async ({
+  userId,
+  shipmentId,
+  status,
+  currentLocation,
+}) => {
+  const employee = await ensureAuthenticatedEmployee({ userId });
+
+  const shipment = await Shipment.findOne({
+    where: {
+      id: shipmentId,
+      driver_id: employee.id,
+    },
+    include: [
+      {
+        model: Order,
+        as: 'order',
+        include: [
+          {
+            model: Region,
+            as: 'region',
+            attributes: ['id', 'name', 'price'],
+            required: false,
+          },
+        ],
+      },
+    ],
+  });
+
+  if (!shipment || !shipment.order) {
+    const error = new Error('Employee order not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const transition = STATUS_TRANSITIONS[shipment.current_status];
+
+  if (!transition || transition.nextStatus !== status) {
+    const error = new Error('Invalid shipment status transition');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  await sequelize.transaction(async (transaction) => {
+    await shipment.update(
+      {
+        current_status: transition.nextStatus,
+      },
+      { transaction }
+    );
+
+    const orderUpdates = {
+      status: transition.orderStatus,
+    };
+
+    if (transition.nextStatus === 'delivered' && !shipment.order.delivered_at) {
+      orderUpdates.delivered_at = new Date();
+    }
+
+    await shipment.order.update(orderUpdates, { transaction });
+
+    await TrackingUpdate.create(
+      {
+        shipment_id: shipment.id,
+        status: transition.nextStatus,
+        note: transition.note,
+        current_location:
+          currentLocation ||
+          (transition.nextStatus === 'picked_up'
+            ? shipment.order.origin_city || shipment.order.sender_address || null
+            : shipment.order.destination_city || shipment.order.receiver_address || null),
+      },
+      { transaction }
+    );
+  });
+
+  const updatedShipment = await Shipment.findOne({
+    where: {
+      id: shipmentId,
+      driver_id: employee.id,
+    },
+    include: [
+      {
+        model: Order,
+        as: 'order',
+        include: [
+          {
+            model: Region,
+            as: 'region',
+            attributes: ['id', 'name', 'price'],
+            required: false,
+          },
+        ],
+      },
+    ],
+  });
+
+  return mapOrderCard(updatedShipment);
 };
 
 const getEmployeeProfileData = async ({ userId }) => {
@@ -414,6 +590,7 @@ const createEmployeeWithdrawalRequest = async ({ userId, amount, withdrawalMetho
 module.exports = {
   getEmployeeOrdersData,
   getEmployeeOrderDetailsData,
+  updateEmployeeOrderStatus,
   getEmployeeProfileData,
   getEmployeeWalletData,
   createEmployeeWithdrawalRequest,

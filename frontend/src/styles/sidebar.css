@@ -1,0 +1,361 @@
+
+.phoenix-sidebar-shell {
+  height: 100vh;
+  width: 290px;
+  min-width: 290px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14px 14px 18px;
+  font-family: "Cairo", sans-serif;
+  box-sizing: border-box;
+}
+
+.phoenix-sidebar-shell.admin {
+  background: #ffffff;
+  border-left: 1px solid #e5e7eb;
+}
+
+.phoenix-sidebar-shell.employee {
+  background: #ffffff;
+  border-left: 1px solid #e5e7eb;
+}
+
+.phoenix-sidebar-top {
+  display: flex;
+  flex-direction: column;
+}
+
+.phoenix-brand-block {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.phoenix-sidebar-shell.employee .phoenix-brand-block {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.phoenix-brand-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background:  #1fa8f5;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: 0 6px 14px rgba(56, 182, 255, 0.16);
+}
+
+.phoenix-brand-text {
+  flex: 1;
+  direction: rtl;
+  text-align: right;
+}
+
+
+.phoenix-brand-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.05;
+  color: #0f172a;
+}
+
+.phoenix-brand-subtitle {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.phoenix-sidebar-shell.employee .phoenix-brand-title,
+.phoenix-sidebar-shell.employee .phoenix-brand-subtitle {
+  color: inherit;
+}
+
+.phoenix-nav-list {
+  display: grid;
+  gap: 8px;
+}
+
+.phoenix-nav-item {
+  width: 100%;
+  min-height: 54px;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.phoenix-sidebar-shell.admin .phoenix-nav-item {
+  color: #1f2937;
+}
+
+.phoenix-sidebar-shell.employee .phoenix-nav-item {
+  color: #1f2937;
+}
+
+.phoenix-nav-item i {
+  font-size: 1.05rem;
+  flex-shrink: 0;
+  opacity: 0.95;
+}
+
+.phoenix-nav-item span {
+  line-height: 1.15;
+  text-align: right;
+}
+
+.phoenix-nav-item:hover {
+  transform: translateY(-1px);
+}
+
+
+
+
+.phoenix-nav-item.active {
+  background:  #1fa8f5;
+  color: #ffffff !important;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.14);
+}
+
+.phoenix-nav-item.active i {
+  color: #ffffff;
+}
+
+.phoenix-sidebar-user {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.phoenix-sidebar-shell.employee .phoenix-sidebar-user {
+  border-top: 1px solid #e5e7eb;
+}
+
+.phoenix-sidebar-user-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.phoenix-user-name {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.phoenix-user-email {
+  margin-top: 3px;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.phoenix-sidebar-shell.employee .phoenix-user-name,
+.phoenix-sidebar-shell.employee .phoenix-user-email {
+  color: inherit;
+  opacity: 1;
+}
+
+/* tablet */
+@media (max-width: 1199.98px) {
+  .phoenix-sidebar-shell {
+    width: 280px;
+    min-width: 280px;
+    padding: 14px 14px 16px;
+  }
+
+  .phoenix-brand-title {
+    font-size: 1.0625rem;
+  }
+
+  .phoenix-nav-item {
+    min-height: 50px;
+    font-size: 0.875rem;
+  }
+}
+
+/* mobile */
+@media (max-width: 767.98px) {
+  .phoenix-sidebar-shell {
+    width: 100%;
+    min-width: 100%;
+    height: 100%;
+    padding: 14px 14px 16px;
+  }
+
+  .phoenix-brand-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 1.2rem;
+    border-radius: 14px;
+  }
+
+  .phoenix-brand-title {
+    font-size: 1rem;
+  }
+
+  .phoenix-brand-subtitle {
+    font-size: 0.75rem;
+  }
+
+  .phoenix-nav-item {
+    min-height: 48px;
+    padding: 11px 13px;
+    font-size: 0.875rem;
+    border-radius: 14px;
+  }
+
+  .phoenix-nav-item i {
+    font-size: 1rem;
+    
+  }
+
+  .phoenix-user-name {
+    font-size: 0.8125rem;
+      direction: rtl;
+
+  }
+
+  .phoenix-user-email {
+    font-size: 0.75rem;
+      direction: rtl;
+
+  }
+}
+
+
+.phoenix-nav-item {
+  width: 100%;
+  min-height: 54px;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+
+  /* المهم */
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  gap: 6px;
+
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.phoenix-nav-item i {
+  font-size: 1.05rem;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.phoenix-nav-item span {
+  line-height: 1.15;
+  margin: 0;
+}
+
+
+
+.phoenix-sidebar-shell {
+  direction: rtl;
+}
+
+.phoenix-nav-item {
+  width: 100%;
+  min-height: 54px;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;  
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.phoenix-nav-item i {
+  font-size: 1.05rem;
+  flex-shrink: 0;
+  margin: 0;
+  order: 2;
+}
+
+.phoenix-nav-item span {
+  line-height: 1.15;
+  margin: 0;
+  order: 1;
+}
+
+
+
+
+.phoenix-sidebar-user-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  direction: rtl;
+}
+
+.phoenix-user-name {
+  font-size: 0.875rem;
+  direction: rtl;
+  text-align: right;
+  width: 100%;
+}
+
+.phoenix-user-email {
+  font-size: 0.78rem;
+  direction: rtl;
+  text-align: right;
+  width: 100%;
+}
+
+
+.phoenix-sidebar-shell {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-left: 1px solid #dbeafe;
+}
+
+.phoenix-user-block,
+.phoenix-nav-list,
+.phoenix-brand-block {
+  margin-bottom: 0;
+}
+
+.phoenix-sidebar-shell::-webkit-scrollbar {
+  width: 6px;
+}
+
+

@@ -12,6 +12,7 @@ const { getEmployeeDashboardData } = require('../services/employee-dashboard.ser
 const {
   getEmployeeOrdersData,
   getEmployeeOrderDetailsData,
+  updateEmployeeOrderStatus,
   getEmployeeProfileData,
   getEmployeeWalletData,
   createEmployeeWithdrawalRequest,
@@ -282,6 +283,34 @@ const getAuthenticatedEmployeeOrderDetails = async (req, res) => {
   }
 };
 
+const updateAuthenticatedEmployeeOrderStatus = async (req, res) => {
+  try {
+    const updatedOrder = await updateEmployeeOrderStatus({
+      userId: req.user.id,
+      shipmentId: Number(req.params.shipmentId),
+      status: req.body.status,
+      currentLocation: req.body.currentLocation,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Employee order status updated successfully',
+      data: updatedOrder,
+      mockAuth: Boolean(req.user.isMockAuth),
+    });
+  } catch (error) {
+    console.error('Employee order status update error:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Validation errors:', error.errors);
+
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to update employee order status',
+    });
+  }
+};
+
 const getAuthenticatedEmployeeWallet = async (req, res) => {
   try {
     const walletData = await getEmployeeWalletData({
@@ -333,6 +362,7 @@ module.exports = {
   getAuthenticatedEmployeeProfile,
   getAuthenticatedEmployeeOrders,
   getAuthenticatedEmployeeOrderDetails,
+  updateAuthenticatedEmployeeOrderStatus,
   getAuthenticatedEmployeeWallet,
   submitAuthenticatedEmployeeWithdrawal,
 };
