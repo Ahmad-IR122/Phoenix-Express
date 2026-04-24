@@ -1,11 +1,12 @@
-import './App.css';
-import Navbar from './Components/Navbar';
+import SignInPage from "./features/auth/pages/SignInPage";
+import Footer from "./Components/Footer";
 
 function App() {
   return (
-    <div className="App">
-      <Navbar/>
-    </div>
+    <>
+      <SignInPage />
+      <Footer />
+    </>
   );
 }
 
