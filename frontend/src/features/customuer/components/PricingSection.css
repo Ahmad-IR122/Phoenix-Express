@@ -1,0 +1,121 @@
+.pricing-section {
+  background: #f3f3f3;
+  font-family: "Cairo", "Segoe UI", sans-serif;
+}
+
+.pricing-header {
+  max-width: 32rem;
+}
+
+.pricing-section-title {
+  color: #0a0a0a;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.pricing-section-subtitle {
+  color: #55616d;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.pricing-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2rem 1.5rem 1.75rem;
+  border: 2px solid #38b6ff;
+  border-radius: 1.75rem;
+  background: #ffffff;
+  box-shadow: 0 1.2rem 2.6rem rgba(56, 182, 255, 0.12);
+}
+
+.pricing-badge {
+  position: absolute;
+  top: -0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: #0a0a0a;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.pricing-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 50%;
+  background: #38b6ff;
+  color: #ffffff;
+  box-shadow: 0 1rem 2rem rgba(56, 182, 255, 0.2);
+}
+
+.pricing-card-title {
+  color: #0a0a0a;
+  font-size: 1.65rem;
+  font-weight: 800;
+}
+
+.pricing-amount {
+  color: #38b6ff;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.pricing-description {
+  color: #55616d;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.pricing-button {
+  min-width: 9.75rem;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background: #38b6ff;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.pricing-button:hover,
+.pricing-button:focus,
+.pricing-button:active {
+  background: #22a7f4;
+  color: #ffffff;
+}
+
+@media (max-width: 991.98px) {
+  .pricing-section-title {
+    font-size: 1.8rem;
+  }
+
+  .pricing-card-title {
+    font-size: 1.45rem;
+  }
+
+  .pricing-amount {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .pricing-card {
+    padding: 1.75rem 1.2rem 1.5rem;
+    border-radius: 1.4rem;
+  }
+
+  .pricing-icon {
+    width: 5rem;
+    height: 5rem;
+  }
+}
