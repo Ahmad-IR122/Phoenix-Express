@@ -19,7 +19,7 @@ function DashboardLayout({
 
   return (
     <div dir="rtl" className={`phoenix-layout ${layoutType}`}>
-      <aside className={`phoenix-sidebar d-none d-xl-flex ${layoutType}`}>
+      <aside className={`phoenix-sidebar ${layoutType}`}>
         <DashboardSidebar
           layoutType={layoutType}
           brand={brand}
@@ -43,23 +43,33 @@ function DashboardLayout({
         <main className="phoenix-page-content">{children}</main>
       </div>
 
-      <div className={`phoenix-mobile-sidebar ${isSidebarOpen ? "show" : ""}`}>
+      <div
+        className={`phoenix-mobile-sidebar ${isSidebarOpen ? "show" : ""}`}
+        aria-hidden={!isSidebarOpen}
+      >
         <div
           className="phoenix-mobile-overlay"
           onClick={() => setIsSidebarOpen(false)}
         ></div>
 
-        <aside dir="rtl" className={`phoenix-mobile-panel ${layoutType}`}>
-          <div className="d-flex justify-content-between align-items-center mb-3 text-end">
+        <aside
+          dir="rtl"
+          className={`phoenix-mobile-panel ${layoutType}`}
+          aria-label="القائمة الجانبية"
+        >
+          <div className="phoenix-mobile-panel__header">
             <button
               type="button"
               className="phoenix-icon-btn"
               onClick={() => setIsSidebarOpen(false)}
+              aria-label="إغلاق القائمة الجانبية"
             >
               <i className="bi bi-x-lg"></i>
             </button>
 
-            <strong dir="rtl">{brand.name}</strong>
+            <strong dir="rtl" className="phoenix-mobile-panel__title">
+              {brand.name}
+            </strong>
           </div>
 
           <DashboardSidebar
@@ -67,11 +77,10 @@ function DashboardLayout({
             brand={brand}
             navItems={navItems}
             activeKey={activeKey}
-            onNavigate={(key) => {
-              onNavigate(key);
-              setIsSidebarOpen(false);
-            }}
+            onNavigate={onNavigate}
             user={user}
+            isMobile
+            onClose={() => setIsSidebarOpen(false)}
           />
         </aside>
       </div>

@@ -1,42 +1,45 @@
-
 .phoenix-sidebar-shell {
-  height: 100vh;
-  width: 290px;
-  min-width: 290px;
+  direction: rtl;
+  height: 100%;
+  min-height: 100vh;
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 14px 14px 18px;
+  gap: 24px;
+  padding: 20px 16px 18px;
   font-family: "Cairo", sans-serif;
   box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #ffffff;
+  border-left: 1px solid #dbeafe;
 }
 
-.phoenix-sidebar-shell.admin {
-  background: #ffffff;
-  border-left: 1px solid #e5e7eb;
+.phoenix-sidebar-shell.is-desktop {
+  position: sticky;
+  top: 0;
 }
 
-.phoenix-sidebar-shell.employee {
-  background: #ffffff;
-  border-left: 1px solid #e5e7eb;
+.phoenix-sidebar-shell.is-mobile {
+  min-height: 100%;
+  padding: 8px 0 0;
+  border-left: 0;
 }
 
 .phoenix-sidebar-top {
   display: flex;
   flex-direction: column;
+  gap: 16px;
+  min-height: 0;
 }
 
 .phoenix-brand-block {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding-bottom: 14px;
-  margin-bottom: 14px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.phoenix-sidebar-shell.employee .phoenix-brand-block {
+  gap: 12px;
+  padding-bottom: 16px;
   border-bottom: 1px solid #e5e7eb;
 }
 
@@ -44,7 +47,7 @@
   width: 52px;
   height: 52px;
   border-radius: 16px;
-  background:  #1fa8f5;
+  background: #1fa8f5;
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -57,17 +60,17 @@
 
 .phoenix-brand-text {
   flex: 1;
-  direction: rtl;
+  min-width: 0;
   text-align: right;
 }
-
 
 .phoenix-brand-title {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 800;
-  line-height: 1.05;
+  line-height: 1.2;
   color: #0f172a;
+  word-break: break-word;
 }
 
 .phoenix-brand-subtitle {
@@ -75,11 +78,7 @@
   font-size: 0.78rem;
   font-weight: 600;
   color: #64748b;
-}
-
-.phoenix-sidebar-shell.employee .phoenix-brand-title,
-.phoenix-sidebar-shell.employee .phoenix-brand-subtitle {
-  color: inherit;
+  line-height: 1.45;
 }
 
 .phoenix-nav-list {
@@ -89,51 +88,50 @@
 
 .phoenix-nav-item {
   width: 100%;
-  min-height: 54px;
+  min-height: 52px;
   padding: 12px 14px;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 16px;
   background: transparent;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 10px;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease,
+    color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 700;
+  text-align: right;
+  color: #1f2937;
+  overflow: hidden;
 }
 
-.phoenix-sidebar-shell.admin .phoenix-nav-item {
-  color: #1f2937;
-}
-
-.phoenix-sidebar-shell.employee .phoenix-nav-item {
-  color: #1f2937;
+.phoenix-nav-item:hover {
+  background: #eff6ff;
+  border-color: #dbeafe;
+  transform: translateY(-1px);
 }
 
 .phoenix-nav-item i {
   font-size: 1.05rem;
   flex-shrink: 0;
-  opacity: 0.95;
+  order: 2;
 }
 
 .phoenix-nav-item span {
-  line-height: 1.15;
-  text-align: right;
+  order: 1;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
-
-.phoenix-nav-item:hover {
-  transform: translateY(-1px);
-}
-
-
-
 
 .phoenix-nav-item.active {
-  background:  #1fa8f5;
-  color: #ffffff !important;
+  background: #1fa8f5;
+  border-color: #1fa8f5;
+  color: #ffffff;
   box-shadow: 0 8px 18px rgba(37, 99, 235, 0.14);
 }
 
@@ -142,220 +140,81 @@
 }
 
 .phoenix-sidebar-user {
-  margin-top: 16px;
+  margin-top: auto;
   padding-top: 14px;
   border-top: 1px solid #e5e7eb;
 }
 
-.phoenix-sidebar-shell.employee .phoenix-sidebar-user {
-  border-top: 1px solid #e5e7eb;
-}
-
 .phoenix-sidebar-user-text {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  text-align: right;
+  min-width: 0;
 }
 
 .phoenix-user-name {
+  width: 100%;
   font-size: 0.875rem;
   font-weight: 800;
   color: #0f172a;
+  line-height: 1.4;
 }
 
 .phoenix-user-email {
+  width: 100%;
   margin-top: 3px;
   font-size: 0.78rem;
   color: #64748b;
-}
-
-.phoenix-sidebar-shell.employee .phoenix-user-name,
-.phoenix-sidebar-shell.employee .phoenix-user-email {
-  color: inherit;
-  opacity: 1;
-}
-
-/* tablet */
-@media (max-width: 1199.98px) {
-  .phoenix-sidebar-shell {
-    width: 280px;
-    min-width: 280px;
-    padding: 14px 14px 16px;
-  }
-
-  .phoenix-brand-title {
-    font-size: 1.0625rem;
-  }
-
-  .phoenix-nav-item {
-    min-height: 50px;
-    font-size: 0.875rem;
-  }
-}
-
-/* mobile */
-@media (max-width: 767.98px) {
-  .phoenix-sidebar-shell {
-    width: 100%;
-    min-width: 100%;
-    height: 100%;
-    padding: 14px 14px 16px;
-  }
-
-  .phoenix-brand-avatar {
-    width: 48px;
-    height: 48px;
-    font-size: 1.2rem;
-    border-radius: 14px;
-  }
-
-  .phoenix-brand-title {
-    font-size: 1rem;
-  }
-
-  .phoenix-brand-subtitle {
-    font-size: 0.75rem;
-  }
-
-  .phoenix-nav-item {
-    min-height: 48px;
-    padding: 11px 13px;
-    font-size: 0.875rem;
-    border-radius: 14px;
-  }
-
-  .phoenix-nav-item i {
-    font-size: 1rem;
-    
-  }
-
-  .phoenix-user-name {
-    font-size: 0.8125rem;
-      direction: rtl;
-
-  }
-
-  .phoenix-user-email {
-    font-size: 0.75rem;
-      direction: rtl;
-
-  }
-}
-
-
-.phoenix-nav-item {
-  width: 100%;
-  min-height: 54px;
-  padding: 12px 14px;
-  border: none;
-  border-radius: 16px;
-  background: transparent;
-  display: flex;
-  align-items: center;
-
-  /* المهم */
-  flex-direction: row-reverse;
-  justify-content: flex-start;
-  gap: 6px;
-
-  cursor: pointer;
-  transition: all 0.18s ease;
-  font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 700;
-}
-.phoenix-nav-item i {
-  font-size: 1.05rem;
-  flex-shrink: 0;
-  margin: 0;
-}
-
-.phoenix-nav-item span {
-  line-height: 1.15;
-  margin: 0;
-}
-
-
-
-.phoenix-sidebar-shell {
-  direction: rtl;
-}
-
-.phoenix-nav-item {
-  width: 100%;
-  min-height: 54px;
-  padding: 12px 14px;
-  border: none;
-  border-radius: 16px;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;  
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.18s ease;
-  font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 700;
-  text-align: right;
-}
-
-.phoenix-nav-item i {
-  font-size: 1.05rem;
-  flex-shrink: 0;
-  margin: 0;
-  order: 2;
-}
-
-.phoenix-nav-item span {
-  line-height: 1.15;
-  margin: 0;
-  order: 1;
-}
-
-
-
-
-.phoenix-sidebar-user-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  text-align: right;
-  direction: rtl;
-}
-
-.phoenix-user-name {
-  font-size: 0.875rem;
-  direction: rtl;
-  text-align: right;
-  width: 100%;
-}
-
-.phoenix-user-email {
-  font-size: 0.78rem;
-  direction: rtl;
-  text-align: right;
-  width: 100%;
-}
-
-
-.phoenix-sidebar-shell {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-  background: #ffffff;
-  border-left: 1px solid #dbeafe;
-}
-
-.phoenix-user-block,
-.phoenix-nav-list,
-.phoenix-brand-block {
-  margin-bottom: 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .phoenix-sidebar-shell::-webkit-scrollbar {
   width: 6px;
 }
 
+.phoenix-sidebar-shell::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
+  border-radius: 999px;
+}
 
+@media (max-width: 1199.98px) {
+  .phoenix-sidebar-shell {
+    min-height: 100%;
+    padding: 10px 0 0;
+  }
+
+  .phoenix-brand-title {
+    font-size: 1.05rem;
+  }
+
+  .phoenix-nav-item {
+    min-height: 50px;
+    font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .phoenix-brand-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 1.15rem;
+    border-radius: 14px;
+  }
+
+  .phoenix-brand-title {
+    font-size: 1rem;
+  }
+
+  .phoenix-brand-subtitle,
+  .phoenix-user-email {
+    font-size: 0.75rem;
+  }
+
+  .phoenix-nav-item {
+    min-height: 48px;
+    padding: 11px 12px;
+    border-radius: 14px;
+  }
+}

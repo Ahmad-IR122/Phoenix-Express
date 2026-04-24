@@ -8,7 +8,7 @@ import './styles/dashboardHeader.css';
 function App() {
   return (
     <div className="App">
-       <DashboardContainer />;
+      <DashboardContainer />
     </div>
   );
 }

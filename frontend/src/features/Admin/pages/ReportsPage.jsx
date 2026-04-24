@@ -30,17 +30,14 @@ const paymentMethodMeta = {
 const returnActionMeta = {
   retry_delivery: {
     label: "إعادة محاولة التوصيل",
-    description: "إعادة جدولة الطلب وإسناده مجددًا بعد التواصل مع العميل.",
     className: "phoenix-reports__decision-btn--primary",
   },
   return_to_merchant: {
     label: "إرجاع للتاجر",
-    description: "تثبيت الطلب كمرتجع نهائي وتحويله إلى مسار إرجاع للتاجر.",
     className: "phoenix-reports__decision-btn--neutral",
   },
   cancel_final: {
     label: "إلغاء نهائي",
-    description: "إغلاق الطلب نهائيًا بعد اعتماد الإدارة لعدم المتابعة.",
     className: "phoenix-reports__decision-btn--danger",
   },
 };
@@ -297,7 +294,6 @@ function ReportsPage() {
             <div className="phoenix-reports__summary-content">
               <span className="phoenix-reports__summary-label">{card.label}</span>
               <strong className="phoenix-reports__summary-value">{card.value}</strong>
-              <small className="phoenix-reports__summary-note">{card.note}</small>
             </div>
           </article>
         ))}

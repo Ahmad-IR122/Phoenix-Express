@@ -1,42 +1,42 @@
-import React, { useState } from 'react';
-import './profilePage.css';
+import React, { useState } from "react";
+import "./profilePage.css";
 
 const initialProfile = {
-  fullName: 'أحمد محمد',
-  jobTitle: 'موظف توصيل',
-  phone: '0599 123 456',
-  email: 'ahmad.driver@phoenix.ps',
-  address: 'نابلس - رفيديا - شارع الجامعة',
-  vehicleType: 'دراجة نارية',
-  licenseNumber: 'DL-44291',
-  plateNumber: '21-845-7',
-  avatarInitials: 'أم',
+  fullName: "أحمد محمد",
+  jobTitle: "موظف توصيل",
+  phone: "0599 123 456",
+  email: "ahmad.driver@phoenix.ps",
+  address: "نابلس - رفيديا - شارع الجامعة",
+  vehicleType: "دراجة نارية",
+  licenseNumber: "DL-44291",
+  plateNumber: "21-845-7",
+  avatarInitials: "أم",
 };
 
 const initialDocuments = [
   {
     id: 1,
-    name: 'رخصة القيادة',
-    expiryDate: '2026-12-18',
-    status: 'سارية',
-    tone: 'valid',
-    fileName: 'driving-license.pdf',
+    name: "رخصة القيادة",
+    expiryDate: "2026-12-18",
+    status: "سارية",
+    tone: "valid",
+    fileName: "driving-license.pdf",
   },
   {
     id: 2,
-    name: 'تأمين المركبة',
-    expiryDate: '2026-05-08',
-    status: 'تنتهي قريبًا',
-    tone: 'warning',
-    fileName: 'vehicle-insurance.pdf',
+    name: "تأمين المركبة",
+    expiryDate: "2026-05-08",
+    status: "تنتهي قريبًا",
+    tone: "warning",
+    fileName: "vehicle-insurance.pdf",
   },
   {
     id: 3,
-    name: 'الهوية الشخصية',
-    expiryDate: '2025-11-02',
-    status: 'منتهية',
-    tone: 'expired',
-    fileName: 'national-id.pdf',
+    name: "الهوية الشخصية",
+    expiryDate: "2025-11-02",
+    status: "منتهية",
+    tone: "expired",
+    fileName: "national-id.pdf",
   },
 ];
 
@@ -50,14 +50,14 @@ const getDocumentStatus = (expiryDate) => {
   const diffDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
 
   if (diffDays < 0) {
-    return { status: 'منتهية', tone: 'expired' };
+    return { status: "منتهية", tone: "expired" };
   }
 
   if (diffDays <= 30) {
-    return { status: 'تنتهي قريبًا', tone: 'warning' };
+    return { status: "تنتهي قريبًا", tone: "warning" };
   }
 
-  return { status: 'سارية', tone: 'valid' };
+  return { status: "سارية", tone: "valid" };
 };
 
 function EmployeeProfilePage() {
@@ -66,29 +66,37 @@ function EmployeeProfilePage() {
   const [documents, setDocuments] = useState(initialDocuments);
   const [isPersonalEditing, setIsPersonalEditing] = useState(false);
   const [isVehicleEditing, setIsVehicleEditing] = useState(false);
+  const [isPasswordOpen, setIsPasswordOpen] = useState(false);
   const [activeDocumentId, setActiveDocumentId] = useState(null);
   const [documentDraft, setDocumentDraft] = useState({
-    name: '',
-    expiryDate: '',
+    name: "",
+    expiryDate: "",
     file: null,
   });
   const [newDocumentDraft, setNewDocumentDraft] = useState({
-    name: '',
-    expiryDate: '',
+    name: "",
+    expiryDate: "",
     file: null,
   });
-  const [documentMessage, setDocumentMessage] = useState('');
+  const [documentMessage, setDocumentMessage] = useState("");
+  const [passwordDraft, setPasswordDraft] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const personalFields = [
-    { key: 'phone', label: 'رقم الهاتف', icon: 'bi-telephone' },
-    { key: 'email', label: 'البريد الإلكتروني', icon: 'bi-envelope' },
-    { key: 'address', label: 'العنوان', icon: 'bi-geo-alt' },
+    { key: "phone", label: "رقم الهاتف", icon: "bi-telephone" },
+    { key: "email", label: "البريد الإلكتروني", icon: "bi-envelope" },
+    { key: "address", label: "العنوان", icon: "bi-geo-alt" },
   ];
 
   const vehicleFields = [
-    { key: 'vehicleType', label: 'نوع المركبة', icon: 'bi-truck' },
-    { key: 'licenseNumber', label: 'رقم الرخصة', icon: 'bi-card-text' },
-    { key: 'plateNumber', label: 'رقم اللوحة', icon: 'bi-upc-scan' },
+    { key: "vehicleType", label: "نوع المركبة", icon: "bi-truck" },
+    { key: "licenseNumber", label: "رقم الرخصة", icon: "bi-card-text" },
+    { key: "plateNumber", label: "رقم اللوحة", icon: "bi-upc-scan" },
   ];
 
   const handleDraftChange = (key, value) => {
@@ -100,20 +108,20 @@ function EmployeeProfilePage() {
 
   const startEdit = (section) => {
     setDraftProfile(profile);
-    if (section === 'personal') {
+    if (section === "personal") {
       setIsPersonalEditing(true);
     }
-    if (section === 'vehicle') {
+    if (section === "vehicle") {
       setIsVehicleEditing(true);
     }
   };
 
   const cancelEdit = (section) => {
     setDraftProfile(profile);
-    if (section === 'personal') {
+    if (section === "personal") {
       setIsPersonalEditing(false);
     }
-    if (section === 'vehicle') {
+    if (section === "vehicle") {
       setIsVehicleEditing(false);
     }
   };
@@ -127,10 +135,10 @@ function EmployeeProfilePage() {
       return nextProfile;
     });
 
-    if (section === 'personal') {
+    if (section === "personal") {
       setIsPersonalEditing(false);
     }
-    if (section === 'vehicle') {
+    if (section === "vehicle") {
       setIsVehicleEditing(false);
     }
   };
@@ -142,21 +150,21 @@ function EmployeeProfilePage() {
       expiryDate: document.expiryDate,
       file: null,
     });
-    setDocumentMessage('');
+    setDocumentMessage("");
   };
 
   const cancelDocumentEdit = () => {
     setActiveDocumentId(null);
     setDocumentDraft({
-      name: '',
-      expiryDate: '',
+      name: "",
+      expiryDate: "",
       file: null,
     });
   };
 
   const saveDocumentEdit = (documentId) => {
     if (!documentDraft.name || !documentDraft.expiryDate || !documentDraft.file) {
-      setDocumentMessage('لازم تعبئة اسم الوثيقة وتاريخ الانتهاء واختيار ملف للتحديث.');
+      setDocumentMessage("لازم تعبئة اسم الوثيقة وتاريخ الانتهاء واختيار ملف للتحديث.");
       return;
     }
 
@@ -177,13 +185,13 @@ function EmployeeProfilePage() {
       )
     );
 
-    setDocumentMessage('تم تحديث الوثيقة وبياناتها بنجاح.');
+    setDocumentMessage("تم تحديث الوثيقة وبياناتها بنجاح.");
     cancelDocumentEdit();
   };
 
   const addNewDocument = () => {
     if (!newDocumentDraft.name || !newDocumentDraft.expiryDate || !newDocumentDraft.file) {
-      setDocumentMessage('لرفع وثيقة جديدة يجب إدخال الاسم وتاريخ الانتهاء واختيار الملف.');
+      setDocumentMessage("لرفع وثيقة جديدة يجب إدخال الاسم وتاريخ الانتهاء واختيار الملف.");
       return;
     }
 
@@ -202,11 +210,51 @@ function EmployeeProfilePage() {
     ]);
 
     setNewDocumentDraft({
-      name: '',
-      expiryDate: '',
+      name: "",
+      expiryDate: "",
       file: null,
     });
-    setDocumentMessage('تم رفع الوثيقة الجديدة وإضافتها للقائمة.');
+    setDocumentMessage("تم رفع الوثيقة الجديدة وإضافتها للقائمة.");
+  };
+
+  const handlePasswordChange = (key, value) => {
+    setPasswordDraft((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  };
+
+  const handlePasswordSubmit = (event) => {
+    event.preventDefault();
+    setPasswordError("");
+    setPasswordMessage("");
+
+    if (
+      !passwordDraft.currentPassword ||
+      !passwordDraft.newPassword ||
+      !passwordDraft.confirmPassword
+    ) {
+      setPasswordError("يرجى تعبئة جميع حقول كلمة المرور.");
+      return;
+    }
+
+    if (passwordDraft.newPassword.length < 6) {
+      setPasswordError("كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل.");
+      return;
+    }
+
+    if (passwordDraft.newPassword !== passwordDraft.confirmPassword) {
+      setPasswordError("تأكيد كلمة المرور غير مطابق.");
+      return;
+    }
+
+    setPasswordDraft({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+    setPasswordMessage("تم تحديث كلمة المرور بنجاح.");
+    setIsPasswordOpen(false);
   };
 
   return (
@@ -225,11 +273,88 @@ function EmployeeProfilePage() {
           </div>
         </div>
 
-        <button type="button" className="employee-profile-page__edit-btn" onClick={() => startEdit('personal')}>
-          <i className="bi bi-pencil-square"></i>
-          تعديل
-        </button>
+        <div className="employee-profile-page__hero-actions">
+          <button
+            type="button"
+            className="employee-profile-page__hero-secondary-btn"
+            onClick={() => setIsPasswordOpen((prev) => !prev)}
+          >
+            <i className="bi bi-shield-lock"></i>
+            {isPasswordOpen ? "إغلاق كلمة المرور" : "تغيير كلمة المرور"}
+          </button>
+
+          <button
+            type="button"
+            className="employee-profile-page__edit-btn"
+            onClick={() => startEdit("personal")}
+          >
+            <i className="bi bi-pencil-square"></i>
+            تعديل
+          </button>
+        </div>
       </section>
+
+      {isPasswordOpen && (
+        <section className="employee-profile-page__section-card employee-profile-page__section-card--password">
+          <div className="employee-profile-page__section-head">
+            <div>
+              <h3 className="employee-profile-page__section-title">تغيير كلمة المرور</h3>
+              <p className="employee-profile-page__section-subtitle">
+                حدّث كلمة المرور الخاصة بحسابك بشكل آمن.
+              </p>
+            </div>
+          </div>
+
+          <form className="employee-profile-page__form-grid" onSubmit={handlePasswordSubmit}>
+            <div className="employee-profile-page__field">
+              <label className="employee-profile-page__info-label">كلمة المرور الحالية</label>
+              <input
+                type="password"
+                className="employee-profile-page__input"
+                value={passwordDraft.currentPassword}
+                onChange={(event) => handlePasswordChange("currentPassword", event.target.value)}
+              />
+            </div>
+
+            <div className="employee-profile-page__field">
+              <label className="employee-profile-page__info-label">كلمة المرور الجديدة</label>
+              <input
+                type="password"
+                className="employee-profile-page__input"
+                value={passwordDraft.newPassword}
+                onChange={(event) => handlePasswordChange("newPassword", event.target.value)}
+              />
+            </div>
+
+            <div className="employee-profile-page__field employee-profile-page__field--wide">
+              <label className="employee-profile-page__info-label">تأكيد كلمة المرور الجديدة</label>
+              <input
+                type="password"
+                className="employee-profile-page__input"
+                value={passwordDraft.confirmPassword}
+                onChange={(event) => handlePasswordChange("confirmPassword", event.target.value)}
+              />
+            </div>
+
+            <div className="employee-profile-page__password-actions">
+              <button type="submit" className="employee-profile-page__upload-btn">
+                <i className="bi bi-shield-lock"></i>
+                تحديث كلمة المرور
+              </button>
+            </div>
+
+            {passwordError ? (
+              <p className="employee-profile-page__password-message employee-profile-page__password-message--error">
+                {passwordError}
+              </p>
+            ) : null}
+
+            {passwordMessage ? (
+              <p className="employee-profile-page__password-message">{passwordMessage}</p>
+            ) : null}
+          </form>
+        </section>
+      )}
 
       <section className="employee-profile-page__details-grid">
         <article className="employee-profile-page__section-card">
@@ -241,20 +366,24 @@ function EmployeeProfilePage() {
                 <button
                   type="button"
                   className="employee-profile-page__section-link employee-profile-page__section-link--ghost"
-                  onClick={() => cancelEdit('personal')}
+                  onClick={() => cancelEdit("personal")}
                 >
                   إلغاء
                 </button>
                 <button
                   type="button"
                   className="employee-profile-page__section-link"
-                  onClick={() => saveEdit('personal', ['phone', 'email', 'address'])}
+                  onClick={() => saveEdit("personal", ["phone", "email", "address"])}
                 >
                   حفظ
                 </button>
               </div>
             ) : (
-              <button type="button" className="employee-profile-page__section-link" onClick={() => startEdit('personal')}>
+              <button
+                type="button"
+                className="employee-profile-page__section-link"
+                onClick={() => startEdit("personal")}
+              >
                 تعديل
               </button>
             )}
@@ -293,20 +422,26 @@ function EmployeeProfilePage() {
                 <button
                   type="button"
                   className="employee-profile-page__section-link employee-profile-page__section-link--ghost"
-                  onClick={() => cancelEdit('vehicle')}
+                  onClick={() => cancelEdit("vehicle")}
                 >
                   إلغاء
                 </button>
                 <button
                   type="button"
                   className="employee-profile-page__section-link"
-                  onClick={() => saveEdit('vehicle', ['vehicleType', 'licenseNumber', 'plateNumber'])}
+                  onClick={() =>
+                    saveEdit("vehicle", ["vehicleType", "licenseNumber", "plateNumber"])
+                  }
                 >
                   حفظ
                 </button>
               </div>
             ) : (
-              <button type="button" className="employee-profile-page__section-link" onClick={() => startEdit('vehicle')}>
+              <button
+                type="button"
+                className="employee-profile-page__section-link"
+                onClick={() => startEdit("vehicle")}
+              >
                 تعديل
               </button>
             )}

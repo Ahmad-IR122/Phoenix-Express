@@ -259,6 +259,49 @@ function EmployeeWalletPage() {
               </tbody>
             </table>
           </div>
+
+          <div className="employee-wallet-page__mobile-transactions">
+            {transactions.map((transaction) => (
+              <article
+                key={transaction.id}
+                className="employee-wallet-page__mobile-transaction-card"
+              >
+                <div className="employee-wallet-page__mobile-transaction-top">
+                  <span className="employee-wallet-page__amount-cell">
+                    {formatCurrency(transaction.amount)}
+                  </span>
+                  <span
+                    className={`employee-wallet-page__status employee-wallet-page__status--${transaction.statusTone}`}
+                  >
+                    {transaction.status}
+                  </span>
+                </div>
+
+                <div className="employee-wallet-page__mobile-transaction-grid">
+                  <div className="employee-wallet-page__mobile-transaction-row">
+                    <span className="employee-wallet-page__mobile-label">Ø§Ù„Ù†ÙˆØ¹</span>
+                    <span className="employee-wallet-page__mobile-value">
+                      {transaction.type}
+                    </span>
+                  </div>
+
+                  <div className="employee-wallet-page__mobile-transaction-row">
+                    <span className="employee-wallet-page__mobile-label">Ø§Ù„ØªØ§Ø±ÙŠØ®</span>
+                    <span className="employee-wallet-page__mobile-value">
+                      {transaction.date}
+                    </span>
+                  </div>
+
+                  <div className="employee-wallet-page__mobile-transaction-row">
+                    <span className="employee-wallet-page__mobile-label">Ø§Ù„ÙˆÙ‚Øª</span>
+                    <span className="employee-wallet-page__mobile-value">
+                      {transaction.time}
+                    </span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
     </div>
