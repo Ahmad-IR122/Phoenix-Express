@@ -110,6 +110,35 @@
   box-shadow: 0 12px 22px rgba(37, 99, 235, 0.16);
 }
 
+.employee-profile-page__hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.employee-profile-page__hero-secondary-btn {
+  height: 48px;
+  min-width: 150px;
+  border: none;
+  border-radius: 14px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.2s ease;
+}
+
+.employee-profile-page__hero-secondary-btn:hover {
+  transform: translateY(-1px);
+}
+
 .employee-profile-page__details-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -119,6 +148,10 @@
 .employee-profile-page__section-card {
   padding: 24px;
   min-height: 100%;
+}
+
+.employee-profile-page__section-card--password {
+  padding-top: 20px;
 }
 
 .employee-profile-page__section-head {
@@ -409,6 +442,30 @@
   font-weight: 700;
 }
 
+.employee-profile-page__password-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.employee-profile-page__password-message {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.employee-profile-page__password-message--error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
 .employee-profile-page__input--file {
   padding: 10px 14px;
   height: auto;
@@ -451,7 +508,8 @@
   }
 
   .employee-profile-page__section-actions,
-  .employee-profile-page__document-actions {
+  .employee-profile-page__document-actions,
+  .employee-profile-page__hero-actions {
     justify-content: flex-start;
   }
 }

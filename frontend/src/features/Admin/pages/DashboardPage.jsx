@@ -391,6 +391,36 @@ function DashboardPage() {
             </tbody>
           </table>
         </div>
+
+        <div className="admin-dashboard__mobile-orders">
+          {recentOrders.map((order) => (
+            <article key={order.id} className="admin-dashboard__mobile-order-card">
+              <div className="admin-dashboard__mobile-order-top">
+                <span className="admin-dashboard__order-id">{order.id}</span>
+                <span className={getStatusBadgeClass(order.status)}>
+                  {getStatusLabel(order.status)}
+                </span>
+              </div>
+
+              <div className="admin-dashboard__mobile-order-grid">
+                <div className="admin-dashboard__mobile-order-row">
+                  <span className="admin-dashboard__mobile-order-label">Ø§Ù„ØªØ§Ø¬Ø±</span>
+                  <span className="admin-dashboard__mobile-order-value">{order.merchant}</span>
+                </div>
+
+                <div className="admin-dashboard__mobile-order-row">
+                  <span className="admin-dashboard__mobile-order-label">Ø§Ù„Ù…Ù†Ø¯ÙˆØ¨</span>
+                  <span className="admin-dashboard__mobile-order-value">{order.courier}</span>
+                </div>
+
+                <div className="admin-dashboard__mobile-order-row">
+                  <span className="admin-dashboard__mobile-order-label">Ø§Ù„ÙˆÙ‚Øª</span>
+                  <span className="admin-dashboard__mobile-order-value">{order.time}</span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
       </article>
     </section>
   );

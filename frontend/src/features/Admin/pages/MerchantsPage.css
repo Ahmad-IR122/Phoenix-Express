@@ -1,8 +1,10 @@
+@import "./AdminTheme.css";
+
 .phoenix-merchants {
   direction: rtl;
   text-align: right;
   display: grid;
-  gap: 24px;
+  gap: 20px;
   color: #0f172a;
 }
 
@@ -11,7 +13,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
+  gap: 16px;
   padding: 6px 2px 0;
 }
 
@@ -33,15 +35,15 @@
 
 .phoenix-merchants__title {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: var(--phoenix-admin-title);
+  font-weight: 800;
   line-height: 1.15;
 }
 
 .phoenix-merchants__subtitle {
   margin: 0;
   color: #64748b;
-  font-size: 0.75rem;
+  font-size: var(--phoenix-admin-body);
 }
 
 /* Summary Cards */
@@ -53,19 +55,19 @@
 
 .phoenix-merchants__summary-card {
   background: #fff;
-  border-radius: 14px;
-  padding: 12px;
-  border: 1px solid #e5eefc;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.04);
+  border-radius: var(--phoenix-admin-radius-lg);
+  padding: 14px;
+  border: 1px solid var(--phoenix-admin-border);
+  box-shadow: var(--phoenix-admin-shadow);
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
 .phoenix-merchants__summary-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -100,13 +102,13 @@
 }
 
 .phoenix-merchants__summary-value {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--phoenix-admin-stat-sm);
+  font-weight: 800;
   line-height: 1.2;
 }
 
 .phoenix-merchants__summary-label {
-  font-size: 0.7rem;
+  font-size: var(--phoenix-admin-caption);
   color: #64748b;
 }
 
@@ -138,9 +140,9 @@
 .phoenix-merchants__search-input {
   width: 100%;
   padding: 10px 14px 10px 38px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  font-size: 0.85rem;
+  border: 1px solid var(--phoenix-admin-border-strong);
+  border-radius: var(--phoenix-admin-radius-sm);
+  font-size: var(--phoenix-admin-body);
   background: #fff;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -162,13 +164,13 @@
 }
 
 .phoenix-merchants__filter-chip {
-  padding: 5px 10px;
-  border: 1px solid #e2e8f0;
+  padding: 7px 12px;
+  border: 1px solid var(--phoenix-admin-border-strong);
   border-radius: 999px;
   background: #fff;
   color: #64748b;
-  font-size: 0.7rem;
-  font-weight: 500;
+  font-size: var(--phoenix-admin-caption);
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -193,9 +195,9 @@
 /* Table */
 .phoenix-merchants__table-wrapper {
   background: #fff;
-  border-radius: 16px;
-  border: 1px solid #e5eefc;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+  border-radius: var(--phoenix-admin-radius-xl);
+  border: 1px solid var(--phoenix-admin-border);
+  box-shadow: var(--phoenix-admin-shadow);
   overflow: hidden;
 }
 
@@ -211,11 +213,9 @@
 .phoenix-merchants__table th {
   padding: 12px 14px;
   text-align: right;
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: var(--phoenix-admin-caption);
+  font-weight: 800;
   color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
   border-bottom: 1px solid #e2e8f0;
 }
 
@@ -223,6 +223,7 @@
   padding: 12px 14px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
+  font-size: var(--phoenix-admin-body);
 }
 
 .phoenix-merchants__table tbody tr:last-child td {
@@ -260,25 +261,25 @@
 }
 
 .phoenix-merchants__merchant-name {
-  font-weight: 600;
-  font-size: 0.85rem;
+  font-weight: 700;
+  font-size: var(--phoenix-admin-body);
 }
 
 .phoenix-merchants__merchant-phone {
-  font-size: 0.75rem;
+  font-size: var(--phoenix-admin-caption);
   color: #64748b;
 }
 
 /* Location */
 .phoenix-merchants__location {
   color: #475569;
-  font-size: 0.8rem;
+  font-size: var(--phoenix-admin-caption);
 }
 
 /* Stats */
 .phoenix-merchants__stat {
-  font-weight: 600;
-  font-size: 0.85rem;
+  font-weight: 700;
+  font-size: var(--phoenix-admin-body);
 }
 
 .phoenix-merchants__stat--success {
@@ -298,8 +299,8 @@
   display: inline-flex;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: var(--phoenix-admin-caption);
+  font-weight: 700;
 }
 
 .phoenix-merchants__badge--active {
@@ -321,11 +322,11 @@
 .phoenix-merchants__details-btn {
   padding: 6px 12px;
   border: 1px solid #2563eb;
-  border-radius: 6px;
+  border-radius: var(--phoenix-admin-radius-sm);
   background: transparent;
   color: #2563eb;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--phoenix-admin-caption);
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -340,7 +341,7 @@
   text-align: center;
   padding: 40px 16px;
   color: #94a3b8;
-  font-size: 0.95rem;
+  font-size: var(--phoenix-admin-body);
 }
 
 /* Modal */
@@ -360,12 +361,12 @@
 
 .phoenix-merchants__modal {
   background: #fff;
-  border-radius: 20px;
+  border-radius: var(--phoenix-admin-radius-xl);
   width: 100%;
   max-width: 560px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.25);
+  box-shadow: var(--phoenix-admin-shadow-strong);
 }
 
 .phoenix-merchants__modal-header {
@@ -378,8 +379,8 @@
 
 .phoenix-merchants__modal-title {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--phoenix-admin-heading);
+  font-weight: 800;
 }
 
 .phoenix-merchants__modal-close {
@@ -414,11 +415,9 @@
 
 .phoenix-merchants__modal-section-title {
   margin: 0;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: var(--phoenix-admin-caption);
+  font-weight: 800;
   color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .phoenix-merchants__modal-grid {
@@ -434,13 +433,13 @@
 }
 
 .phoenix-merchants__modal-label {
-  font-size: 0.7rem;
+  font-size: var(--phoenix-admin-micro);
   color: #94a3b8;
 }
 
 .phoenix-merchants__modal-value {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: var(--phoenix-admin-body);
+  font-weight: 700;
   color: #0f172a;
 }
 
@@ -470,7 +469,7 @@
 
 .phoenix-merchants__modal-financial-note {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: var(--phoenix-admin-body);
   color: #64748b;
   line-height: 1.6;
 }
@@ -484,7 +483,7 @@
 
 @media (max-width: 768px) {
   .phoenix-merchants__title {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
   }
 
   .phoenix-merchants__summary-grid {
