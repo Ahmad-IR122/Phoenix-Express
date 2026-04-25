@@ -7,6 +7,7 @@ function DashboardHeader({
   notifications = [],
   customDate,
   employeeName,
+  onOpenSidebar,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -15,8 +16,7 @@ function DashboardHeader({
     if (customDate) return customDate;
 
     const now = new Date();
-
-    const weekdays = [
+   const weekdays = [
       "الأحد",
       "الاثنين",
       "الثلاثاء",
@@ -41,7 +41,7 @@ function DashboardHeader({
       "ديسمبر",
     ];
 
-    return `${weekdays[now.getDay()]}، ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    return `${weekdays[now.getDay()]}ØŒ ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
   }, [customDate]);
 
   useEffect(() => {
@@ -52,15 +52,14 @@ function DashboardHeader({
     }
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const isEmployeeLayout = layoutType === "employee";
-  const headerTitle = isEmployeeLayout
+    const isEmployeeLayout = layoutType === "employee";
+    const headerTitle = isEmployeeLayout
     ? `مرحبًا، ${employeeName || "رغد"}`
     : "مرحبًا بك في لوحة التحكم";
+
 
   return (
     <header dir="rtl" className="phoenix-header">
@@ -70,59 +69,71 @@ function DashboardHeader({
           <p className="phoenix-header-date">{todayDate}</p>
         </div>
 
-        <div className="phoenix-header-notification" ref={dropdownRef}>
+        <div className="phoenix-header-actions" ref={dropdownRef}>
           <button
             type="button"
-            className="phoenix-bell-btn"
-            onClick={() => setIsOpen((prev) => !prev)}
+            className="phoenix-menu-btn"
+            onClick={onOpenSidebar}
+            aria-label="Open sidebar"
           >
-            <i className="bi bi-bell"></i>
-
-            {notificationCount > 0 && (
-              <span className="phoenix-bell-badge">{notificationCount}</span>
-            )}
+            <i className="bi bi-list"></i>
           </button>
 
-          {isOpen && (
-            <div dir="rtl" className="phoenix-notification-dropdown">
-              <div className="phoenix-notification-dropdown-header">
-                <h3>التنبيهات</h3>
-              </div>
+          <div className="phoenix-header-notification">
+            <button
+              type="button"
+              className="phoenix-bell-btn"
+              onClick={() => setIsOpen((prev) => !prev)}
+              aria-label="Notifications"
+            >
+              <i className="bi bi-bell"></i>
 
-              <div className="phoenix-notification-list">
-                {notifications.length > 0 ? (
-                  notifications.map((item) => (
-                    <div key={item.id} className="phoenix-notification-item">
-                      <div className="phoenix-notification-item-text">
-                        <div className="phoenix-notification-text">
-                          {item.title}
+              {notificationCount > 0 && (
+                <span className="phoenix-bell-badge">{notificationCount}</span>
+              )}
+            </button>
+
+            {isOpen && (
+              <div dir="rtl" className="phoenix-notification-dropdown">
+                <div className="phoenix-notification-dropdown-header">
+                  <h3>Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª</h3>
+                </div>
+
+                <div className="phoenix-notification-list">
+                  {notifications.length > 0 ? (
+                    notifications.map((item) => (
+                      <div key={item.id} className="phoenix-notification-item">
+                        <div className="phoenix-notification-item-text">
+                          <div className="phoenix-notification-text">
+                            {item.title}
+                          </div>
+                          <div className="phoenix-notification-time">
+                            {item.time}
+                          </div>
                         </div>
-                        <div className="phoenix-notification-time">
-                          {item.time}
+
+                        <div
+                          className={`phoenix-notification-icon ${
+                            item.type || "info"
+                          }`}
+                        >
+                          <i className={`bi ${item.icon || "bi-bell"}`}></i>
                         </div>
                       </div>
-
-                      <div
-                        className={`phoenix-notification-icon ${
-                          item.type || "info"
-                        }`}
-                      >
-                        <i className={`bi ${item.icon || "bi-bell"}`}></i>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="phoenix-notification-empty">
+                      Ù„Ø§ ÙŠÙˆØ¬Ø¯ ØªÙ†Ø¨ÙŠÙ‡Ø§Øª Ø­Ø§Ù„ÙŠØ§Ù‹
                     </div>
-                  ))
-                ) : (
-                  <div className="phoenix-notification-empty">
-                    لا يوجد تنبيهات حالياً
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
 
-              <button type="button" className="phoenix-view-all-btn">
-                عرض جميع التنبيهات
-              </button>
-            </div>
-          )}
+                <button type="button" className="phoenix-view-all-btn">
+                  Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>

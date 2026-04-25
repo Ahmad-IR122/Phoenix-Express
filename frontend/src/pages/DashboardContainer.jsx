@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import DashboardLayout from "../Components/layout/DashboardLayout";
 
+import AdminProfilePage from "../features/Admin/pages/AdminProfilePage";
 import DashboardPage from "../features/Admin/pages/DashboardPage";
 import DelegatesPage from "../features/Admin/pages/DelegatesPage";
 import MerchantsPage from "../features/Admin/pages/MerchantsPage";
@@ -41,7 +42,8 @@ const adminNav = [
   { key: "shipments", label: "توزيع الطرود", icon: "bi-box-seam" },
   { key: "traders", label: "التجار", icon: "bi-shop" },
   { key: "couriers", label: "المناديب", icon: "bi-people" },
-  { key: "reports", label: "التقارير", icon: "bi-file-earmark-text" }
+  { key: "reports", label: "التقارير", icon: "bi-file-earmark-text" },
+  { key: "profile", label: "الملف الشخصي", icon: "bi-person" },
 ];
 
 const employeeNav = [
@@ -62,12 +64,6 @@ function DashboardContainer() {
     return current ? current.label : "لوحة التحكم";
   }, [activeKey, navItems]);
 
-
-
-
-
-
-  
   const brand =
     layoutType === "admin"
       ? {
@@ -86,17 +82,17 @@ function DashboardContainer() {
         };
 
   const user =
-  layoutType === "admin"
-    ? {
-        name: "إدارة النظام",
-        email: "admin@phoenix.com",
-        avatarText: "P",
-      }
-    : {
-        name: "رغد",
-        email: "employee@phoenix.com",
-        avatarText: "ر",
-      };
+    layoutType === "admin"
+      ? {
+          name: "إدارة النظام",
+          email: "admin@phoenix.com",
+          avatarText: "P",
+        }
+      : {
+          name: "رغد",
+          email: "employee@phoenix.com",
+          avatarText: "ر",
+        };
 
   const renderAdminPage = () => {
     switch (activeKey) {
@@ -110,6 +106,8 @@ function DashboardContainer() {
         return <DelegatesPage />;
       case "reports":
         return <ReportsPage />;
+      case "profile":
+        return <AdminProfilePage />;
       default:
         return <DashboardPage />;
     }
