@@ -12,7 +12,6 @@
     animation: App-logo-spin infinite 20s linear;
   }
 }
-
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -37,13 +36,6 @@
   }
 }
 
-@font-face {
-  font-family: 'Alarabiya';
-  src: url('./assets/fonts/alarabiya-font-normal.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-}
-
 body {
-  font-family: 'Alarabiya', sans-serif;
+  font-family: "Cairo", sans-serif;
 }

@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+
+.footer-container {
+    background-color: #000000;
+    color: #FFFFFF;
+    font-family: 'Cairo', sans-serif;
+    border-top: 1px solid #1A1A1A;
+}
+
+.footer-logo-img {
+    height: 60px;
+    border-radius: 10px;
+    object-fit: contain;
+}
+
+.footer-about-text {
+    color: #C7C7C7;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.footer-heading {
+    color: #FFFFFF;
+    font-weight: 800;
+    font-size: 18px;
+}
+
+.footer-links a {
+    color: #C7C7C7;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.footer-links a:hover {
+    color: #38B6FF;
+}
+
+.contact-icon {
+    color: #38B6FF;
+    font-size: 1.4rem;
+}
+
+.contact-text {
+    color: #C7C7C7;
+}
+
+.social-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1.5px solid #38B6FF;
+    color: #38B6FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    background-color: transparent;
+}
+
+.social-circle:hover {
+    background-color: #38B6FF;
+    color: #FFFFFF;
+    transform: translateY(-3px);
+}
+
+.footer-divider {
+    height: 1px;
+    background-color: #1A1A1A;
+}
+
+.copyright-text {
+    font-size: 14px;
+    color: #FFFFFF;
+    font-weight: 600;
+}

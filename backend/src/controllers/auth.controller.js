@@ -2,6 +2,7 @@
 
 const { User } = require('../models');
 const bcrypt = require('bcrypt');
+const jwt = require("jsonwebtoken");
 
 const createAuth = async (req, res) => {
   try {
@@ -31,6 +32,60 @@ const createAuth = async (req, res) => {
       errors: error.errors
         ? error.errors.map((err) => err.message)
         : [error.message],
+    });
+  }
+};
+const loginAuth = async (req, res) => {
+  try {
+    const { phone, email, password } = req.body;
+
+    const user = await User.findOne({
+      where: phone ? { phone } : { email },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid password",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        role: user.role,
+        email: user.email,
+        phone: user.phone,
+      },
+      process.env.JWT_SECRET || "phoenix_secret_key",
+      { expiresIn: "7d" }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Login failed",
+      errors: [error.message],
     });
   }
 };
@@ -155,6 +210,7 @@ const deleteAuth = async (req, res) => {
 
 module.exports = {
   createAuth,
+  loginAuth,
   getAllAuths,
   findAuthById,
   updateAuth,

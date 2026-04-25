@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
 
+router.post('/login', authController.loginAuth);
 router.post('/', authController.createAuth);
 router.get('/', authController.getAllAuths);
 router.get('/:id', authController.findAuthById);

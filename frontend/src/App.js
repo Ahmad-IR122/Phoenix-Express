@@ -1,12 +1,7 @@
-import './App.css';
-import Navbar from './Components/Navbar';
+import SignInPage from "./features/auth/pages/SignInPage";
 
 function App() {
-  return (
-    <div className="App">
-      <Navbar/>
-    </div>
-  );
+  return <SignInPage />;
 }
 
 export default App;
