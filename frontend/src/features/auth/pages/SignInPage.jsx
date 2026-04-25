@@ -10,9 +10,45 @@ import {
   HiOutlineMapPin
 } from "react-icons/hi2";
 import logo from "../../../Images/Phonex_logo.jpeg";
+import { registerUser } from "../services/authService";
 
 const SignInPage = () => {
   const [accountType, setAccountType] = useState('individual');
+
+  const [fullName, setFullName] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [companyLocation, setCompanyLocation] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const payload = {
+        email,
+        phone,
+        password,
+        role: accountType === "company" ? "company" : "customer",
+      };
+
+      const response = await registerUser(payload);
+
+      console.log("Register success:", response.data);
+      alert("تم إنشاء الحساب بنجاح");
+
+      setFullName("");
+      setCompanyName("");
+      setCompanyLocation("");
+      setEmail("");
+      setPhone("");
+      setPassword("");
+    } catch (error) {
+      console.log("Register error:", error.response?.data || error.message);
+      alert("فشل إنشاء الحساب");
+    }
+  };
 
   return (
     <div className="signin-wrapper d-flex align-items-center justify-content-center">
@@ -52,7 +88,7 @@ const SignInPage = () => {
             </button>
           </div>
 
-          <form dir="rtl">
+          <form dir="rtl" onSubmit={handleSubmit}>
             {accountType === 'individual' ? (
               <>
                 <div className="mb-3">
@@ -60,7 +96,13 @@ const SignInPage = () => {
                     <HiOutlineUser className="icon-blue-outline me-2" />
                     <span>الاسم</span>
                   </label>
-                  <input type="text" className="form-control custom-input" placeholder="الاسم الكامل" />
+                  <input
+                    type="text"
+                    className="form-control custom-input"
+                    placeholder="الاسم الكامل"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                  />
                 </div>
 
                 <div className="mb-3">
@@ -68,7 +110,14 @@ const SignInPage = () => {
                     <HiOutlineEnvelope className="icon-blue-outline me-2" />
                     <span>البريد الإلكتروني</span>
                   </label>
-                  <input type="email" className="form-control custom-input" placeholder="email@example.com" />
+                  <input
+                    type="email"
+                    className="form-control custom-input"
+                    placeholder="email@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
                 </div>
 
                 <div className="mb-3">
@@ -76,7 +125,14 @@ const SignInPage = () => {
                     <HiOutlinePhone className="icon-blue-outline me-2" />
                     <span>رقم الهاتف</span>
                   </label>
-                  <input type="tel" className="form-control custom-input" placeholder="05xxxxxxxx" />
+                  <input
+                    type="tel"
+                    className="form-control custom-input"
+                    placeholder="05xxxxxxxx"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                  />
                 </div>
               </>
             ) : (
@@ -86,7 +142,13 @@ const SignInPage = () => {
                     <HiOutlineBuildingOffice2 className="icon-blue-outline me-2" />
                     <span>اسم الشركة</span>
                   </label>
-                  <input type="text" className="form-control custom-input" placeholder="اسم الشركة" />
+                  <input
+                    type="text"
+                    className="form-control custom-input"
+                    placeholder="اسم الشركة"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                  />
                 </div>
 
                 <div className="mb-3">
@@ -94,7 +156,14 @@ const SignInPage = () => {
                     <HiOutlineEnvelope className="icon-blue-outline me-2" />
                     <span>البريد الإلكتروني</span>
                   </label>
-                  <input type="email" className="form-control custom-input" placeholder="email@company.com" />
+                  <input
+                    type="email"
+                    className="form-control custom-input"
+                    placeholder="email@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
                 </div>
 
                 <div className="mb-3">
@@ -102,7 +171,14 @@ const SignInPage = () => {
                     <HiOutlinePhone className="icon-blue-outline me-2" />
                     <span>رقم هاتف الشركة</span>
                   </label>
-                  <input type="tel" className="form-control custom-input" placeholder="02xxxxxxxx" />
+                  <input
+                    type="tel"
+                    className="form-control custom-input"
+                    placeholder="02xxxxxxxx"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                  />
                 </div>
 
                 <div className="mb-3">
@@ -110,7 +186,13 @@ const SignInPage = () => {
                     <HiOutlineMapPin className="icon-blue-outline me-2" />
                     <span>موقع الشركة الحالي</span>
                   </label>
-                  <input type="text" className="form-control custom-input" placeholder="المدينة والعنوان" />
+                  <input
+                    type="text"
+                    className="form-control custom-input"
+                    placeholder="المدينة والعنوان"
+                    value={companyLocation}
+                    onChange={(e) => setCompanyLocation(e.target.value)}
+                  />
                 </div>
               </>
             )}
@@ -120,7 +202,14 @@ const SignInPage = () => {
                 <HiOutlineLockClosed className="icon-blue-outline me-2" />
                 <span>كلمة السر</span>
               </label>
-              <input type="password" className="form-control custom-input password-field" placeholder="••••••••" />
+              <input
+                type="password"
+                className="form-control custom-input password-field"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </div>
 
             <button type="submit" className="btn btn-primary-signup w-100">

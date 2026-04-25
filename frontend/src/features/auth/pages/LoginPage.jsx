@@ -1,12 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './LoginPage.css';
 import { LuPhone } from "react-icons/lu";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { FiLogIn } from "react-icons/fi";
 import logo from "../../../Images/Phonex_logo.jpeg";
+import { loginUser } from "../services/authService";
 
 const LoginPage = () => {
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await loginUser({ phone, password });
+
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+
+      alert("تم تسجيل الدخول بنجاح");
+      console.log(response.data);
+    } catch (error) {
+      console.log(error.response?.data || error.message);
+      alert("فشل تسجيل الدخول");
+    }
+  };
+
   return (
     <div className="login-screen">
       <div className="logo-top-wrapper">
@@ -27,7 +48,7 @@ const LoginPage = () => {
             <p className="sub-title">مرحباً بك في فينكس إكسبريس</p>
           </div>
 
-          <form>
+          <form onSubmit={handleLogin}>
             <div className="input-field-wrapper phone-field-spacing">
               <label className="field-label d-flex align-items-center">
                 <LuPhone className="icon-blue ms-2" />
@@ -38,6 +59,9 @@ const LoginPage = () => {
                 className="form-control custom-input text-start"
                 placeholder="05xxxxxxxxx"
                 dir="ltr"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
               />
             </div>
 
@@ -47,9 +71,12 @@ const LoginPage = () => {
                 <span>كلمة المرور</span>
               </label>
               <input
-                type="text"
+                type="password"
                 className="form-control custom-input text-end gray-dots-placeholder"
                 placeholder="▪▪▪▪▪▪▪▪"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
               />
             </div>
 
