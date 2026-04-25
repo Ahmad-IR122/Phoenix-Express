@@ -1,16 +1,11 @@
-import './App.css';
-import Navbar from './Components/Navbar';
-import DashboardContainer from "./pages/DashboardContainer";
-import './styles/dashboard.css';
-import './styles/dashboard-layout.css';
-import './styles/dashboardHeader.css';
+import HomePage from "./features/customuer/pages/HomePage";
 
 function App() {
   return (
-    <div className="App">
-      <DashboardContainer />
-    </div>
-  );
+    <>
+    <HomePage/>
+    </>
+  )
 }
 
 export default App;

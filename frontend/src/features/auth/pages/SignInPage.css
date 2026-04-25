@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+
+:root {
+    --main-blue: #38B6FF;
+    --white: #FFFFFF;
+    --light-gray: #F2F4F7;
+    --border-gray: #E2E8F0;
+}
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Cairo', sans-serif;
+    background-color: var(--main-blue);
+    font-size: 14px;
+}
+
+.signin-wrapper {
+    min-height: 100vh;
+    padding: 30px 0;
+}
+
+.logo-box-fixed {
+    width: 150px;
+    height: 150px;
+    background-color: var(--white);
+    border-radius: 18px;
+    padding: 10px;
+}
+
+.logo-img-contained {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.signin-card {
+    background-color: var(--white);
+    width: 100%;
+    max-width: 440px;
+    border-radius: 20px;
+    padding: 30px;
+    direction: rtl;
+}
+
+.auth-tabs {
+    background-color: var(--light-gray);
+    border-radius: 12px;
+    height: 48px;
+}
+
+.tab-btn {
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.tab-btn.active {
+    background-color: var(--main-blue);
+    color: var(--white);
+}
+
+.tab-btn.inactive {
+    background: transparent;
+    color: #718096;
+}
+
+.main-title {
+    color: var(--main-blue);
+    font-weight: 800;
+    font-size: 28px;
+}
+
+.sub-title {
+    font-size: 14px;
+    color: #718096;
+}
+
+.account-switcher {
+    background-color: var(--light-gray);
+    border-radius: 12px;
+    height: 46px;
+}
+
+.switch-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 13px;
+    color: #718096;
+}
+
+.switch-btn.active {
+    background-color: var(--white);
+    color: var(--main-blue);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.icon-blue-outline {
+    color: var(--main-blue);
+    font-size: 1.2rem;
+}
+
+.form-label {
+    font-weight: 700;
+    color: #2D3748;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.custom-input {
+    height: 48px;
+    border-radius: 12px !important;
+    border: 1px solid var(--border-gray);
+    font-size: 14px;
+    padding: 0 15px;
+}
+
+.password-field::placeholder {
+    font-size: 18px;
+    letter-spacing: 3px;
+    color: #CBD5E0;
+}
+
+.btn-primary-signup {
+    background-color: var(--main-blue);
+    color: white;
+    border: none;
+    height: 50px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.btn-secondary-home {
+    background-color: var(--light-gray);
+    border: none;
+    height: 50px;
+    border-radius: 12px;
+    font-weight: 600;
+    color: #4A5568;
+    font-size: 15px;
+}
+
+.modern-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin-top: 30px !important;
+    margin-bottom: 25px !important;
+    color: #A0AEC0;
+}
+
+.modern-divider::before,
+.modern-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #EDF2F7;
+}
+
+.modern-divider span {
+    padding: 0 15px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.small-help {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.phone-num-small {
+    font-weight: 700;
+    font-size: 16px;
+    margin-top: 2px;
+}

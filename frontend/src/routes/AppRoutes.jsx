@@ -31,13 +31,12 @@ import PaymentPage from "../features/employee/pages/PaymentPage";
 import ProfilePage from "../features/employee/pages/ProfilePage";
 
 import PageNotFound from "../pages/pageNotFound";
-import App from "../App";
 
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>          
-        <Route path="/" element={<App />} />
+        <Route path="/" element={<HomePage />} />
         {/* Customer public routes */}
           <Route path="/HomePage" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />

@@ -1,0 +1,205 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+
+:root {
+    --phoenix-blue: #38B6FF;
+    --bg-gray: #F1F3F6;
+    --text-dark: #333;
+}
+
+body,
+html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Cairo', sans-serif;
+    background-color: var(--phoenix-blue);
+}
+
+.login-screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.white-logo-box {
+    background-color: white;
+    width: 140px;
+    height: 140px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.main-logo-img {
+    max-width: 85%;
+    max-height: 85%;
+    object-fit: contain;
+}
+
+.main-card-container {
+    width: 100%;
+    max-width: 480px;
+}
+
+.login-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 40px;
+    direction: rtl;
+}
+
+.tab-switcher {
+    background-color: var(--bg-gray);
+    border-radius: 6px;
+    padding: 4px;
+    display: flex;
+    margin-bottom: 25px;
+}
+
+.tab-btn {
+    flex: 1;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    background: transparent;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.tab-btn.active {
+    background-color: var(--phoenix-blue);
+    color: white;
+}
+
+.main-title-blue {
+    color: var(--phoenix-blue);
+    font-weight: 900;
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+}
+
+.sub-title {
+    color: #777;
+    font-size: 0.85rem;
+}
+
+.phone-field-spacing {
+    margin-bottom: 30px;
+}
+
+.field-label {
+    font-weight: 800;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    color: #000;
+}
+
+.icon-blue {
+    color: var(--phoenix-blue);
+    font-size: 1.2rem;
+}
+
+.custom-input {
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    height: 52px;
+    font-weight: 600;
+}
+
+.gray-dots-placeholder::placeholder {
+    color: #A0AEC0;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+}
+
+.remember-me-group {
+    cursor: pointer;
+}
+
+.remember-text-style {
+    font-weight: 400;
+    font-size: 0.85rem;
+    color: #444;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.black-custom-checkbox {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background-color: #333;
+    border-radius: 3px;
+    position: relative;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.black-custom-checkbox:checked {
+    background-color: var(--phoenix-blue);
+}
+
+.black-custom-checkbox:checked::after {
+    content: '✔';
+    position: absolute;
+    color: white;
+    font-size: 12px;
+    left: 4px;
+    top: 0px;
+}
+
+.forgot-password-link {
+    color: var(--phoenix-blue);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.btn-primary-blue-action {
+    background-color: var(--phoenix-blue);
+    border: none;
+    color: white;
+    height: 55px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.btn-light-gray-home {
+    background-color: var(--bg-gray);
+    border: none;
+    color: #444;
+    height: 55px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+.custom-divider {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.custom-divider::before,
+.custom-divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #EEE;
+}
+
+.custom-divider span {
+    padding: 0 15px;
+    color: #BBB;
+    font-size: 0.85rem;
+}
+
+.phone-number-bold {
+    font-weight: 900;
+    font-size: 1.1rem;
+}

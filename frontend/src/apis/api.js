@@ -7,6 +7,7 @@ const API = axios.create({
 API.interceptors.request.use((config) => {
   const storedUser =
     typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+
   config.headers = config.headers || {};
   config.headers['x-mock-auth-mode'] = 'employee-dev';
 
@@ -16,6 +17,7 @@ API.interceptors.request.use((config) => {
 
   try {
     const user = JSON.parse(storedUser);
+
     const token = user?.token;
     const userId = user?.id || user?.userId || user?.user_id;
     const role = user?.role;

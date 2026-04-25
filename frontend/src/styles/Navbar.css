@@ -1,13 +1,7 @@
-*{
-    font-size: 20px;
-}
-
-.mobix-navbar {
-  font-family: "Cairo", sans-serif;
-}
-
 .mobix-nav-link,
 .mobix-btn {
+  font-family: inherit;
+  font-weight: 600;
   transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease,
     box-shadow 0.2s ease;
 }
