@@ -52,7 +52,7 @@ const Navbar = () => {
             ))}
           </ul>
 
-          <div className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 gap-lg-3">
+          <div className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center justify-content-lg-end gap-2 gap-lg-3 mobix-nav-actions">
             <a
               className="btn rounded-pill px-4 px-xl-5 py-2 fw-bold text-white border-0 mobix-btn mobix-btn-primary"
               href="/request-delivery"

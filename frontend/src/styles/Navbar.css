@@ -43,6 +43,32 @@
   color: #ffffff;
 }
 
+@media (min-width: 992px) and (max-width: 1399.98px) {
+  .mobix-navbar .navbar-collapse {
+    display: flex !important;
+    flex-wrap: wrap;
+    row-gap: 0.75rem;
+  }
+
+  .mobix-navbar .navbar-nav {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .mobix-navbar .mobix-nav-actions {
+    width: 100%;
+    justify-content: center !important;
+  }
+
+  .mobix-btn-primary {
+    min-width: 180px;
+  }
+
+  .mobix-btn-dark {
+    min-width: 130px;
+  }
+}
+
 @media (max-width: 991.98px) {
   .mobix-navbar .navbar-collapse {
     padding-top: 1rem;

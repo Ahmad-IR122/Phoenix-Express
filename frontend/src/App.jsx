@@ -5,7 +5,8 @@ import DashboardContainer from "./pages/DashboardContainer";
 function App() {
   return (
     <div className="App">
-       <DashboardContainer />;
+      <Navbar />
+      <DashboardContainer />
     </div>
   );
 }
