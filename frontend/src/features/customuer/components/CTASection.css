@@ -1,0 +1,51 @@
+.cta-section {
+  font-family: "Cairo", "Segoe UI", sans-serif;
+}
+
+.cta-section__surface {
+  width: 100%;
+  min-height: 26rem;
+  padding: 5rem 0;
+  background: linear-gradient(90deg, #000000 0%, #0f172a 100%);
+}
+
+.cta-section__title {
+  font-size: clamp(1.8rem, 4vw, 3.2rem);
+  line-height: 1.2;
+}
+
+.cta-section__subtitle {
+  max-width: 36rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: clamp(0.95rem, 1.7vw, 1.25rem);
+  line-height: 1.9;
+}
+
+.cta-section__button {
+  min-width: min(100%, 25rem);
+  min-height: 4.75rem;
+  background-color: #38b6ff;
+  color: #ffffff;
+  font-size: clamp(1rem, 1.5vw, 1.4rem);
+  border: none;
+  box-shadow: 0 1rem 2.5rem rgba(56, 182, 255, 0.22);
+}
+
+.cta-section__button:hover,
+.cta-section__button:focus,
+.cta-section__button:active {
+  background-color: #25a9f3;
+  color: #ffffff;
+}
+
+@media (max-width: 575.98px) {
+  .cta-section__surface {
+    min-height: 22rem;
+    padding: 4rem 0;
+  }
+
+  .cta-section__button {
+    width: 100%;
+    min-height: 4.1rem;
+  }
+}

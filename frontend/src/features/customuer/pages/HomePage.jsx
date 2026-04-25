@@ -1,9 +1,18 @@
 import React from 'react';
+import Navbar from '../../../Components/Navbar';
+import HeroSection from '../components/HeroSection';
+import FeaturesSection from '../components/FeaturesSection';
+import PricingSection from '../components/PricingSection';
+import CTASection from '../components/CTASection';
 
 const HomePage = () => {
   return (
     <div>
-      
+      <Navbar />
+      <HeroSection />
+      <FeaturesSection />
+      <PricingSection />
+      <CTASection />
     </div>
   );
 }

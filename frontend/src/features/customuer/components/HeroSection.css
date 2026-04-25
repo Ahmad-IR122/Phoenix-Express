@@ -1,0 +1,290 @@
+.hero-section {
+  background: #38b6ff;
+  overflow: hidden;
+  box-shadow: inset 0 0.75rem 2rem rgba(13, 79, 125, 0.16);
+  font-family: "Cairo", "Segoe UI", sans-serif;
+}
+
+.hero-container {
+  padding-top: 4rem;
+  padding-bottom: 4.5rem;
+}
+
+.hero-content {
+  max-width: 42rem;
+}
+
+.hero-title {
+  margin: 0;
+  font-size: clamp(2.3rem, 4.2vw, 4.1rem);
+  line-height: 1.12;
+  letter-spacing: 0;
+  font-weight: 800;
+}
+
+.hero-title span {
+  display: block;
+  font-size:45px
+}
+
+.hero-description {
+  max-width: 39rem;
+  font-size: 0.96rem;
+  line-height: 1.55;
+  color: #ffffff;
+  opacity: 0.98;
+  font-weight: 500;
+}
+
+.tracking-card {
+  max-width: 47rem;
+  border-radius: 1.4rem;
+  padding: 2rem 1.9rem 1.8rem;
+  box-shadow: 0 1.6rem 3.2rem rgba(10, 10, 10, 0.18);
+}
+
+.tracking-card-title {
+  margin-bottom: 1.2rem;
+  color: #0a0a0a;
+  font-size: 1.55rem;
+  font-weight: 800;
+}
+
+.tracking-form {
+  margin: 0;
+}
+
+.tracking-input {
+  min-height: 3.95rem;
+  border: 2px solid #d0d6df;
+  border-radius: 1rem;
+  color: #0a0a0a;
+  box-shadow: none;
+  text-align: right;
+  padding-inline: 1.4rem;
+  font-size: 1rem;
+  font-family: "Cairo", "Segoe UI", sans-serif;
+}
+
+.tracking-input:focus {
+  border-color: rgba(56, 182, 255, 0.55);
+  box-shadow: 0 0 0 0.2rem rgba(56, 182, 255, 0.15);
+}
+
+.tracking-input::placeholder {
+  color: #7d8793;
+}
+
+.tracking-button {
+  min-height: 3.95rem;
+  border: none;
+  border-radius: 0.95rem;
+  background-color: #38b6ff;
+  font-size: 1rem;
+  font-weight: 800;
+  box-shadow: none;
+  font-family: "Cairo", "Segoe UI", sans-serif;
+}
+
+.tracking-button:hover,
+.tracking-button:focus,
+.tracking-button:active {
+  background-color: #22a7f4;
+}
+
+.hero-visual-card {
+  position: relative;
+  min-height: 39rem;
+  max-width: 35rem;
+  border-radius: 2.25rem;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 1.5rem;
+  box-shadow: 0 2rem 4rem rgba(10, 10, 10, 0.12);
+  backdrop-filter: blur(4px);
+}
+
+.hero-visual-brand {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 2;
+  padding: 0.65rem 1rem 0.65rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0.75rem 1.5rem rgba(10, 10, 10, 0.08);
+}
+
+.hero-visual-logo {
+  width: 3rem;
+  height: 3rem;
+  object-fit: cover;
+}
+
+.hero-visual-brand-text {
+  color: #0a0a0a;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.hero-visual-frame {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+  min-height: 36rem;
+  border-radius: 1.8rem;
+  padding: 1.5rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05)),
+    linear-gradient(145deg, #eaf8ff 0%, #ffffff 48%, #dff3ff 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+.hero-delivery-window {
+  position: relative;
+  flex: 1;
+  border-radius: 1.5rem;
+  margin-bottom: 1.25rem;
+  background:
+    radial-gradient(circle at 25% 25%, rgba(56, 182, 255, 0.24), transparent 18%),
+    radial-gradient(circle at 78% 30%, rgba(56, 182, 255, 0.2), transparent 20%),
+    linear-gradient(160deg, rgba(56, 182, 255, 0.12), rgba(56, 182, 255, 0.02));
+  overflow: hidden;
+}
+
+.hero-map-dot {
+  position: absolute;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.35rem rgba(56, 182, 255, 0.12);
+}
+
+.hero-map-dot-primary {
+  top: 28%;
+  left: 28%;
+  background: #38b6ff;
+}
+
+.hero-map-dot-secondary {
+  right: 22%;
+  bottom: 22%;
+  background: #0a0a0a;
+}
+
+.hero-map-path {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 28% 28%, rgba(56, 182, 255, 0.2) 0 2%, transparent 2.5%),
+    radial-gradient(circle at 78% 78%, rgba(10, 10, 10, 0.18) 0 2%, transparent 2.5%);
+}
+
+.hero-map-path::before {
+  content: "";
+  position: absolute;
+  top: 34%;
+  left: 33%;
+  width: 48%;
+  height: 38%;
+  border: 3px dashed rgba(56, 182, 255, 0.6);
+  border-left: none;
+  border-bottom: none;
+  border-radius: 0 3rem 0 0;
+  transform: rotate(10deg);
+}
+
+.hero-info-panel {
+  border-radius: 1.5rem;
+  padding: 1.35rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 1rem 2rem rgba(10, 10, 10, 0.08);
+}
+
+.hero-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.85rem;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: rgba(56, 182, 255, 0.14);
+  color: #1388cb;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.hero-info-title {
+  color: #0a0a0a;
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.hero-info-text {
+  color: #4a5560;
+  font-size: 1rem;
+  line-height: 1.8;
+  font-weight: 400;
+}
+
+.py-lg-6 {
+  padding-top: 5.5rem !important;
+  padding-bottom: 5.5rem !important;
+}
+
+@media (max-width: 991.98px) {
+  .hero-content,
+  .tracking-card,
+  .hero-visual-card {
+    max-width: 100%;
+  }
+
+  .hero-title {
+    font-size: 2.9rem;
+  }
+
+  .hero-visual-card {
+    min-height: 32rem;
+  }
+
+  .hero-visual-frame {
+    min-height: 29rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .hero-container {
+    padding-top: 1rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .hero-title {
+    font-size: 2.1rem;
+    line-height: 1.18;
+  }
+
+  .hero-description {
+    font-size: 0.92rem;
+  }
+
+  .tracking-card {
+    border-radius: 1.25rem;
+    padding: 1.3rem;
+  }
+
+  .hero-visual-brand {
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .hero-visual-card {
+    min-height: 20rem;
+    border-radius: 1.25rem;
+  }
+
+  .hero-visual-frame {
+    min-height: 17rem;
+    padding: 1rem;
+  }
+}
