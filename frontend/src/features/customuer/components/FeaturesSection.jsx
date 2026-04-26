@@ -1,5 +1,5 @@
 import React from "react";
-import "./FeaturesSection.css";
+import "./style/FeaturesSection.css";
 const features = [
   {
     title: "توصيل سريع",

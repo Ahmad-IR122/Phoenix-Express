@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import RoleRoute from "./RoleRoute";
 
@@ -29,27 +29,29 @@ import EmployeeHomePage from "../features/employee/pages/HomePage";
 import OrdersPage from "../features/employee/pages/OrdersPage";
 import PaymentPage from "../features/employee/pages/PaymentPage";
 import ProfilePage from "../features/employee/pages/ProfilePage";
-
 import PageNotFound from "../pages/pageNotFound";
-
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>          
-        <Route path="/" element={<HomePage />} />
-        {/* Customer public routes */}
-          <Route path="/HomePage" element={<HomePage />} />
+        <Route element={<CustomerLayout />}>
+          <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/tracking" element={<TrackingPage />} />
           <Route path="/gallery" element={<PhotoGalleryPage />} />
+          <Route path="/reviews" element={<ReviewsPage />} />
           <Route path="/feedback" element={<FeedbackPage />} />
           <Route path="/blog" element={<BlogPage />} />
-          <Route path="/reviews" element={<ReviewsPage/>} />
           <Route
             path="/request-delivery"
             element={<RequestDeliveryServicePage />}
           />
-
+          <Route path="/track" element={<Navigate to="/tracking" replace />} />
+          <Route
+            path="/request-service"
+            element={<Navigate to="/request-delivery" replace />}
+          />
+        </Route>
 
         {/* Auth routes */}
         <Route element={<AuthLayout />}>

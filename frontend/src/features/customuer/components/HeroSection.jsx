@@ -1,5 +1,5 @@
 import React from "react";
-import "./HeroSection.css";
+import "./style/HeroSection.css";
 import logo from "../../../Images/Phonex_logo.jpeg";
 
 const HeroSection = () => {

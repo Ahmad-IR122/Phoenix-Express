@@ -4,7 +4,7 @@ import Navbar from '../../../Components/Navbar';
 const ReviewsPage = () => {
   return (
     <div>
-      <Navbar/>
+      <h1>Reviews Page</h1>
     </div>
   );
 }

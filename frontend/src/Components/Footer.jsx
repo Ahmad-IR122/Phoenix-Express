@@ -1,16 +1,9 @@
-import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './Footer.css';
-import {
-  HiOutlineMapPin,
-  HiOutlinePhone,
-  HiOutlineEnvelope
-} from "react-icons/hi2";
-import {
-  AiOutlineTwitter,
-  AiOutlineInstagram,
-  AiOutlineFacebook
-} from "react-icons/ai";
+import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Link } from "react-router-dom";
+import "../styles/Footer.css"
+import { HiOutlineMapPin, HiOutlinePhone, HiOutlineEnvelope } from "react-icons/hi2";
+import { AiOutlineTwitter, AiOutlineInstagram, AiOutlineFacebook } from "react-icons/ai";
 import logo from "../Images/Phonex_logo.jpeg";
 
 const Footer = () => {
@@ -18,32 +11,32 @@ const Footer = () => {
     <footer className="footer-container" dir="rtl">
       <div className="container py-5">
         <div className="row gy-4">
-
           <div className="col-lg-3 col-md-6 text-center text-md-end">
             <div className="footer-logo mb-3">
               <img src={logo} alt="Phonex Express" className="footer-logo-img" />
             </div>
             <p className="footer-about-text">
-              شركة فلسطينية رائدة في مجال خدمات توصيل الطرود، نعمل على دعم المشاريع الصغيرة والمتوسطة.
+              شركة فلسطينية رائدة في مجال خدمات توصيل الطرود، نعمل على دعم المشاريع
+              الصغيرة والمتوسطة.
             </p>
           </div>
 
           <div className="col-lg-3 col-md-6 text-center text-md-end">
             <h5 className="footer-heading mb-4">روابط سريعة</h5>
             <ul className="list-unstyled footer-links p-0">
-              <li><a href="/">الرئيسية</a></li>
-              <li><a href="/about">من نحن</a></li>
-              <li><a href="/track">تتبع الشحنة</a></li>
-              <li><a href="/blog">المدونة</a></li>
+              <li><Link to="/">الرئيسية</Link></li>
+              <li><Link to="/about">من نحن</Link></li>
+              <li><Link to="/tracking">تتبع الشحنة</Link></li>
+              <li><Link to="/blog">المدونة</Link></li>
             </ul>
           </div>
 
           <div className="col-lg-3 col-md-6 text-center text-md-end">
             <h5 className="footer-heading mb-4">خدماتنا</h5>
             <ul className="list-unstyled footer-links p-0">
-              <li><a href="/gallery">معرض الصور</a></li>
-              <li><a href="/reviews">آراء الزبائن</a></li>
-              <li><a href="/request-service">طلب خدمة توصيل</a></li>
+              <li><Link to="/gallery">معرض الصور</Link></li>
+              <li><Link to="/reviews">آراء الزبائن</Link></li>
+              <li><Link to="/request-delivery">طلب خدمة توصيل</Link></li>
             </ul>
           </div>
 
@@ -53,7 +46,8 @@ const Footer = () => {
               <li className="d-flex align-items-center justify-content-center justify-content-md-start mb-3">
                 <HiOutlineMapPin className="contact-icon ms-2" />
                 <div className="contact-text">
-                  نابلس - الضاحية <br />
+                  نابلس - الضاحية
+                  <br />
                   شارع جامعة النجاح
                 </div>
               </li>
@@ -73,7 +67,6 @@ const Footer = () => {
               <a href="#" className="social-circle"><AiOutlineFacebook /></a>
             </div>
           </div>
-
         </div>
       </div>
 

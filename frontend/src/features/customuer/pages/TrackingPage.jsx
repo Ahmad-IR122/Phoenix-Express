@@ -1,6 +1,5 @@
 import React from "react";
-import Navbar from "../../../Components/Navbar";
-import "./TrackingPage.css";
+import "../../../styles/TrackingPage.css";
 
 const searchIcon = (
   <svg
@@ -48,7 +47,6 @@ const packageIcon = (
 const TrackingPage = () => {
   return (
     <div className="tracking-page bg-light min-vh-100" dir="rtl">
-      <Navbar />
 
       <main className="container py-5">
         <section className="mx-auto text-center tracking-shell">

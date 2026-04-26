@@ -22,6 +22,9 @@
 }
 
 .cta-section__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: min(100%, 25rem);
   min-height: 4.75rem;
   background-color: #38b6ff;
@@ -29,6 +32,7 @@
   font-size: clamp(1rem, 1.5vw, 1.4rem);
   border: none;
   box-shadow: 0 1rem 2.5rem rgba(56, 182, 255, 0.22);
+  text-align: center;
 }
 
 .cta-section__button:hover,
