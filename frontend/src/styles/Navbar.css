@@ -1,24 +1,114 @@
+.mobix-navbar {
+  background-color: #ffffff;
+  padding: 1rem 0;
+  position: relative;
+  z-index: 10;
+}
+
+.mobix-navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.mobix-navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  text-decoration: none;
+}
+
+.mobix-navbar-logo {
+  display: block;
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.mobix-navbar-toggler {
+  display: none;
+  margin-inline-start: auto;
+}
+
+.mobix-navbar-collapse {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 1.5rem;
+}
+
+.mobix-navbar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  gap: 0.5rem 1.5rem;
+  flex-wrap: wrap;
+}
+
+.mobix-navbar-item {
+  flex: 0 0 auto;
+}
+
 .mobix-nav-link,
 .mobix-btn {
   font-family: inherit;
-  font-weight: 600;
+  font-weight: 700;
   transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease,
     box-shadow 0.2s ease;
 }
 
+.mobix-nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  color: #000000;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
 .mobix-nav-link:hover,
 .mobix-nav-link:focus {
-  color: #38b6ff !important;
+  color: #38b6ff;
+}
+
+.mobix-nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 0 0 auto;
+  gap: 0.75rem;
+  margin-inline-start: auto;
 }
 
 .mobix-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border: 0;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #ffffff;
   white-space: nowrap;
+  line-height: 1.2;
 }
 
 .mobix-btn:hover,
 .mobix-btn:focus {
   transform: translateY(-1px);
   box-shadow: 0 0.5rem 1rem rgba(10, 10, 10, 0.12);
+  color: #ffffff;
 }
 
 .mobix-btn-primary {
@@ -29,7 +119,6 @@
 .mobix-btn-primary:hover,
 .mobix-btn-primary:focus {
   background-color: #1fa8f5;
-  color: #ffffff;
 }
 
 .mobix-btn-dark {
@@ -40,24 +129,15 @@
 .mobix-btn-dark:hover,
 .mobix-btn-dark:focus {
   background-color: #222222;
-  color: #ffffff;
 }
 
-@media (min-width: 992px) and (max-width: 1399.98px) {
-  .mobix-navbar .navbar-collapse {
-    display: flex !important;
-    flex-wrap: wrap;
-    row-gap: 0.75rem;
+@media (max-width: 1199.98px) {
+  .mobix-navbar-collapse {
+    gap: 1rem;
   }
 
-  .mobix-navbar .navbar-nav {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .mobix-navbar .mobix-nav-actions {
-    width: 100%;
-    justify-content: center !important;
+  .mobix-navbar-nav {
+    gap: 0.5rem 1rem;
   }
 
   .mobix-btn-primary {
@@ -70,7 +150,53 @@
 }
 
 @media (max-width: 991.98px) {
-  .mobix-navbar .navbar-collapse {
+  .mobix-navbar-container {
+    flex-wrap: wrap;
+  }
+
+  .mobix-navbar-toggler {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobix-navbar-collapse {
+    display: none;
+    width: 100%;
+    flex: 0 0 100%;
     padding-top: 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+
+  .mobix-navbar-collapse.show {
+    display: flex;
+  }
+
+  .mobix-navbar-nav {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .mobix-nav-actions {
+    width: 100%;
+    margin-inline-start: 0;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+
+  .mobix-btn,
+  .mobix-btn-primary,
+  .mobix-btn-dark {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (min-width: 992px) {
+  .mobix-navbar-collapse.collapse {
+    display: flex !important;
   }
 }

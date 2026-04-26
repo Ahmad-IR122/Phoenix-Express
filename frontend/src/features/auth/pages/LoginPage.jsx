@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './LoginPage.css';
+import React, { useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Link, useNavigate } from "react-router-dom";
+import "./LoginPage.css";
 import { LuPhone } from "react-icons/lu";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { FiLogIn } from "react-icons/fi";
@@ -8,6 +9,7 @@ import logo from "../../../Images/Phonex_logo.jpeg";
 import { loginUser } from "../services/authService";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
 
@@ -16,12 +18,22 @@ const LoginPage = () => {
 
     try {
       const response = await loginUser({ phone, password });
+      const { token, user } = response.data;
 
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
-      alert("تم تسجيل الدخول بنجاح");
-      console.log(response.data);
+      if (user?.role === "admin") {
+        navigate("/admin/dashboard", { replace: true });
+        return;
+      }
+
+      if (user?.role === "employee") {
+        navigate("/employee/home", { replace: true });
+        return;
+      }
+
+      navigate("/", { replace: true });
     } catch (error) {
       console.log(error.response?.data || error.message);
       alert("فشل تسجيل الدخول");
@@ -45,7 +57,7 @@ const LoginPage = () => {
 
           <div className="header-text text-center">
             <h2 className="main-title-blue">تسجيل الدخول</h2>
-            <p className="sub-title">مرحباً بك في فينكس إكسبريس</p>
+            <p className="sub-title">مرحباً بك في فينكس إكسبرس</p>
           </div>
 
           <form onSubmit={handleLogin}>
@@ -73,7 +85,7 @@ const LoginPage = () => {
               <input
                 type="password"
                 className="form-control custom-input text-end gray-dots-placeholder"
-                placeholder="▪▪▪▪▪▪▪▪"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -86,7 +98,7 @@ const LoginPage = () => {
                 <label htmlFor="remember" className="remember-text-style">تذكرني</label>
               </div>
 
-              <a href="#" className="forgot-password-link">نسيت كلمة المرور؟</a>
+              <Link to="/forgot-password" className="forgot-password-link">نسيت كلمة المرور؟</Link>
             </div>
 
             <button type="submit" className="btn-primary-blue-action w-100">
@@ -97,9 +109,9 @@ const LoginPage = () => {
               <span>أو</span>
             </div>
 
-            <button type="button" className="btn-light-gray-home w-100">
+            <Link to="/" className="btn btn-light-gray-home w-100 d-flex align-items-center justify-content-center">
               العودة للصفحة الرئيسية
-            </button>
+            </Link>
           </form>
         </div>
       </div>

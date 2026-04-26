@@ -1,10 +1,9 @@
 import React from 'react';
-import Navbar from '../../../Components/Navbar';
 
 const PhotoGalleryPage = () => {
   return (
     <div>
-      <Navbar/>
+      <h1>Photo Gallery</h1>
     </div>
   );
 }
