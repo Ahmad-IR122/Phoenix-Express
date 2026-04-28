@@ -1,5 +1,6 @@
 import React from "react";
-import "./CTASection.css";
+import "./style/CTASection.css";
+import { Link } from "react-router-dom";
 
 const CTASection = () => {
   return (
@@ -16,12 +17,11 @@ const CTASection = () => {
                   <p className="cta-section__subtitle mb-4 mb-md-5 mx-auto">
                     انضم إلى آلاف الزبائن الراضين عن خدماتنا
                   </p>
-                  <button
-                    type="button"
+                  <Link to="/request-delivery"
                     className="btn cta-section__button rounded-pill fw-bold px-4 px-md-5"
                   >
                     اطلب خدمة التوصيل الآن
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

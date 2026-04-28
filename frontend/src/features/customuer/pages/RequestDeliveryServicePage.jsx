@@ -1,9 +1,8 @@
 import React from 'react';
-import Navbar from '../../../Components/Navbar';
 const RequestDeliveryServicePage = () => {
   return (
     <div>
-      <Navbar/>
+      <h1>Request Delivery Service Page</h1>
     </div>
   );
 }

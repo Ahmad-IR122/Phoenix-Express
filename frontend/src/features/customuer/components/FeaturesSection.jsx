@@ -1,5 +1,5 @@
 import React from "react";
-import "./FeaturesSection.css";
+import "./style/FeaturesSection.css";
 const features = [
   {
     title: "توصيل سريع",
@@ -68,7 +68,7 @@ const features = [
         width="38"
         height="38"
         fill="currentColor"
-        class="bi bi-check2-circle"
+        className="bi bi-check2-circle"
         viewBox="0 0 16 16"
       >
         <path d="M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0" />

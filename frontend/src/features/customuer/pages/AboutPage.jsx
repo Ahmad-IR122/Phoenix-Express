@@ -1,11 +1,9 @@
 import React from "react";
-import Navbar from "../../../Components/Navbar";
-import "./AboutPage.css";
+import "../../../styles/AboutPage.css";
 
 const AboutPage = () => {
   return (
     <div className="about-page" dir="rtl">
-      <Navbar />
       <main className="about-page__section py-5">
         <div className="container py-lg-5">
           <div className="row justify-content-center text-center">
