@@ -6,6 +6,7 @@
   display: grid;
   gap: 20px;
   color: #0f172a;
+  min-width: 0;
 }
 
 .admin-distribution__hero {
@@ -118,12 +119,14 @@
   grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.95fr);
   gap: 20px;
   align-items: start;
+  min-width: 0;
 }
 
 .admin-distribution__main,
 .admin-distribution__side {
   display: grid;
   gap: 20px;
+  min-width: 0;
 }
 
 .admin-distribution__card {
@@ -132,6 +135,7 @@
   border-radius: var(--phoenix-admin-radius-xl);
   box-shadow: var(--phoenix-admin-shadow);
   padding: 20px;
+  min-width: 0;
 }
 
 .admin-distribution__section-head {
@@ -240,6 +244,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px 18px;
+  min-width: 0;
 }
 
 .admin-distribution__parcel-grid-wide {
@@ -263,6 +268,7 @@
   font-size: var(--phoenix-admin-body);
   line-height: 1.6;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .admin-distribution__action-btn {

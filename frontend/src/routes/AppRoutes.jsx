@@ -70,6 +70,7 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         >
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="/admin/dashboard" element={<DashboardPage />} />
           <Route
             path="/admin/parcel-distribution"
@@ -90,6 +91,7 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         >
+          <Route path="/employee" element={<Navigate to="/employee/home" replace />} />
           <Route path="/employee/home" element={<EmployeeHomePage />} />
           <Route path="/employee/orders" element={<OrdersPage />} />
           <Route path="/employee/payment" element={<PaymentPage />} />
