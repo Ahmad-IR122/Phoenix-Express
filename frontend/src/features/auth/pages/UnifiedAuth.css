@@ -1,0 +1,208 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+
+:root {
+    --phoenix-blue: #38B6FF;
+    --bg-gray: #F1F3F6;
+}
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Cairo', sans-serif;
+    background-color: var(--phoenix-blue);
+    min-height: 100vh;
+}
+
+.auth-screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+}
+
+.white-logo-box {
+    background-color: white;
+    width: 130px;
+    height: 130px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.main-logo-img {
+    max-width: 85%;
+    object-fit: contain;
+}
+
+.main-card-container {
+    width: 100%;
+    max-width: 440px;
+    /* العرض الموحد للكروت */
+}
+
+.auth-card {
+    background-color: white;
+    border-radius: 15px;
+    padding: 35px;
+    /* البادينج الموحد */
+    direction: rtl;
+}
+
+/* Tabs */
+.tab-switcher {
+    background-color: var(--bg-gray);
+    border-radius: 8px;
+    padding: 4px;
+    display: flex;
+    margin-bottom: 25px;
+}
+
+.tab-btn {
+    flex: 1;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    background: transparent;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.tab-btn.active {
+    background-color: var(--phoenix-blue);
+    color: white;
+}
+
+/* Account Switcher (Company/User) */
+.account-switcher {
+    background-color: var(--bg-gray);
+    border-radius: 10px;
+    padding: 4px;
+}
+
+.switch-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #718096;
+    padding: 8px;
+}
+
+.switch-btn.active {
+    background-color: white;
+    color: var(--phoenix-blue);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Typography */
+.main-title-blue {
+    color: var(--phoenix-blue);
+    font-weight: 900;
+    font-size: 1.7rem;
+    margin-bottom: 5px;
+}
+
+.sub-title {
+    color: #777;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+}
+
+/* Fields */
+.input-field-wrapper {
+    margin-bottom: 20px;
+}
+
+.field-label {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.icon-blue {
+    color: var(--phoenix-blue);
+    font-size: 1.1rem;
+}
+
+.custom-input {
+    height: 50px;
+    /* الارتفاع الموحد */
+    border: 1px solid #E2E8F0;
+    border-radius: 8px !important;
+    font-weight: 600;
+}
+
+/* Buttons */
+.btn-primary-blue-action {
+    background-color: var(--phoenix-blue);
+    border: none;
+    color: white;
+    height: 52px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.btn-light-gray-home {
+    background-color: var(--bg-gray);
+    border: none;
+    color: #4A5568;
+    height: 52px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+/* Divider */
+.custom-divider {
+    display: flex;
+    align-items: center;
+    margin: 25px 0;
+}
+
+.custom-divider::before,
+.custom-divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #EEE;
+}
+
+.custom-divider span {
+    padding: 0 15px;
+    color: #BBB;
+    font-size: 0.85rem;
+}
+
+/* Others */
+.remember-text-style {
+    margin-right: 8px;
+    font-size: 0.85rem;
+    color: #444;
+}
+
+.forgot-password-link {
+    text-decoration: none;
+    color: var(--phoenix-blue);
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.phone-number-bold {
+    font-weight: 900;
+    font-size: 1.1rem;
+}
+
+.swal-rtl {
+    direction: rtl;
+    font-family: 'Cairo', sans-serif;
+    border-radius: 18px;
+}

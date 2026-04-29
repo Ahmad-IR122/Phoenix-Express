@@ -1,26 +1,41 @@
-import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './SignInPage.css';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Swal from "sweetalert2";
+import "./UnifiedAuth.css";
 import {
   HiOutlineUser,
   HiOutlineEnvelope,
   HiOutlinePhone,
   HiOutlineLockClosed,
   HiOutlineBuildingOffice2,
-  HiOutlineMapPin
+  HiOutlineMapPin,
 } from "react-icons/hi2";
 import logo from "../../../Images/Phonex_logo.jpeg";
 import { registerUser } from "../services/authService";
 
 const SignInPage = () => {
-  const [accountType, setAccountType] = useState('individual');
-
+  const navigate = useNavigate();
+  const [accountType, setAccountType] = useState("individual");
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [companyLocation, setCompanyLocation] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+
+  const showError = (title, message) => {
+    Swal.fire({
+      icon: "error",
+      title,
+      text: message,
+      confirmButtonText: "حسنًا",
+      confirmButtonColor: "#38B6FF",
+      customClass: {
+        popup: "swal-rtl",
+      },
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,12 +46,11 @@ const SignInPage = () => {
         phone,
         password,
         role: accountType === "company" ? "company" : "customer",
+        fullName: accountType === "individual" ? fullName : companyName,
+        address: companyLocation,
       };
 
-      const response = await registerUser(payload);
-
-      console.log("Register success:", response.data);
-      alert("تم إنشاء الحساب بنجاح");
+      await registerUser(payload);
 
       setFullName("");
       setCompanyName("");
@@ -44,167 +58,158 @@ const SignInPage = () => {
       setEmail("");
       setPhone("");
       setPassword("");
+
+      await Swal.fire({
+        icon: "success",
+        title: "تم إنشاء الحساب",
+        text: "يمكنك الآن تسجيل الدخول إلى حسابك",
+        confirmButtonText: "تسجيل الدخول",
+        confirmButtonColor: "#38B6FF",
+        customClass: {
+          popup: "swal-rtl",
+        },
+      });
+
+      navigate("/login");
     } catch (error) {
-      console.log("Register error:", error.response?.data || error.message);
-      alert("فشل إنشاء الحساب");
+      const message =
+        error.response?.data?.errors?.join(" - ") ||
+        error.response?.data?.message ||
+        "تأكد من البيانات المدخلة وحاول مرة أخرى";
+
+      showError("فشل إنشاء الحساب", message);
     }
   };
 
   return (
-    <div className="signin-wrapper d-flex align-items-center justify-content-center">
-      <div className="container d-flex flex-column align-items-center">
-
-        <div className="logo-box-fixed mb-4 shadow-sm d-flex align-items-center justify-content-center">
-          <img src={logo} alt="فينكس لوجو" className="img-fluid logo-img-contained" />
+    <div className="auth-screen">
+      <div className="logo-top-wrapper">
+        <div className="white-logo-box">
+          <img src={logo} alt="فينكس لوجو" className="main-logo-img" />
         </div>
+      </div>
 
-        <div className="signin-card shadow-sm">
-
-          <div className="auth-tabs d-flex p-1 mb-4">
-            <button type="button" className="tab-btn inactive w-50">تسجيل الدخول</button>
-            <button type="button" className="tab-btn active w-50">إنشاء حساب</button>
+      <div className="main-card-container">
+        <div className="auth-card shadow-sm">
+          <div className="tab-switcher">
+            <Link
+              to="/login"
+              className="tab-btn text-decoration-none d-flex align-items-center justify-content-center"
+            >
+              تسجيل الدخول
+            </Link>
+            <button type="button" className="tab-btn active">
+              إنشاء حساب
+            </button>
           </div>
 
-          <div className="text-center mb-4">
-            <h2 className="main-title mb-1">إنشاء حساب جديد</h2>
-            <p className="sub-title">انضم إلى عائلة فينكس إكسبريس</p>
+          <div className="header-text text-center">
+            <h2 className="main-title-blue">إنشاء حساب جديد</h2>
+            <p className="sub-title">انضم إلى عائلة فينكس إكسبرس</p>
           </div>
 
-          <div className="account-switcher d-flex p-1 mb-4">
+          <div className="account-switcher d-flex mb-4">
             <button
               type="button"
-              className={`switch-btn ${accountType === 'individual' ? 'active' : ''}`}
-              onClick={() => setAccountType('individual')}
+              className={`switch-btn ${accountType === "individual" ? "active" : ""}`}
+              onClick={() => setAccountType("individual")}
             >
               زبون عادي
             </button>
-
             <button
               type="button"
-              className={`switch-btn ${accountType === 'company' ? 'active' : ''}`}
-              onClick={() => setAccountType('company')}
+              className={`switch-btn ${accountType === "company" ? "active" : ""}`}
+              onClick={() => setAccountType("company")}
             >
               شركات
             </button>
           </div>
 
           <form dir="rtl" onSubmit={handleSubmit}>
-            {accountType === 'individual' ? (
-              <>
-                <div className="mb-3">
-                  <label className="form-label d-flex align-items-center">
-                    <HiOutlineUser className="icon-blue-outline me-2" />
-                    <span>الاسم</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control custom-input"
-                    placeholder="الاسم الكامل"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label d-flex align-items-center">
-                    <HiOutlineEnvelope className="icon-blue-outline me-2" />
-                    <span>البريد الإلكتروني</span>
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control custom-input"
-                    placeholder="email@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label d-flex align-items-center">
-                    <HiOutlinePhone className="icon-blue-outline me-2" />
-                    <span>رقم الهاتف</span>
-                  </label>
-                  <input
-                    type="tel"
-                    className="form-control custom-input"
-                    placeholder="05xxxxxxxx"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    required
-                  />
-                </div>
-              </>
+            {accountType === "individual" ? (
+              <div className="input-field-wrapper">
+                <label className="field-label d-flex align-items-center">
+                  <HiOutlineUser className="icon-blue ms-2" />
+                  <span>الاسم</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-control custom-input"
+                  placeholder="الاسم الكامل"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
+              </div>
             ) : (
-              <>
-                <div className="mb-3">
-                  <label className="form-label d-flex align-items-center">
-                    <HiOutlineBuildingOffice2 className="icon-blue-outline me-2" />
-                    <span>اسم الشركة</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control custom-input"
-                    placeholder="اسم الشركة"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label d-flex align-items-center">
-                    <HiOutlineEnvelope className="icon-blue-outline me-2" />
-                    <span>البريد الإلكتروني</span>
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control custom-input"
-                    placeholder="email@company.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label d-flex align-items-center">
-                    <HiOutlinePhone className="icon-blue-outline me-2" />
-                    <span>رقم هاتف الشركة</span>
-                  </label>
-                  <input
-                    type="tel"
-                    className="form-control custom-input"
-                    placeholder="02xxxxxxxx"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label d-flex align-items-center">
-                    <HiOutlineMapPin className="icon-blue-outline me-2" />
-                    <span>موقع الشركة الحالي</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control custom-input"
-                    placeholder="المدينة والعنوان"
-                    value={companyLocation}
-                    onChange={(e) => setCompanyLocation(e.target.value)}
-                  />
-                </div>
-              </>
+              <div className="input-field-wrapper">
+                <label className="field-label d-flex align-items-center">
+                  <HiOutlineBuildingOffice2 className="icon-blue ms-2" />
+                  <span>اسم الشركة</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-control custom-input"
+                  placeholder="اسم الشركة"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                />
+              </div>
             )}
 
-            <div className="mb-4">
-              <label className="form-label d-flex align-items-center">
-                <HiOutlineLockClosed className="icon-blue-outline me-2" />
+            <div className="input-field-wrapper">
+              <label className="field-label d-flex align-items-center">
+                <HiOutlineEnvelope className="icon-blue ms-2" />
+                <span>البريد الإلكتروني</span>
+              </label>
+              <input
+                type="email"
+                className="form-control custom-input"
+                placeholder="email@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="input-field-wrapper">
+              <label className="field-label d-flex align-items-center">
+                <HiOutlinePhone className="icon-blue ms-2" />
+                <span>رقم الهاتف</span>
+              </label>
+              <input
+                type="tel"
+                className="form-control custom-input"
+                placeholder="05xxxxxxxx"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+              />
+            </div>
+
+            {accountType === "company" && (
+              <div className="input-field-wrapper">
+                <label className="field-label d-flex align-items-center">
+                  <HiOutlineMapPin className="icon-blue ms-2" />
+                  <span>موقع الشركة</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-control custom-input"
+                  placeholder="المدينة والعنوان"
+                  value={companyLocation}
+                  onChange={(e) => setCompanyLocation(e.target.value)}
+                />
+              </div>
+            )}
+
+            <div className="input-field-wrapper mb-4">
+              <label className="field-label d-flex align-items-center">
+                <HiOutlineLockClosed className="icon-blue ms-2" />
                 <span>كلمة السر</span>
               </label>
               <input
                 type="password"
-                className="form-control custom-input password-field"
+                className="form-control custom-input"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -212,24 +217,29 @@ const SignInPage = () => {
               />
             </div>
 
-            <button type="submit" className="btn btn-primary-signup w-100">
+            <button type="submit" className="btn-primary-blue-action w-100">
               إنشاء الحساب
             </button>
 
-            <div className="modern-divider my-4">
+            <div className="custom-divider">
               <span>أو</span>
             </div>
 
-            <button type="button" className="btn btn-secondary-home w-100">
+            <Link
+              to="/"
+              className="btn-light-gray-home w-100 d-flex align-items-center justify-content-center text-decoration-none"
+            >
               العودة للصفحة الرئيسية
-            </button>
+            </Link>
           </form>
         </div>
+      </div>
 
-        <div className="support-footer text-center mt-4 text-white">
-          <p className="mb-0 small-help">هل تحتاج مساعدة؟</p>
-          <p className="phone-num-small">+970 123 456 789</p>
-        </div>
+      <div className="footer-support-info text-center mt-4 text-white">
+        <p className="mb-0">هل تحتاج مساعدة؟</p>
+        <p className="phone-number-bold" dir="ltr">
+          +970 123 456 789
+        </p>
       </div>
     </div>
   );

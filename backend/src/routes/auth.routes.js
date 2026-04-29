@@ -1,14 +1,25 @@
-'use strict';
-
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const authController = require('../controllers/auth.controller');
 
-router.post('/login', authController.loginAuth);
-router.post('/', authController.createAuth);
-router.get('/', authController.getAllAuths);
-router.get('/:id', authController.findAuthById);
-router.put('/:id', authController.updateAuth);
-router.delete('/:id', authController.deleteAuth);
+const {
+    register,
+    login,
+    forgotPassword,
+    resetPasswordWithCode,
+    getAllAuths,
+    findAuthById,
+    updateAuth,
+    deleteAuth,
+} = require("../controllers/auth.controller");
+
+router.post("/register", register);
+router.post("/login", login);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPasswordWithCode);
+
+router.get("/", getAllAuths);
+router.get("/:id", findAuthById);
+router.put("/:id", updateAuth);
+router.delete("/:id", deleteAuth);
 
 module.exports = router;

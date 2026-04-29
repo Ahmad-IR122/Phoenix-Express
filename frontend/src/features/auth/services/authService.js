@@ -1,16 +1,18 @@
-import API from "../../../apis/api";
+import axios from "axios";
+
+const API_URL = "http://localhost:5000/api/auth";
 
 export const registerUser = (data) => {
-    return API.post("/auth", data);
+    return axios.post(`${API_URL}/register`, data);
 };
 
 export const loginUser = (data) => {
-    return API.post("/auth/login", data);
+    return axios.post(`${API_URL}/login`, data);
+};
+export const forgotPassword = (data) => {
+    return axios.post(`${API_URL}/forgot-password`, data);
 };
 
-export const logoutUser = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+export const resetPassword = (data) => {
+    return axios.post(`${API_URL}/reset-password`, data);
 };
-
-
