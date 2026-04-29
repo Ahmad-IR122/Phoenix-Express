@@ -122,14 +122,11 @@ const ReviewsPage = () => {
               type="button"
               className="review-modal-close"
               onClick={() => {
-                setSuccessMessage(true);
-
-                setTimeout(() => {
-                  setShowReviewModal(false);
-                  setSelectedRating(0);
-                  setReviewText("");
-                  setSuccessMessage(false);
-                }, 2000);
+                setShowReviewModal(false);
+                setSelectedRating(0);
+                setHoverRating(0);
+                setReviewText("");
+                setSuccessMessage(false);
               }}
             >
               ×

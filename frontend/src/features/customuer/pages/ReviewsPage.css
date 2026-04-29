@@ -417,86 +417,15 @@
     text-shadow: 0 8px 18px rgba(56, 182, 255, 0.28);
 }
 
-.review-modal-submit:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-    opacity: 0.9;
-}
-
-.review-modal-submit:not(:disabled):hover {
-    background: #2ca3ea;
-    transform: translateY(-2px);
-}
-
-.success-box {
-    background: #e6f7ff;
-    color: #0ea5e9;
-    padding: 14px;
-    border-radius: 10px;
-    text-align: center;
-    font-weight: 800;
-    margin-bottom: 15px;
-    animation: fadeIn 0.3s ease;
-}
-
-.modal-star.active {
-    color: var(--primary-blue);
-}
-
-.review-modal-label {
-    display: block;
-    text-align: right;
-    font-size: 22px;
-    font-weight: 900;
-    margin-bottom: 10px;
-}
-
-.review-modal-textarea {
-    width: 100%;
-    height: 180px;
-    border: 2px solid #d1d5db;
-    border-radius: 12px;
-    padding: 18px;
-    font-size: 18px;
-    font-family: 'Cairo', sans-serif;
-    resize: none;
-}
-
-.review-modal-actions {
-    display: flex;
-    gap: 16px;
-    margin-top: 28px;
-}
-
-.review-modal-cancel,
-.review-modal-submit {
-    flex: 1;
-    height: 60px;
-    border-radius: 12px;
-    font-size: 20px;
-    font-weight: 900;
-}
-
-.review-modal-cancel {
-    background: white;
-    border: 2px solid #d1d5db;
-}
-
-.review-modal-submit {
-    background: var(--primary-blue);
-    color: white;
-    border: none;
-}
-
-.review-modal-submit:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-}
+/* --- قسم نافذة التقييم (Review Modal) --- */
 
 .review-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.35);
+    background: rgba(15, 23, 42, 0.45);
+    /* تعتيم أعمق قليلاً لتركيز النظر */
+    backdrop-filter: blur(4px);
+    /* لمسة عصرية لتمويه الخلفية */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -508,94 +437,150 @@
     background: white;
     width: 100%;
     max-width: 640px;
-    border-radius: 10px;
-    padding: 32px;
+    border-radius: 20px;
+    /* حواف أنعم تماشياً مع الـ Brand */
+    padding: 40px;
     position: relative;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .review-modal-close {
     position: absolute;
-    top: 14px;
-    left: 18px;
+    top: 20px;
+    left: 20px;
     border: none;
-    background: transparent;
-    font-size: 28px;
+    background: #f1f5f9;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 24px;
+    color: #64748b;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.review-modal-close:hover {
+    background: #e2e8f0;
+    color: #1e293b;
 }
 
 .review-modal-title {
     text-align: center;
     color: var(--primary-blue);
-    font-weight: 900;
-    font-size: 34px;
-    margin-bottom: 28px;
+    font-weight: 800;
+    font-size: 32px;
+    margin-bottom: 10px;
 }
 
 .review-modal-question {
     text-align: center;
-    font-size: 24px;
-    font-weight: 900;
-    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 30px;
 }
 
+/* تنسيق النجوم داخل الـ Modal */
 .review-modal-stars {
     display: flex;
     justify-content: center;
-    gap: 14px;
+    gap: 12px;
     margin-bottom: 30px;
     direction: ltr;
+    /* لضمان ترتيب النجوم من اليسار لليمين */
 }
 
 .modal-star {
     border: none;
     background: transparent;
-    font-size: 58px;
-    color: #d1d5db;
+    font-size: 52px;
+    color: #e2e8f0;
+    /* لون الرمادي الهادئ للنجوم الفارغة */
     cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1;
+    padding: 0;
+}
+
+.modal-star:hover {
+    transform: scale(1.2) rotate(-5deg);
 }
 
 .modal-star.active {
     color: var(--primary-blue);
+    text-shadow: 0 0 15px rgba(56, 182, 255, 0.3);
 }
 
+/* حقل النص */
 .review-modal-label {
     display: block;
     text-align: right;
-    font-size: 22px;
-    font-weight: 900;
-    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #475569;
 }
 
 .review-modal-textarea {
     width: 100%;
-    height: 180px;
-    border: 2px solid #d1d5db;
-    border-radius: 12px;
+    height: 160px;
+    border: 2px solid #e2e8f0;
+    border-radius: 15px;
     padding: 18px;
-    font-size: 18px;
+    font-size: 16px;
     font-family: 'Cairo', sans-serif;
     resize: none;
+    transition: border-color 0.2s ease;
 }
 
+.review-modal-textarea:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+}
+
+/* الأزرار */
 .review-modal-actions {
     display: flex;
     gap: 16px;
-    margin-top: 28px;
+    margin-top: 30px;
 }
 
 .review-modal-cancel,
 .review-modal-submit {
     flex: 1;
-    height: 60px;
+    height: 55px;
     border-radius: 12px;
-    font-size: 20px;
-    font-weight: 900;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .review-modal-cancel {
     background: white;
-    border: 2px solid #d1d5db;
+    border: 2px solid #e2e8f0;
+    color: #64748b;
+}
+
+.review-modal-cancel:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
 }
 
 .review-modal-submit {
@@ -604,26 +589,35 @@
     border: none;
 }
 
+.review-modal-submit:not(:disabled):hover {
+    background: #2ca3ea;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(56, 182, 255, 0.2);
+}
+
 .review-modal-submit:disabled {
-    background: #9ca3af;
+    background: #cbd5e1;
     cursor: not-allowed;
 }
 
+/* صندوق النجاح */
 .success-box {
-    background: #e6f7ff;
-    color: #0ea5e9;
-    padding: 14px;
-    border-radius: 10px;
+    background: #f0fdf4;
+    /* لون أخضر فاتح جداً للنجاح */
+    color: #16a34a;
+    padding: 16px;
+    border-radius: 12px;
     text-align: center;
     font-weight: 700;
-    margin-bottom: 15px;
-    animation: fadeIn 0.3s ease;
+    margin-bottom: 20px;
+    border: 1px solid #bbf7d0;
+    animation: fadeInDown 0.4s ease;
 }
 
-@keyframes fadeIn {
+@keyframes fadeInDown {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-15px);
     }
 
     to {
