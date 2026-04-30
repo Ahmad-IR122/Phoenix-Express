@@ -61,20 +61,20 @@ const PhotoGalleryPage = () => {
               <p className="info-text">
                 نفخر بفريقنا المدرب والمحترف الذي يعمل على مدار الساعة لضمان وصول طرودكم بأمان وفي الوقت المحدد.
               </p>
-              <div className="stats-row">
-                <div className="stat-item">
-                  <span className="stat-number">50+</span>
-                  <span className="stat-label">موظف</span>
+              <div className="photo-gallery-stats-row">
+                <div className="photo-gallery-stat-item">
+                  <span className="photo-gallery-stat-number">50+</span>
+                  <span className="photo-gallery-stat-label">موظف</span>
                 </div>
 
-                <div className="stat-item">
-                  <span className="stat-number">20+</span>
-                  <span className="stat-label">مركبة</span>
+                <div className="photo-gallery-stat-item">
+                  <span className="photo-gallery-stat-number">20+</span>
+                  <span className="photo-gallery-stat-label">مركبة</span>
                 </div>
 
-                <div className="stat-item">
-                  <span className="stat-number">24/7</span>
-                  <span className="stat-label">خدمة</span>
+                <div className="photo-gallery-stat-item">
+                  <span className="photo-gallery-stat-number">24/7</span>
+                  <span className="photo-gallery-stat-label">خدمة</span>
                 </div>
               </div>
             </div>

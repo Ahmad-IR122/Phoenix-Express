@@ -162,23 +162,23 @@
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 767px) {
-    .stats-row {
+    .photo-gallery-stats-row {
         justify-content: space-between;
         gap: 15px;
     }
 
-    .stat-number {
+    .photo-gallery-stat-number {
         font-size: 1rem;
     }
 
-    .stat-label {
+    .photo-gallery-stat-label {
         font-size: 0.7rem;
     }
 }
 
 /* ===== FINAL OVERRIDE FOR STATS ===== */
 
-.team-card .stats-row {
+.team-card .photo-gallery-stats-row {
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -187,13 +187,13 @@
     direction: rtl;
 }
 
-.team-card .stat-item {
+.team-card .photo-gallery-stat-item {
     min-width: 50px;
     text-align: center;
     position: relative;
 }
 
-.team-card .stat-number {
+.team-card .photo-gallery-stat-number {
     display: block;
     font-size: 1.95rem !important;
     font-weight: 800;
@@ -201,7 +201,7 @@
     line-height: 1;
 }
 
-.team-card .stat-label {
+.team-card .photo-gallery-stat-label {
     display: block;
     font-size: 1.68rem !important;
     margin-top: 4px;
@@ -209,7 +209,7 @@
     opacity: 0.95 !important;
 }
 
-.team-card .stat-item:not(:last-child)::after {
+.team-card .photo-gallery-stat-item:not(:last-child)::after {
     content: "";
     position: absolute;
     left: -9px;

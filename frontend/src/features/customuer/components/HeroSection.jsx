@@ -49,14 +49,14 @@ const HeroSection = () => {
                 لإنجاح مشروعك.
               </p>
 
-              <div className="tracking-card bg-white text-dark text-lg-end text-center ms-lg-auto">
-                <h2 className="tracking-card-title fw-bold">تتبع شحنتك الآن</h2>
+              <div className="home-hero-tracking-card bg-white text-dark text-lg-end text-center ms-lg-auto">
+                <h2 className="home-hero-tracking-card-title fw-bold">تتبع شحنتك الآن</h2>
 
-                <form className="row g-3 align-items-center tracking-form">
+                <form className="row g-3 align-items-center home-hero-tracking-form">
                   <div className="col-12 col-md-8">
                     <input
                       type="text"
-                      className="form-control form-control-lg tracking-input"
+                      className="form-control form-control-lg home-hero-tracking-input"
                       placeholder="أدخل رقم التتبع"
                       aria-label="أدخل رقم التتبع"
                     />
@@ -65,7 +65,7 @@ const HeroSection = () => {
                   <div className="col-12 col-md-4">
                     <button
                       type="button"
-                      className="btn btn-primary btn-lg w-100 tracking-button d-inline-flex align-items-center justify-content-center gap-2"
+                      className="btn btn-primary btn-lg w-100 home-hero-tracking-button d-inline-flex align-items-center justify-content-center gap-2"
                     >
                       <span>تتبع الآن</span>
                       <svg

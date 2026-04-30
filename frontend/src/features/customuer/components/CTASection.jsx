@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const CTASection = () => {
   return (
-    <section className="cta-section" dir="rtl">
+    <section className="home-cta-section" dir="rtl">
       <div className="container-fluid px-0">
         <div className="cta-section__surface text-center d-flex align-items-center justify-content-center">
           <div className="container">

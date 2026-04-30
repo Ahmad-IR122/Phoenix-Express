@@ -89,10 +89,10 @@ const ForgotPasswordPage = () => {
 
         <div className="forgot-password-card shadow-sm">
           <div className="text-center mb-4">
-            <h2 className="main-title mb-2">
+            <h2 className="forgot-password-main-title mb-2">
               {step === 1 ? "نسيت كلمة المرور؟" : "رمز التحقق"}
             </h2>
-            <p className="sub-title text-muted">
+            <p className="forgot-password-subtitle text-muted">
               {step === 1
                 ? "أدخل رقم هاتفك وسنرسل لك رمز التحقق"
                 : `أدخل الرمز المرسل إلى ${phone}`}
@@ -109,7 +109,7 @@ const ForgotPasswordPage = () => {
 
                 <input
                   type="tel"
-                  className="form-control custom-input text-start"
+                  className="form-control forgot-password-input text-start"
                   placeholder="05xxxxxxxx"
                   dir="ltr"
                   value={phone}
@@ -133,7 +133,7 @@ const ForgotPasswordPage = () => {
 
                 <input
                   type="text"
-                  className="form-control custom-input text-center code-input"
+                  className="form-control forgot-password-input text-center code-input"
                   placeholder="123456"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
@@ -150,7 +150,7 @@ const ForgotPasswordPage = () => {
 
                 <input
                   type="password"
-                  className="form-control custom-input"
+                  className="form-control forgot-password-input"
                   placeholder="••••••••"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
@@ -182,7 +182,7 @@ const ForgotPasswordPage = () => {
             </form>
           )}
 
-          <div className="modern-divider my-4">
+          <div className="forgot-password-divider my-4">
             <span>أو</span>
           </div>
 
@@ -196,7 +196,7 @@ const ForgotPasswordPage = () => {
         </div>
 
         <div className="support-footer text-center mt-4 text-white">
-          <p className="mb-0 small-help">هل تحتاج مساعدة؟</p>
+          <p className="mb-0 forgot-password-help">هل تحتاج مساعدة؟</p>
           <p className="phone-num-small">+970 123 456 789</p>
         </div>
       </div>
