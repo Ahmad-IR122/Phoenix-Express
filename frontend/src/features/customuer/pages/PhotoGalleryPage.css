@@ -1,0 +1,221 @@
+/* ===== GENERAL ===== */
+.photo-gallery-page {
+    direction: rtl;
+    font-family: 'Cairo', sans-serif;
+    background-color: #fcfcfc;
+    overflow-x: hidden;
+}
+
+/* ===== HEADER ===== */
+.section-header .gallery-main-title {
+    font-weight: 900;
+    color: #38B6FF;
+    margin-bottom: 8px;
+}
+
+.section-header .gallery-subtitle {
+    color: #777;
+    font-size: 1.1rem;
+}
+
+/* ===== GALLERY ===== */
+.gallery-card {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    cursor: pointer;
+}
+
+.img-zoom-container {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+}
+
+.img-zoom-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 20px;
+    color: #fff;
+    text-align: right;
+}
+
+.overlay-title {
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.overlay-desc {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin: 0;
+}
+
+/* Hover */
+@media (hover: hover) {
+    .gallery-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .gallery-card:hover img {
+        transform: scale(1.08);
+    }
+}
+
+/* ===== INFO CARDS ===== */
+.info-section-row {
+    margin-top: 80px !important;
+}
+
+.info-card {
+    width: 100%;
+    padding: 40px;
+    border-radius: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: 0.4s;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Hover */
+@media (hover: hover) {
+    .info-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* ===== BLUE CARD ===== */
+.team-card {
+    background-color: #38B6FF;
+    color: #fff;
+}
+
+.team-card .info-title {
+    font-weight: 800;
+    font-size: 1.9rem;
+    margin-bottom: 20px;
+}
+
+.team-card .info-text {
+    line-height: 1.8;
+    font-size: 1rem;
+    margin-bottom: 30px;
+}
+
+
+/* ===== WHITE CARD ===== */
+.coverage-card {
+    background: #fff;
+}
+
+.blue-text {
+    color: #38B6FF;
+    font-weight: 800;
+    font-size: 1.9rem;
+    margin-bottom: 20px;
+}
+
+.gray-text {
+    color: #666;
+    line-height: 1.8;
+    margin-bottom: 25px;
+}
+
+.coverage-list {
+    list-style: none;
+    padding: 0;
+    margin-top: auto;
+}
+
+.coverage-list li {
+    position: relative;
+    padding-right: 28px;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.coverage-list li::before {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background-color: #38B6FF;
+    border-radius: 50%;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 767px) {
+    .stats-row {
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .stat-number {
+        font-size: 1rem;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+    }
+}
+
+/* ===== FINAL OVERRIDE FOR STATS ===== */
+
+.team-card .stats-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 18px;
+    margin-top: 16px;
+    direction: rtl;
+}
+
+.team-card .stat-item {
+    min-width: 50px;
+    text-align: center;
+    position: relative;
+}
+
+.team-card .stat-number {
+    display: block;
+    font-size: 1.95rem !important;
+    font-weight: 800;
+    color: #fff !important;
+    line-height: 1;
+}
+
+.team-card .stat-label {
+    display: block;
+    font-size: 1.68rem !important;
+    margin-top: 4px;
+    color: #fff !important;
+    opacity: 0.95 !important;
+}
+
+.team-card .stat-item:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: -9px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.35);
+}
