@@ -5,15 +5,6 @@
     --bg-gray: #F1F3F6;
 }
 
-body,
-html {
-    margin: 0;
-    padding: 0;
-    font-family: 'Cairo', sans-serif;
-    background-color: var(--phoenix-blue);
-    min-height: 100vh;
-}
-
 .auth-screen {
     min-height: 100vh;
     display: flex;
@@ -21,6 +12,8 @@ html {
     align-items: center;
     justify-content: center;
     padding: 30px 20px;
+    font-family: 'Cairo', sans-serif;
+    background-color: var(--phoenix-blue);
 }
 
 .white-logo-box {

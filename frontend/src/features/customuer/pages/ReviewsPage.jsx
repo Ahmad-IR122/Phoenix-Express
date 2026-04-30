@@ -43,18 +43,18 @@ const ReviewsPage = () => {
         <section className="stats-section mb-5">
           <div className="stats-card shadow-sm text-center">
             <Row className="align-items-center">
-              <Col md={4} className="stat-item">
-                <div className="stat-number">4.8</div>
+              <Col md={4} className="reviews-stat-item">
+                <div className="reviews-stat-number">4.8</div>
                 <div className="stat-stars">{renderStars(5)}</div>
-                <div className="stat-label">متوسط التقييم</div>
+                <div className="reviews-stat-label">متوسط التقييم</div>
               </Col>
-              <Col md={4} className="stat-item border-start-end">
-                <div className="stat-number">6</div>
-                <div className="stat-label">تقييم</div>
+              <Col md={4} className="reviews-stat-item border-start-end">
+                <div className="reviews-stat-number">6</div>
+                <div className="reviews-stat-label">تقييم</div>
               </Col>
-              <Col md={4} className="stat-item">
-                <div className="stat-number">98%</div>
-                <div className="stat-label">نسبة الرضا</div>
+              <Col md={4} className="reviews-stat-item">
+                <div className="reviews-stat-number">98%</div>
+                <div className="reviews-stat-label">نسبة الرضا</div>
               </Col>
             </Row>
           </div>
@@ -87,12 +87,12 @@ const ReviewsPage = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="cta-section mb-5">
-          <div className="cta-box text-center p-5 shadow">
-            <h2 className="cta-title mb-3">شارك رأيك معنا!</h2>
-            <p className="cta-subtitle mb-4">هل استخدمت خدماتنا؟ نحب أن نسمع رأيك وتجربتك معنا</p>
+        <section className="reviews-cta-section mb-5">
+          <div className="reviews-cta-box text-center p-5 shadow">
+            <h2 className="reviews-cta-title mb-3">شارك رأيك معنا!</h2>
+            <p className="reviews-cta-subtitle mb-4">هل استخدمت خدماتنا؟ نحب أن نسمع رأيك وتجربتك معنا</p>
             <Button
-              className="btn-leave-review rounded-pill px-5"
+              className="reviews-btn-leave rounded-pill px-5"
               onClick={() => setShowReviewModal(true)}
             >
               اترك تقييمك
@@ -101,7 +101,7 @@ const ReviewsPage = () => {
         </section>
 
         {/* Features Section */}
-        <section className="features-section pb-5">
+        <section className="reviews-features-section pb-5">
           <Row className="g-4">
             {features.map((feat, idx) => (
               <Col key={idx} md={4}>

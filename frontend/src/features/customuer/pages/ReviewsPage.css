@@ -49,14 +49,14 @@
     box-shadow: var(--shadow-soft) !important;
 }
 
-.stat-number {
+.reviews-stat-number {
     font-size: 48px;
     font-weight: 900;
     color: var(--primary-blue);
     line-height: 1;
 }
 
-.stat-label {
+.reviews-stat-label {
     font-weight: 800;
     color: var(--text-dark);
     margin-top: 12px;
@@ -218,11 +218,11 @@
     color: var(--text-muted);
 }
 
-.cta-section {
+.reviews-cta-section {
     margin: 78px auto 70px;
 }
 
-.cta-box {
+.reviews-cta-box {
     background: linear-gradient(135deg, var(--primary-blue), #2ca3ea);
     border-radius: 24px;
     color: white;
@@ -232,17 +232,17 @@
     box-shadow: 0 18px 38px rgba(56, 182, 255, 0.25) !important;
 }
 
-.cta-title {
+.reviews-cta-title {
     font-size: 34px;
     font-weight: 900;
 }
 
-.cta-subtitle {
+.reviews-cta-subtitle {
     font-size: 20px;
     opacity: 0.95;
 }
 
-.btn-leave-review {
+.reviews-btn-leave {
     background-color: white !important;
     color: var(--primary-blue) !important;
     border: none !important;
@@ -252,12 +252,12 @@
     transition: var(--transition);
 }
 
-.btn-leave-review:hover {
+.reviews-btn-leave:hover {
     transform: translateY(-3px);
     background-color: #f8fafc !important;
 }
 
-.features-section {
+.reviews-features-section {
     max-width: 950px;
     margin: 0 auto;
     background: transparent;
@@ -334,11 +334,11 @@
         line-height: 1;
     }
 
-    .cta-title {
+    .reviews-cta-title {
         font-size: 26px;
     }
 
-    .cta-subtitle {
+    .reviews-cta-subtitle {
         font-size: 16px;
     }
 

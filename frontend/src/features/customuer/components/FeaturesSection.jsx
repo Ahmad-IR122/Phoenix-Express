@@ -80,15 +80,15 @@ const features = [
 
 const FeaturesSection = () => {
   return (
-    <section className="features-section py-5" dir="rtl">
+    <section className="home-features-section" dir="rtl">
       <div className="container py-lg-4">
         <div className="row g-4 justify-content-center">
           {features.map((feature) => (
             <div className="col-12 col-sm-6 col-lg-3" key={feature.title}>
-              <article className="feature-card text-center h-100">
-                <div className="feature-icon mx-auto mb-4">{feature.icon}</div>
-                <h3 className="feature-title mb-2">{feature.title}</h3>
-                <p className="feature-description mb-0">
+              <article className="home-feature-card text-center h-100">
+                <div className="home-feature-icon mx-auto mb-4">{feature.icon}</div>
+                <h3 className="home-feature-title mb-2">{feature.title}</h3>
+                <p className="home-feature-description mb-0">
                   {feature.description}
                 </p>
               </article>
