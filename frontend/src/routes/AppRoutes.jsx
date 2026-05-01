@@ -30,6 +30,7 @@ import OrdersPage from "../features/employee/pages/OrdersPage";
 import PaymentPage from "../features/employee/pages/PaymentPage";
 import ProfilePage from "../features/employee/pages/ProfilePage";
 import PageNotFound from "../pages/pageNotFound";
+import OrderConfirmation from "../features/customuer/pages/OrderConfirmation";
 export default function AppRoutes() {
   return (
     <BrowserRouter>
@@ -51,6 +52,7 @@ export default function AppRoutes() {
             path="/request-service"
             element={<Navigate to="/request-delivery" replace />}
           />
+          <Route path="/order-confirmation" element={<OrderConfirmation />} />  
         </Route>
 
         {/* Auth routes */}

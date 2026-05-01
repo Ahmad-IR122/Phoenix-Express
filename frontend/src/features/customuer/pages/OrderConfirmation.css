@@ -1,0 +1,243 @@
+.phoenix-order-confirmation {
+  background-color: #f4f6f8;
+  font-family: "Cairo", "Segoe UI", sans-serif;
+}
+
+.phoenix-order-confirmation__shell {
+  max-width: 1440px;
+}
+
+.phoenix-order-confirmation__title {
+  color: #38b6ff;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.phoenix-order-confirmation__subtitle {
+  color: #4c5f78;
+  font-size: 16px;
+}
+
+.phoenix-order-confirmation__fallback-alert {
+  border-radius: 1rem;
+  font-weight: 600;
+}
+
+.phoenix-order-confirmation__card,
+.phoenix-order-confirmation__summary-card {
+  border-radius: 1.75rem;
+  background-color: #ffffff;
+  box-shadow: 0 18px 45px rgba(38, 56, 88, 0.12);
+}
+
+.phoenix-order-confirmation__info-box {
+  border-radius: 1.4rem;
+  background-color: #e8f1fb;
+  padding: 2rem;
+}
+
+.phoenix-order-confirmation__card-title {
+  color: #111827;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.phoenix-order-confirmation__info-icon {
+  color: #38b6ff;
+  font-size: 1.9rem;
+  line-height: 1;
+}
+
+.phoenix-order-confirmation__info-text {
+  color: #3f516a;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.phoenix-order-confirmation__button {
+  min-height: 3.85rem;
+  min-width: 7.75rem;
+  border-radius: 1rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  padding: 0.85rem 2rem;
+}
+
+.phoenix-order-confirmation__button--primary {
+  border: 0;
+  background-color: #38b6ff;
+  color: #ffffff;
+}
+
+.phoenix-order-confirmation__button--primary:hover,
+.phoenix-order-confirmation__button--primary:focus {
+  background-color: #21a8f5;
+  color: #ffffff;
+}
+
+.phoenix-order-confirmation__button--secondary {
+  border: 1px solid #cfd8e3;
+  background-color: #ffffff;
+  color: #111827;
+}
+
+.phoenix-order-confirmation__button--secondary:hover,
+.phoenix-order-confirmation__button--secondary:focus {
+  background-color: #f8fafc;
+  color: #111827;
+}
+
+.phoenix-order-confirmation__summary-title {
+  color: #38b6ff;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.phoenix-order-confirmation__summary-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem 1.5rem;
+  align-items: center;
+}
+
+.phoenix-order-confirmation__summary-label {
+  color: #617287;
+  font-size: 16px;
+}
+
+.phoenix-order-confirmation__summary-label--large {
+  font-size: 16px;
+}
+
+.phoenix-order-confirmation__summary-value {
+  color: #111827;
+  font-size: 16px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.phoenix-order-confirmation__summary-value--danger,
+.phoenix-order-confirmation__fragile {
+  color: #e11d48;
+}
+
+.phoenix-order-confirmation__fragile {
+  font-weight: 800;
+}
+
+.phoenix-order-confirmation__divider {
+  margin: 1.6rem 0;
+  border-color: #dbe2ea;
+}
+
+.phoenix-order-confirmation__summary-amount {
+  color: #475569;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.phoenix-order-confirmation__collection-label {
+  color: #111827;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.phoenix-order-confirmation__collection-amount {
+  color: #38b6ff;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.phoenix-order-confirmation__button:disabled {
+  opacity: 0.92;
+  cursor: not-allowed;
+}
+
+.phoenix-order-confirmation__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1080;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(245, 247, 250, 0.9);
+  backdrop-filter: blur(2px);
+}
+
+.phoenix-order-confirmation__modal-card {
+  width: min(100%, 400px);
+  border-radius: 1.75rem;
+  background: #ffffff;
+  box-shadow: 0 20px 55px rgba(38, 56, 88, 0.18);
+  padding: 3.5rem 2rem 3rem;
+}
+
+.phoenix-order-confirmation__success-icon {
+  width: 7.625rem;
+  height: 7.625rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #08c84f;
+}
+
+.phoenix-order-confirmation__success-check {
+  color: #ffffff;
+  font-size: 4rem;
+  line-height: 1;
+}
+
+.phoenix-order-confirmation__success-title {
+  color: #08c84f;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.phoenix-order-confirmation__success-text {
+  color: #3f516a;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.phoenix-order-confirmation__success-tracking {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+@media (max-width: 991.98px) {
+  .phoenix-order-confirmation__shell {
+    max-width: 960px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .phoenix-order-confirmation__card,
+  .phoenix-order-confirmation__summary-card {
+    border-radius: 1.4rem;
+  }
+
+  .phoenix-order-confirmation__info-box {
+    padding: 1.25rem;
+  }
+
+  .phoenix-order-confirmation__button {
+    width: 100%;
+  }
+
+  .phoenix-order-confirmation__modal-card {
+    padding: 2.75rem 1.5rem 2.25rem;
+  }
+
+  .phoenix-order-confirmation__success-icon {
+    width: 6.5rem;
+    height: 6.5rem;
+  }
+
+  .phoenix-order-confirmation__success-check {
+    font-size: 3.3rem;
+  }
+}

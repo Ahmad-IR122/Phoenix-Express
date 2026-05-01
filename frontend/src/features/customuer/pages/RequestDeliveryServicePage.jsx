@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./RequestDeliveryServicePage.css";
 
 const deliveryRegionOptions = [
@@ -6,20 +7,13 @@ const deliveryRegionOptions = [
   { value: "jerusalem", label: "القدس", price: 30 },
   { value: "inside", label: "الداخل", price: 70 },
 ];
-const orderSize = [
-  {
-    value: "small",
-    label: "صغير",
-  },
-  {
-    value: "medium",
-    label: "متوسط",
-  },
-  {
-    value: "large",
-    label: "كبير",
-  },
+
+const orderSizeOptions = [
+  { value: "small", label: "صغير" },
+  { value: "medium", label: "متوسط" },
+  { value: "large", label: "كبير" },
 ];
+
 const parcelStatusOptions = [
   { value: "normal", label: "عادي" },
   { value: "urgent", label: "عاجل" },
@@ -27,15 +21,49 @@ const parcelStatusOptions = [
 ];
 
 const RequestDeliveryServicePage = () => {
-  const [selectedRegion, setSelectedRegion] = useState("");
-  const [selectedOrderSize, setSelectedOrderSize] = useState("");
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    selectedRegion: "",
+    originalCity: "",
+    destinationCity: "",
+    senderName: "",
+    senderPhone: "",
+    senderAddress: "",
+    receiverName: "",
+    receiverPhone: "",
+    receiverAddress: "",
+    orderStatus: "normal",
+    orderSize: "",
+    isFragile: false,
+    orderPrice: "",
+    orderDescription: "",
+  });
+
+  const handleChange = (field, value) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [field]: value,
+    }));
+  };
 
   const selectedRegionDetails = useMemo(
     () =>
-      deliveryRegionOptions.find((region) => region.value === selectedRegion) ||
-      null,
-    [selectedRegion],
+      deliveryRegionOptions.find(
+        (region) => region.value === formData.selectedRegion,
+      ) || null,
+    [formData.selectedRegion],
   );
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    navigate("/order-confirmation", {
+      state: {
+        ...formData,
+        deliveryRegionLabel: selectedRegionDetails?.label || "",
+        deliveryAmount: selectedRegionDetails?.price || 0,
+      },
+    });
+  };
 
   return (
     <div className="request-delivery-service-page min-vh-100 py-5" dir="rtl">
@@ -52,22 +80,23 @@ const RequestDeliveryServicePage = () => {
 
           <div className="card border-0 request-delivery-service-page__card">
             <div className="card-body p-4 p-md-5">
-              <form>
+              <form onSubmit={handleSubmit}>
                 <div className="row g-4">
                   <div className="col-12">
                     <label
                       htmlFor="delivery-region"
                       className="form-label request-delivery-service-page__label"
                     >
-                      <i class="bi bi-geo-alt"></i>  المنطقة 
+                      <i className="bi bi-geo-alt"></i> المنطقة
                     </label>
                     <select
                       id="delivery-region"
                       className="form-select request-delivery-service-page__input"
-                      value={selectedRegion}
+                      value={formData.selectedRegion}
                       onChange={(event) =>
-                        setSelectedRegion(event.target.value)
+                        handleChange("selectedRegion", event.target.value)
                       }
+                      required
                     >
                       <option value="" disabled>
                         اختر المنطقة
@@ -103,6 +132,11 @@ const RequestDeliveryServicePage = () => {
                       type="text"
                       className="form-control request-delivery-service-page__input"
                       placeholder="أدخل المدينة الأصل"
+                      value={formData.originalCity}
+                      onChange={(event) =>
+                        handleChange("originalCity", event.target.value)
+                      }
+                      required
                     />
                   </div>
 
@@ -118,12 +152,17 @@ const RequestDeliveryServicePage = () => {
                       type="text"
                       className="form-control request-delivery-service-page__input"
                       placeholder="أدخل مدينة الوصول"
+                      value={formData.destinationCity}
+                      onChange={(event) =>
+                        handleChange("destinationCity", event.target.value)
+                      }
+                      required
                     />
                   </div>
 
                   <div className="col-12">
                     <h2 className="request-delivery-service-page__section-title mb-0">
-                    <i class="bi bi-person"></i>  معلومات المرسل 
+                      <i className="bi bi-person"></i> معلومات المرسل
                     </h2>
                   </div>
 
@@ -139,6 +178,11 @@ const RequestDeliveryServicePage = () => {
                       type="text"
                       className="form-control request-delivery-service-page__input"
                       placeholder="أدخل اسم المرسل"
+                      value={formData.senderName}
+                      onChange={(event) =>
+                        handleChange("senderName", event.target.value)
+                      }
+                      required
                     />
                   </div>
 
@@ -154,12 +198,37 @@ const RequestDeliveryServicePage = () => {
                       type="tel"
                       className="form-control request-delivery-service-page__input"
                       placeholder="أدخل رقم الهاتف"
+                      value={formData.senderPhone}
+                      onChange={(event) =>
+                        handleChange("senderPhone", event.target.value)
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="col-12">
+                    <label
+                      htmlFor="sender-address"
+                      className="form-label request-delivery-service-page__label"
+                    >
+                      عنوان المرسل
+                    </label>
+                    <input
+                      id="sender-address"
+                      type="text"
+                      className="form-control request-delivery-service-page__input"
+                      placeholder="أدخل عنوان المرسل"
+                      value={formData.senderAddress}
+                      onChange={(event) =>
+                        handleChange("senderAddress", event.target.value)
+                      }
+                      required
                     />
                   </div>
 
                   <div className="col-12">
                     <h2 className="request-delivery-service-page__section-title mb-0">
-                      <i class="bi bi-person"></i>  معلومات المستلم
+                      <i className="bi bi-person"></i> معلومات المستلم
                     </h2>
                   </div>
 
@@ -175,6 +244,10 @@ const RequestDeliveryServicePage = () => {
                       type="text"
                       className="form-control request-delivery-service-page__input"
                       placeholder="أدخل اسم المستلم"
+                      value={formData.receiverName}
+                      onChange={(event) =>
+                        handleChange("receiverName", event.target.value)
+                      }
                     />
                   </div>
 
@@ -190,6 +263,10 @@ const RequestDeliveryServicePage = () => {
                       type="tel"
                       className="form-control request-delivery-service-page__input"
                       placeholder="أدخل رقم الهاتف"
+                      value={formData.receiverPhone}
+                      onChange={(event) =>
+                        handleChange("receiverPhone", event.target.value)
+                      }
                     />
                   </div>
 
@@ -205,12 +282,16 @@ const RequestDeliveryServicePage = () => {
                       type="text"
                       className="form-control request-delivery-service-page__input"
                       placeholder="أدخل عنوان المستلم"
+                      value={formData.receiverAddress}
+                      onChange={(event) =>
+                        handleChange("receiverAddress", event.target.value)
+                      }
                     />
                   </div>
 
                   <div className="col-12">
                     <h2 className="request-delivery-service-page__section-title mb-0">
-                    <i class="bi bi-box-seam"></i>  تفاصيل الطرد
+                      <i className="bi bi-box-seam"></i> تفاصيل الطرد
                     </h2>
                   </div>
 
@@ -224,14 +305,15 @@ const RequestDeliveryServicePage = () => {
                     <select
                       id="parcel-size"
                       className="form-select request-delivery-service-page__input"
-                      defaultValue=""
-                      value={selectedOrderSize}
-                      onChange={(e) => setSelectedOrderSize(e.target.value)}
+                      value={formData.orderSize}
+                      onChange={(event) =>
+                        handleChange("orderSize", event.target.value)
+                      }
                     >
                       <option value="" disabled>
                         اختر حجم الطرد
                       </option>
-                      {orderSize.map((size) => (
+                      {orderSizeOptions.map((size) => (
                         <option key={size.value} value={size.value}>
                           {size.label}
                         </option>
@@ -249,7 +331,10 @@ const RequestDeliveryServicePage = () => {
                     <select
                       id="parcel-status"
                       className="form-select request-delivery-service-page__input"
-                      defaultValue="normal"
+                      value={formData.orderStatus}
+                      onChange={(event) =>
+                        handleChange("orderStatus", event.target.value)
+                      }
                     >
                       {parcelStatusOptions.map((status) => (
                         <option key={status.value} value={status.value}>
@@ -258,6 +343,7 @@ const RequestDeliveryServicePage = () => {
                       ))}
                     </select>
                   </div>
+
                   <div className="col-12 col-md-6">
                     <label
                       htmlFor="parcel-price"
@@ -271,16 +357,23 @@ const RequestDeliveryServicePage = () => {
                       min="0"
                       className="form-control request-delivery-service-page__input"
                       placeholder="أدخل سعر الطرد بالشيكل"
+                      value={formData.orderPrice}
+                      onChange={(event) =>
+                        handleChange("orderPrice", event.target.value)
+                      }
                     />
                   </div>
 
                   <div className="col-12 col-md-6">
-                    
                     <div className="request-delivery-service-page__checkbox-wrap form-check">
                       <input
                         id="parcel-fragile"
                         type="checkbox"
                         className="form-check-input request-delivery-service-page__checkbox-input"
+                        checked={formData.isFragile}
+                        onChange={(event) =>
+                          handleChange("isFragile", event.target.checked)
+                        }
                       />
                       <label
                         htmlFor="parcel-fragile"
@@ -303,6 +396,10 @@ const RequestDeliveryServicePage = () => {
                       rows="4"
                       className="form-control request-delivery-service-page__input request-delivery-service-page__textarea"
                       placeholder="أدخل وصفاً مختصراً للطرد"
+                      value={formData.orderDescription}
+                      onChange={(event) =>
+                        handleChange("orderDescription", event.target.value)
+                      }
                     />
                   </div>
 
@@ -311,6 +408,7 @@ const RequestDeliveryServicePage = () => {
                       <button
                         type="button"
                         className="btn request-delivery-service-page__button request-delivery-service-page__button--secondary"
+                        onClick={() => navigate(-1)}
                       >
                         رجوع
                       </button>

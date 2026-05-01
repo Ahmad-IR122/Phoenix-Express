@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import "../../../styles/TrackingPage.css";
 
 const searchIcon = (
@@ -45,24 +46,53 @@ const packageIcon = (
 );
 
 const TrackingPage = () => {
+  const location = useLocation();
+  const trackingNumberFromState = location.state?.trackingNumber || "";
+  const [trackingNumber, setTrackingNumber] = useState(trackingNumberFromState);
+
+  const confirmationMessage = useMemo(() => {
+    if (!location.state?.orderConfirmed || !trackingNumberFromState) {
+      return null;
+    }
+
+    return `تم إنشاء الطلب بنجاح. رقم التتبع الخاص بك هو ${trackingNumberFromState}`;
+  }, [location.state, trackingNumberFromState]);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+  };
+
   return (
     <div className="tracking-page bg-light min-vh-100" dir="rtl">
-
       <main className="container py-5">
         <section className="mx-auto text-center tracking-shell">
           <header className="mb-4 mb-md-5">
             <h1 className="fw-bold tracking-title mb-3">تتبع الشحنة</h1>
-            <p className="tracking-subtitle mb-0">تتبع موقع طردك في الوقت الفعلي</p>
+            <p className="tracking-subtitle mb-0">
+              تتبع موقع طردك في الوقت الفعلي
+            </p>
           </header>
+
+          {confirmationMessage ? (
+            <div className="alert alert-success text-center mb-4" role="alert">
+              {confirmationMessage}
+            </div>
+          ) : null}
 
           <div className="card border-0 tracking-search-card mx-auto">
             <div className="card-body p-3 p-md-4">
-              <form className="d-flex flex-column flex-md-row gap-3 align-items-stretch">
+              <form
+                className="d-flex flex-column flex-md-row gap-3 align-items-stretch"
+                onSubmit={handleSubmit}
+              >
                 <input
                   type="text"
                   className="form-control form-control-lg tracking-input flex-grow-1"
                   placeholder="أدخل رقم التتبع مثال: PH12345ABC"
                   aria-label="رقم التتبع"
+                  value={trackingNumber}
+                  onChange={(event) => setTrackingNumber(event.target.value)}
+                  dir="ltr"
                 />
                 <button
                   type="submit"
@@ -77,7 +107,9 @@ const TrackingPage = () => {
 
           <div className="tracking-empty-state text-center mx-auto">
             <div className="tracking-empty-icon mb-3">{packageIcon}</div>
-            <p className="tracking-empty-text mb-0">أدخل رقم التتبع للبحث عن شحنتك</p>
+            <p className="tracking-empty-text mb-0">
+              أدخل رقم التتبع للبحث عن شحنتك
+            </p>
           </div>
         </section>
       </main>
