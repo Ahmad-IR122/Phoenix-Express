@@ -1,629 +1,983 @@
-import React, { useState } from "react";
-import "./profilePage.css";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import './profilePage.css';
+import {
+  changeAccountPassword,
+  createEmployeeDocument,
+  deleteEmployeeDocument,
+  getEmployeeProfile,
+  updateEmployeeDocument,
+  updateEmployeeProfile,
+  updateEmployeeVehicle,
+} from '../services/employeeService';
 
-const initialProfile = {
-  fullName: "أحمد محمد",
-  jobTitle: "موظف توصيل",
-  phone: "0599 123 456",
-  email: "ahmad.driver@phoenix.ps",
-  address: "نابلس - رفيديا - شارع الجامعة",
-  vehicleType: "دراجة نارية",
-  licenseNumber: "DL-44291",
-  plateNumber: "21-845-7",
-  avatarInitials: "أم",
+const DOCUMENT_TONE_MAP = {
+  valid: 'valid',
+  expiring_soon: 'warning',
+  expired: 'expired',
 };
 
-const initialDocuments = [
-  {
-    id: 1,
-    name: "رخصة القيادة",
-    expiryDate: "2026-12-18",
-    status: "سارية",
-    tone: "valid",
-    fileName: "driving-license.pdf",
-  },
-  {
-    id: 2,
-    name: "تأمين المركبة",
-    expiryDate: "2026-05-08",
-    status: "تنتهي قريبًا",
-    tone: "warning",
-    fileName: "vehicle-insurance.pdf",
-  },
-  {
-    id: 3,
-    name: "الهوية الشخصية",
-    expiryDate: "2025-11-02",
-    status: "منتهية",
-    tone: "expired",
-    fileName: "national-id.pdf",
-  },
+const DOCUMENT_TYPE_OPTIONS = [
+  { value: 'driving_license', label: 'رخصة قيادة' },
+  { value: 'vehicle_license', label: 'رخصة مركبة' },
+  { value: 'vehicle_insurance', label: 'تأمين المركبة' },
+  { value: 'national_id', label: 'الهوية الوطنية' },
 ];
 
-const getDocumentStatus = (expiryDate) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+const DOCUMENT_TYPES_WITH_EXPIRY = [
+  'driving_license',
+  'vehicle_license',
+  'vehicle_insurance',
+];
 
-  const expiry = new Date(expiryDate);
-  expiry.setHours(0, 0, 0, 0);
-
-  const diffDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 0) {
-    return { status: "منتهية", tone: "expired" };
-  }
-
-  if (diffDays <= 30) {
-    return { status: "تنتهي قريبًا", tone: "warning" };
-  }
-
-  return { status: "سارية", tone: "valid" };
+const EMPTY_DOCUMENT_FORM = {
+  document_type: 'driving_license',
+  expiry_date: '',
+  file: null,
+  file_name: '',
+  file_data: '',
 };
 
-function EmployeeProfilePage() {
-  const [profile, setProfile] = useState(initialProfile);
-  const [draftProfile, setDraftProfile] = useState(initialProfile);
-  const [documents, setDocuments] = useState(initialDocuments);
-  const [isPersonalEditing, setIsPersonalEditing] = useState(false);
-  const [isVehicleEditing, setIsVehicleEditing] = useState(false);
-  const [isPasswordOpen, setIsPasswordOpen] = useState(false);
-  const [activeDocumentId, setActiveDocumentId] = useState(null);
-  const [documentDraft, setDocumentDraft] = useState({
-    name: "",
-    expiryDate: "",
-    file: null,
+const mapProfileToForms = (data) => ({
+  personal: {
+    full_name: data?.employee?.fullName || '',
+    phone: data?.employee?.phone || '',
+    email: data?.employee?.email || '',
+    address: data?.employee?.address || '',
+  },
+  vehicle: {
+    type: data?.vehicle?.type || '',
+    brand: data?.vehicle?.brand || '',
+    model: data?.vehicle?.model || '',
+    color: data?.vehicle?.color || '',
+    year: data?.vehicle?.year || '',
+    plate_number: data?.vehicle?.plateNumber || '',
+    vehicle_photo_url: data?.vehicle?.vehiclePhotoUrl || '',
+  },
+});
+
+const readFileAsDataUrl = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('تعذر قراءة الملف المحدد.'));
+    reader.readAsDataURL(file);
   });
-  const [newDocumentDraft, setNewDocumentDraft] = useState({
-    name: "",
-    expiryDate: "",
-    file: null,
-  });
-  const [documentMessage, setDocumentMessage] = useState("");
-  const [passwordDraft, setPasswordDraft] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-  const [passwordMessage, setPasswordMessage] = useState("");
-  const [passwordError, setPasswordError] = useState("");
 
-  const personalFields = [
-    { key: "phone", label: "رقم الهاتف", icon: "bi-telephone" },
-    { key: "email", label: "البريد الإلكتروني", icon: "bi-envelope" },
-    { key: "address", label: "العنوان", icon: "bi-geo-alt" },
-  ];
+function DocumentUploader({
+  form,
+  onChange,
+  inputRef,
+  title,
+  submitLabel,
+  onSubmit,
+  onCancel,
+  isSubmitting,
+}) {
+  const shouldShowExpiry = DOCUMENT_TYPES_WITH_EXPIRY.includes(form.document_type);
 
-  const vehicleFields = [
-    { key: "vehicleType", label: "نوع المركبة", icon: "bi-truck" },
-    { key: "licenseNumber", label: "رقم الرخصة", icon: "bi-card-text" },
-    { key: "plateNumber", label: "رقم اللوحة", icon: "bi-upc-scan" },
-  ];
+  const handleFiles = async (files) => {
+    const selectedFile = files?.[0];
+    if (!selectedFile) return;
 
-  const handleDraftChange = (key, value) => {
-    setDraftProfile((current) => ({
-      ...current,
-      [key]: value,
-    }));
-  };
-
-  const startEdit = (section) => {
-    setDraftProfile(profile);
-    if (section === "personal") {
-      setIsPersonalEditing(true);
-    }
-    if (section === "vehicle") {
-      setIsVehicleEditing(true);
-    }
-  };
-
-  const cancelEdit = (section) => {
-    setDraftProfile(profile);
-    if (section === "personal") {
-      setIsPersonalEditing(false);
-    }
-    if (section === "vehicle") {
-      setIsVehicleEditing(false);
-    }
-  };
-
-  const saveEdit = (section, keys) => {
-    setProfile((current) => {
-      const nextProfile = { ...current };
-      keys.forEach((key) => {
-        nextProfile[key] = draftProfile[key];
-      });
-      return nextProfile;
-    });
-
-    if (section === "personal") {
-      setIsPersonalEditing(false);
-    }
-    if (section === "vehicle") {
-      setIsVehicleEditing(false);
-    }
-  };
-
-  const startDocumentEdit = (document) => {
-    setActiveDocumentId(document.id);
-    setDocumentDraft({
-      name: document.name,
-      expiryDate: document.expiryDate,
-      file: null,
-    });
-    setDocumentMessage("");
-  };
-
-  const cancelDocumentEdit = () => {
-    setActiveDocumentId(null);
-    setDocumentDraft({
-      name: "",
-      expiryDate: "",
-      file: null,
+    const fileData = await readFileAsDataUrl(selectedFile);
+    onChange({
+      ...form,
+      file: selectedFile,
+      file_name: selectedFile.name,
+      file_data: fileData,
     });
   };
 
-  const saveDocumentEdit = (documentId) => {
-    if (!documentDraft.name || !documentDraft.expiryDate || !documentDraft.file) {
-      setDocumentMessage("لازم تعبئة اسم الوثيقة وتاريخ الانتهاء واختيار ملف للتحديث.");
-      return;
-    }
-
-    const nextStatus = getDocumentStatus(documentDraft.expiryDate);
-
-    setDocuments((current) =>
-      current.map((document) =>
-        document.id === documentId
-          ? {
-              ...document,
-              name: documentDraft.name,
-              expiryDate: documentDraft.expiryDate,
-              fileName: documentDraft.file.name,
-              status: nextStatus.status,
-              tone: nextStatus.tone,
-            }
-          : document
-      )
-    );
-
-    setDocumentMessage("تم تحديث الوثيقة وبياناتها بنجاح.");
-    cancelDocumentEdit();
-  };
-
-  const addNewDocument = () => {
-    if (!newDocumentDraft.name || !newDocumentDraft.expiryDate || !newDocumentDraft.file) {
-      setDocumentMessage("لرفع وثيقة جديدة يجب إدخال الاسم وتاريخ الانتهاء واختيار الملف.");
-      return;
-    }
-
-    const nextStatus = getDocumentStatus(newDocumentDraft.expiryDate);
-
-    setDocuments((current) => [
-      {
-        id: Date.now(),
-        name: newDocumentDraft.name,
-        expiryDate: newDocumentDraft.expiryDate,
-        fileName: newDocumentDraft.file.name,
-        status: nextStatus.status,
-        tone: nextStatus.tone,
-      },
-      ...current,
-    ]);
-
-    setNewDocumentDraft({
-      name: "",
-      expiryDate: "",
-      file: null,
-    });
-    setDocumentMessage("تم رفع الوثيقة الجديدة وإضافتها للقائمة.");
-  };
-
-  const handlePasswordChange = (key, value) => {
-    setPasswordDraft((current) => ({
-      ...current,
-      [key]: value,
-    }));
-  };
-
-  const handlePasswordSubmit = (event) => {
+  const handleDrop = async (event) => {
     event.preventDefault();
-    setPasswordError("");
-    setPasswordMessage("");
-
-    if (
-      !passwordDraft.currentPassword ||
-      !passwordDraft.newPassword ||
-      !passwordDraft.confirmPassword
-    ) {
-      setPasswordError("يرجى تعبئة جميع حقول كلمة المرور.");
-      return;
+    try {
+      await handleFiles(event.dataTransfer.files);
+    } catch {
+      onChange({
+        ...form,
+        file: null,
+        file_name: '',
+        file_data: '',
+      });
     }
-
-    if (passwordDraft.newPassword.length < 6) {
-      setPasswordError("كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل.");
-      return;
-    }
-
-    if (passwordDraft.newPassword !== passwordDraft.confirmPassword) {
-      setPasswordError("تأكيد كلمة المرور غير مطابق.");
-      return;
-    }
-
-    setPasswordDraft({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
-    setPasswordMessage("تم تحديث كلمة المرور بنجاح.");
-    setIsPasswordOpen(false);
   };
+
+  const handleChooseFile = async (event) => {
+    try {
+      await handleFiles(event.target.files);
+    } catch {
+      onChange({
+        ...form,
+        file: null,
+        file_name: '',
+        file_data: '',
+      });
+    }
+  };
+
+  return (
+    <form className="employee-profile-page__document-form" onSubmit={onSubmit}>
+      <h4 className="employee-profile-page__upload-title">{title}</h4>
+
+      <div className="employee-profile-page__form-grid">
+        <div className="employee-profile-page__field">
+          <p className="employee-profile-page__info-label">نوع الوثيقة</p>
+          <select
+            className="employee-profile-page__input"
+            value={form.document_type}
+            onChange={(event) =>
+              onChange({
+                ...form,
+                document_type: event.target.value,
+                expiry_date: DOCUMENT_TYPES_WITH_EXPIRY.includes(event.target.value)
+                  ? form.expiry_date
+                  : '',
+              })
+            }
+          >
+            {DOCUMENT_TYPE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {shouldShowExpiry ? (
+          <div className="employee-profile-page__field">
+            <p className="employee-profile-page__info-label">تاريخ الانتهاء</p>
+            <input
+              type="date"
+              className="employee-profile-page__input"
+              value={form.expiry_date}
+              onChange={(event) =>
+                onChange({
+                  ...form,
+                  expiry_date: event.target.value,
+                })
+              }
+            />
+          </div>
+        ) : null}
+
+        <div className="employee-profile-page__field employee-profile-page__field--wide">
+          <p className="employee-profile-page__info-label">ملف الوثيقة</p>
+          <div
+            className="employee-profile-page__upload-box"
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={handleDrop}
+          >
+            <input
+              ref={inputRef}
+              type="file"
+              className="employee-profile-page__input employee-profile-page__input--file"
+              style={{ display: 'none' }}
+              onChange={handleChooseFile}
+            />
+
+            <div className="employee-profile-page__empty-card" style={{ minHeight: 'auto' }}>
+              <i className="bi bi-cloud-arrow-up"></i>
+              <strong>{form.file_name || 'اسحب الملف هنا أو اختره من جهازك'}</strong>
+              <p>يمكنك رفع ملف جديد أو استبدال الملف الحالي مباشرة من هنا.</p>
+              <button
+                type="button"
+                className="employee-profile-page__section-link"
+                onClick={() => inputRef.current?.click()}
+              >
+                اختيار ملف
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="employee-profile-page__document-actions">
+        <button type="submit" className="employee-profile-page__upload-btn" disabled={isSubmitting}>
+          {isSubmitting ? 'جارٍ الحفظ...' : submitLabel}
+        </button>
+        {onCancel ? (
+          <button
+            type="button"
+            className="employee-profile-page__section-link employee-profile-page__section-link--ghost"
+            onClick={onCancel}
+          >
+            إلغاء
+          </button>
+        ) : null}
+      </div>
+    </form>
+  );
+}
+
+function EmployeeProfilePage() {
+  const [profileData, setProfileData] = useState(null);
+  const [forms, setForms] = useState(() => mapProfileToForms(null));
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [feedback, setFeedback] = useState({ message: '', type: '' });
+  const [editingPersonal, setEditingPersonal] = useState(false);
+  const [editingVehicle, setEditingVehicle] = useState(false);
+  const [showNewDocumentForm, setShowNewDocumentForm] = useState(false);
+  const [newDocumentForm, setNewDocumentForm] = useState(EMPTY_DOCUMENT_FORM);
+  const [editingDocumentId, setEditingDocumentId] = useState(null);
+  const [editingDocumentForm, setEditingDocumentForm] = useState(EMPTY_DOCUMENT_FORM);
+  const [savingSection, setSavingSection] = useState('');
+  const [deletingDocumentId, setDeletingDocumentId] = useState(null);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [passwordFeedback, setPasswordFeedback] = useState({ message: '', type: '' });
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const newDocumentInputRef = useRef(null);
+  const editDocumentInputRef = useRef(null);
+
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await getEmployeeProfile();
+      const nextData = response?.data || null;
+      setProfileData(nextData);
+      setForms(mapProfileToForms(nextData));
+    } catch (requestError) {
+      setError(
+        requestError?.response?.data?.message || 'تعذر تحميل بيانات الملف الشخصي حالياً.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  useEffect(() => {
+    if (feedback.type !== 'success' || !feedback.message) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setFeedback({ message: '', type: '' });
+    }, 2000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [feedback]);
+
+  useEffect(() => {
+    if (passwordFeedback.type !== 'success' || !passwordFeedback.message) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsPasswordModalOpen(false);
+      setPasswordFeedback({ message: '', type: '' });
+      setPasswordForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+    }, 2000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [passwordFeedback]);
+
+  const employee = useMemo(() => profileData?.employee || {}, [profileData?.employee]);
+  const vehicle = useMemo(() => profileData?.vehicle || {}, [profileData?.vehicle]);
+  const documents = profileData?.documents || [];
+
+  const startPersonalEdit = () => {
+    setForms(mapProfileToForms(profileData));
+    setEditingPersonal(true);
+    setFeedback({ message: '', type: '' });
+  };
+
+  const cancelPersonalEdit = () => {
+    setForms(mapProfileToForms(profileData));
+    setEditingPersonal(false);
+  };
+
+  const startVehicleEdit = () => {
+    setForms(mapProfileToForms(profileData));
+    setEditingVehicle(true);
+    setFeedback({ message: '', type: '' });
+  };
+
+  const cancelVehicleEdit = () => {
+    setForms(mapProfileToForms(profileData));
+    setEditingVehicle(false);
+  };
+
+  const handleFormChange = (section, field, value) => {
+    setForms((current) => ({
+      ...current,
+      [section]: {
+        ...current[section],
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleSavePersonal = async () => {
+    try {
+      setSavingSection('personal');
+      setFeedback({ message: '', type: '' });
+      const response = await updateEmployeeProfile({
+        full_name: forms.personal.full_name,
+        address: forms.personal.address,
+        phone: forms.personal.phone,
+        email: forms.personal.email,
+      });
+      const nextData = response?.data || null;
+      setProfileData(nextData);
+      setForms(mapProfileToForms(nextData));
+      setEditingPersonal(false);
+      setFeedback({ message: 'تم تحديث البيانات الشخصية بنجاح.', type: 'success' });
+    } catch (requestError) {
+      setFeedback({
+        message:
+          requestError?.response?.data?.message || 'تعذر تحديث البيانات الشخصية.',
+        type: 'error',
+      });
+    } finally {
+      setSavingSection('');
+    }
+  };
+
+  const handleSaveVehicle = async () => {
+    try {
+      setSavingSection('vehicle');
+      setFeedback({ message: '', type: '' });
+      const response = await updateEmployeeVehicle(forms.vehicle);
+      const nextData = response?.data || null;
+      setProfileData(nextData);
+      setForms(mapProfileToForms(nextData));
+      setEditingVehicle(false);
+      setFeedback({ message: 'تم تحديث بيانات المركبة بنجاح.', type: 'success' });
+    } catch (requestError) {
+      setFeedback({
+        message:
+          requestError?.response?.data?.message || 'تعذر تحديث بيانات المركبة.',
+        type: 'error',
+      });
+    } finally {
+      setSavingSection('');
+    }
+  };
+
+  const handleCreateDocument = async (event) => {
+    event.preventDefault();
+    if (!newDocumentForm.file_data) {
+      setFeedback({ message: 'يرجى اختيار ملف الوثيقة أولاً.', type: 'error' });
+      return;
+    }
+
+    try {
+      setSavingSection('new-document');
+      setFeedback({ message: '', type: '' });
+      const response = await createEmployeeDocument({
+        document_type: newDocumentForm.document_type,
+        expiry_date: DOCUMENT_TYPES_WITH_EXPIRY.includes(newDocumentForm.document_type)
+          ? newDocumentForm.expiry_date
+          : null,
+        file_url: newDocumentForm.file_data,
+      });
+      setProfileData(response?.data || null);
+      setNewDocumentForm(EMPTY_DOCUMENT_FORM);
+      setShowNewDocumentForm(false);
+      setFeedback({ message: 'تمت إضافة الوثيقة بنجاح.', type: 'success' });
+    } catch (requestError) {
+      setFeedback({
+        message: requestError?.response?.data?.message || 'تعذر إضافة الوثيقة.',
+        type: 'error',
+      });
+    } finally {
+      setSavingSection('');
+    }
+  };
+
+  const startEditingDocument = (document) => {
+    setEditingDocumentId(document.id);
+    setEditingDocumentForm({
+      document_type: document.documentType || 'driving_license',
+      expiry_date: document.expiryDate || '',
+      file: null,
+      file_name: '',
+      file_data: document.fileUrl || '',
+    });
+    setFeedback({ message: '', type: '' });
+  };
+
+  const cancelEditingDocument = () => {
+    setEditingDocumentId(null);
+    setEditingDocumentForm(EMPTY_DOCUMENT_FORM);
+  };
+
+  const handleUpdateDocument = async (event) => {
+    event.preventDefault();
+    if (!editingDocumentId || !editingDocumentForm.file_data) {
+      setFeedback({ message: 'يرجى اختيار ملف الوثيقة.', type: 'error' });
+      return;
+    }
+
+    try {
+      setSavingSection(`document-${editingDocumentId}`);
+      setFeedback({ message: '', type: '' });
+      const response = await updateEmployeeDocument(editingDocumentId, {
+        document_type: editingDocumentForm.document_type,
+        expiry_date: DOCUMENT_TYPES_WITH_EXPIRY.includes(editingDocumentForm.document_type)
+          ? editingDocumentForm.expiry_date
+          : null,
+        file_url: editingDocumentForm.file_data,
+      });
+      setProfileData(response?.data || null);
+      cancelEditingDocument();
+      setFeedback({ message: 'تم تحديث الوثيقة بنجاح.', type: 'success' });
+    } catch (requestError) {
+      setFeedback({
+        message: requestError?.response?.data?.message || 'تعذر تحديث الوثيقة.',
+        type: 'error',
+      });
+    } finally {
+      setSavingSection('');
+    }
+  };
+
+  const handleDeleteDocument = async (documentId) => {
+    try {
+      setDeletingDocumentId(documentId);
+      setFeedback({ message: '', type: '' });
+      const response = await deleteEmployeeDocument(documentId);
+      setProfileData(response?.data || null);
+      if (editingDocumentId === documentId) {
+        cancelEditingDocument();
+      }
+      setFeedback({ message: 'تم حذف الوثيقة بنجاح.', type: 'success' });
+    } catch (requestError) {
+      setFeedback({
+        message: requestError?.response?.data?.message || 'تعذر حذف الوثيقة.',
+        type: 'error',
+      });
+    } finally {
+      setDeletingDocumentId(null);
+    }
+  };
+
+  const handlePasswordChange = async (event) => {
+    event.preventDefault();
+
+    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      setPasswordFeedback({ message: 'يرجى تعبئة جميع حقول كلمة المرور.', type: 'error' });
+      return;
+    }
+
+    try {
+      setSavingSection('password');
+      setPasswordFeedback({ message: '', type: '' });
+      const response = await changeAccountPassword(passwordForm);
+      setPasswordFeedback({
+        message: response?.message || 'تم تغيير كلمة المرور بنجاح.',
+        type: 'success',
+      });
+      setPasswordForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+    } catch (requestError) {
+      setPasswordFeedback({
+        message:
+          requestError?.response?.data?.message || 'تعذر تغيير كلمة المرور.',
+        type: 'error',
+      });
+    } finally {
+      setSavingSection('');
+    }
+  };
+
+  const openPasswordModal = () => {
+    setPasswordFeedback({ message: '', type: '' });
+    setPasswordForm({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    });
+    setIsPasswordModalOpen(true);
+  };
+
+  const closePasswordModal = () => {
+    if (savingSection === 'password') return;
+    setIsPasswordModalOpen(false);
+    setPasswordFeedback({ message: '', type: '' });
+    setPasswordForm({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    });
+  };
+
+  const employeeCards = useMemo(
+    () => [
+      {
+        title: 'بيانات الموظف',
+        icon: 'bi-person-badge',
+        rows: [
+          { label: 'الاسم', field: 'full_name', value: employee.fullName || '-' },
+          { label: 'المسمى', value: employee.jobTitle || 'موظف توصيل', readOnly: true },
+          { label: 'حالة التوفر', value: employee.availabilityStatusLabel || '-', readOnly: true },
+        ],
+      },
+      {
+        title: 'معلومات التواصل',
+        icon: 'bi-telephone',
+        rows: [
+          { label: 'رقم الهاتف', field: 'phone', value: employee.phone || '-' },
+          { label: 'البريد الإلكتروني', field: 'email', value: employee.email || '-' },
+          { label: 'العنوان', field: 'address', value: employee.address || '-' },
+        ],
+      },
+    ],
+    [employee]
+  );
+
+  const vehicleRows = [
+    { label: 'نوع المركبة', field: 'type', value: vehicle.type || '-' },
+    { label: 'رقم الرخصة', field: 'plate_number', value: vehicle.plateNumber || '-' },
+    { label: 'رقم اللوحة', field: 'plate_number', value: vehicle.plateNumber || '-' },
+    { label: 'الماركة', field: 'brand', value: vehicle.brand || '-' },
+    { label: 'الموديل', field: 'model', value: vehicle.model || '-' },
+    {
+      label: 'اللون / السنة',
+      custom: true,
+      value: [vehicle.color, vehicle.year].filter(Boolean).join(' - ') || '-',
+    },
+    { label: 'رابط صورة المركبة', field: 'vehicle_photo_url', value: vehicle.vehiclePhotoUrl || '-' },
+  ];
+
+  if (loading) {
+    return (
+      <div className="employee-profile-page" dir="rtl">
+        <section className="employee-profile-page__hero">
+          <div className="employee-profile-page__hero-main">
+            <div className="employee-profile-page__avatar">
+              <span>—</span>
+            </div>
+            <div className="employee-profile-page__hero-copy">
+              <h1 className="employee-profile-page__name">جارٍ تحميل الملف الشخصي</h1>
+              <p className="employee-profile-page__job">نجهز بياناتك الآن</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="employee-profile-page" dir="rtl">
+        <section className="employee-profile-page__section-card employee-profile-page__state-card">
+          <div className="employee-profile-page__empty-icon">
+            <i className="bi bi-wifi-off"></i>
+          </div>
+          <h2 className="employee-profile-page__empty-title">تعذر تحميل الملف الشخصي</h2>
+          <p className="employee-profile-page__empty-text">{error}</p>
+          <button type="button" className="employee-profile-page__upload-btn" onClick={loadProfile}>
+            إعادة المحاولة
+          </button>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="employee-profile-page" dir="rtl">
       <section className="employee-profile-page__hero">
         <div className="employee-profile-page__hero-main">
           <div className="employee-profile-page__avatar">
-            <span>{profile.avatarInitials}</span>
+            <span>{employee.avatarInitials || 'مو'}</span>
           </div>
 
           <div className="employee-profile-page__hero-copy">
             <div className="employee-profile-page__identity">
-              <h1 className="employee-profile-page__name">{profile.fullName}</h1>
-              <p className="employee-profile-page__job">{profile.jobTitle}</p>
+              <h1 className="employee-profile-page__name">{employee.fullName || 'الموظف'}</h1>
+              <p className="employee-profile-page__job">{employee.jobTitle || 'موظف توصيل'}</p>
+            </div>
+            <div className="employee-profile-page__availability-pill">
+              <i className="bi bi-circle-fill"></i>
+              <span>{employee.availabilityStatusLabel || 'غير محدد'}</span>
             </div>
           </div>
         </div>
-
         <div className="employee-profile-page__hero-actions">
           <button
             type="button"
             className="employee-profile-page__hero-secondary-btn"
-            onClick={() => setIsPasswordOpen((prev) => !prev)}
+            onClick={openPasswordModal}
           >
             <i className="bi bi-shield-lock"></i>
-            {isPasswordOpen ? "إغلاق كلمة المرور" : "تغيير كلمة المرور"}
-          </button>
-
-          <button
-            type="button"
-            className="employee-profile-page__edit-btn"
-            onClick={() => startEdit("personal")}
-          >
-            <i className="bi bi-pencil-square"></i>
-            تعديل
+            <span>تغيير كلمة المرور</span>
           </button>
         </div>
       </section>
 
-      {isPasswordOpen && (
-        <section className="employee-profile-page__section-card employee-profile-page__section-card--password">
-          <div className="employee-profile-page__section-head">
-            <div>
-              <h3 className="employee-profile-page__section-title">تغيير كلمة المرور</h3>
-              <p className="employee-profile-page__section-subtitle">
-                حدّث كلمة المرور الخاصة بحسابك بشكل آمن.
-              </p>
+      {feedback.message ? (
+        <p
+          className={`employee-profile-page__upload-message ${
+            feedback.type === 'error' ? 'employee-profile-page__password-message--error' : ''
+          }`}
+        >
+          {feedback.message}
+        </p>
+      ) : null}
+
+      <section className="employee-profile-page__details-grid">
+        {employeeCards.map((card, cardIndex) => (
+          <article key={card.title} className="employee-profile-page__section-card">
+            <div className="employee-profile-page__section-head">
+              <div>
+                <h3 className="employee-profile-page__section-title">{card.title}</h3>
+              </div>
+              <div className="employee-profile-page__section-actions">
+                {cardIndex === 0 ? (
+                  editingPersonal ? (
+                    <>
+                      <button
+                        type="button"
+                        className="employee-profile-page__section-link"
+                        onClick={handleSavePersonal}
+                        disabled={savingSection === 'personal'}
+                      >
+                        {savingSection === 'personal' ? 'جارٍ الحفظ...' : 'حفظ'}
+                      </button>
+                      <button
+                        type="button"
+                        className="employee-profile-page__section-link employee-profile-page__section-link--ghost"
+                        onClick={cancelPersonalEdit}
+                      >
+                        إلغاء
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      className="employee-profile-page__section-link"
+                      onClick={startPersonalEdit}
+                    >
+                      تعديل
+                    </button>
+                  )
+                ) : null}
+                <div className="employee-profile-page__section-icon">
+                  <i className={`bi ${card.icon}`}></i>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <form className="employee-profile-page__form-grid" onSubmit={handlePasswordSubmit}>
-            <div className="employee-profile-page__field">
-              <label className="employee-profile-page__info-label">كلمة المرور الحالية</label>
-              <input
-                type="password"
-                className="employee-profile-page__input"
-                value={passwordDraft.currentPassword}
-                onChange={(event) => handlePasswordChange("currentPassword", event.target.value)}
-              />
+            <div className="employee-profile-page__info-list">
+              {card.rows.map((row) => (
+                <div key={row.label} className="employee-profile-page__info-item">
+                  <p className="employee-profile-page__info-label">{row.label}</p>
+                  {editingPersonal && row.field && !row.readOnly ? (
+                    <input
+                      className="employee-profile-page__input"
+                      value={forms.personal[row.field] || ''}
+                      onChange={(event) => handleFormChange('personal', row.field, event.target.value)}
+                    />
+                  ) : (
+                    <p className="employee-profile-page__info-value">{row.value}</p>
+                  )}
+                </div>
+              ))}
             </div>
-
-            <div className="employee-profile-page__field">
-              <label className="employee-profile-page__info-label">كلمة المرور الجديدة</label>
-              <input
-                type="password"
-                className="employee-profile-page__input"
-                value={passwordDraft.newPassword}
-                onChange={(event) => handlePasswordChange("newPassword", event.target.value)}
-              />
-            </div>
-
-            <div className="employee-profile-page__field employee-profile-page__field--wide">
-              <label className="employee-profile-page__info-label">تأكيد كلمة المرور الجديدة</label>
-              <input
-                type="password"
-                className="employee-profile-page__input"
-                value={passwordDraft.confirmPassword}
-                onChange={(event) => handlePasswordChange("confirmPassword", event.target.value)}
-              />
-            </div>
-
-            <div className="employee-profile-page__password-actions">
-              <button type="submit" className="employee-profile-page__upload-btn">
-                <i className="bi bi-shield-lock"></i>
-                تحديث كلمة المرور
-              </button>
-            </div>
-
-            {passwordError ? (
-              <p className="employee-profile-page__password-message employee-profile-page__password-message--error">
-                {passwordError}
-              </p>
-            ) : null}
-
-            {passwordMessage ? (
-              <p className="employee-profile-page__password-message">{passwordMessage}</p>
-            ) : null}
-          </form>
-        </section>
-      )}
+          </article>
+        ))}
+      </section>
 
       <section className="employee-profile-page__details-grid">
         <article className="employee-profile-page__section-card">
           <div className="employee-profile-page__section-head">
-            <h3 className="employee-profile-page__section-title">المعلومات الشخصية</h3>
-
-            {isPersonalEditing ? (
-              <div className="employee-profile-page__section-actions">
-                <button
-                  type="button"
-                  className="employee-profile-page__section-link employee-profile-page__section-link--ghost"
-                  onClick={() => cancelEdit("personal")}
-                >
-                  إلغاء
-                </button>
+            <div>
+              <h3 className="employee-profile-page__section-title">بيانات المركبة</h3>
+              <p className="employee-profile-page__section-subtitle">
+                معلومات المركبة المستخدمة في التوصيل.
+              </p>
+            </div>
+            <div className="employee-profile-page__section-actions">
+              {editingVehicle ? (
+                <>
+                  <button
+                    type="button"
+                    className="employee-profile-page__section-link"
+                    onClick={handleSaveVehicle}
+                    disabled={savingSection === 'vehicle'}
+                  >
+                    {savingSection === 'vehicle' ? 'جارٍ الحفظ...' : 'حفظ'}
+                  </button>
+                  <button
+                    type="button"
+                    className="employee-profile-page__section-link employee-profile-page__section-link--ghost"
+                    onClick={cancelVehicleEdit}
+                  >
+                    إلغاء
+                  </button>
+                </>
+              ) : (
                 <button
                   type="button"
                   className="employee-profile-page__section-link"
-                  onClick={() => saveEdit("personal", ["phone", "email", "address"])}
+                  onClick={startVehicleEdit}
                 >
-                  حفظ
+                  تعديل
                 </button>
+              )}
+              <div className="employee-profile-page__section-icon employee-profile-page__section-icon--vehicle">
+                <i className="bi bi-truck"></i>
               </div>
-            ) : (
-              <button
-                type="button"
-                className="employee-profile-page__section-link"
-                onClick={() => startEdit("personal")}
-              >
-                تعديل
-              </button>
-            )}
+            </div>
           </div>
 
-          <div className="employee-profile-page__info-list">
-            {personalFields.map((item) => (
-              <div key={item.key} className="employee-profile-page__info-item">
-                <div className="employee-profile-page__info-icon">
-                  <i className={`bi ${item.icon}`}></i>
-                </div>
-                <div className="employee-profile-page__info-copy">
-                  <p className="employee-profile-page__info-label">{item.label}</p>
-                  {isPersonalEditing ? (
+          {vehicle.type || vehicle.plateNumber || vehicle.brand || editingVehicle ? (
+            <div className="employee-profile-page__info-list">
+              {vehicleRows.map((row) => (
+                <div key={row.label} className="employee-profile-page__info-item">
+                  <p className="employee-profile-page__info-label">{row.label}</p>
+                  {editingVehicle && !row.custom ? (
                     <input
-                      type="text"
                       className="employee-profile-page__input"
-                      value={draftProfile[item.key]}
-                      onChange={(event) => handleDraftChange(item.key, event.target.value)}
+                      type={row.field === 'year' ? 'number' : 'text'}
+                      value={forms.vehicle[row.field] || ''}
+                      onChange={(event) => handleFormChange('vehicle', row.field, event.target.value)}
                     />
+                  ) : editingVehicle && row.custom ? (
+                    <div className="employee-profile-page__form-grid">
+                      <input
+                        className="employee-profile-page__input"
+                        placeholder="اللون"
+                        value={forms.vehicle.color || ''}
+                        onChange={(event) => handleFormChange('vehicle', 'color', event.target.value)}
+                      />
+                      <input
+                        className="employee-profile-page__input"
+                        type="number"
+                        placeholder="السنة"
+                        value={forms.vehicle.year || ''}
+                        onChange={(event) => handleFormChange('vehicle', 'year', event.target.value)}
+                      />
+                    </div>
                   ) : (
-                    <p className="employee-profile-page__info-value">{profile[item.key]}</p>
+                    <p className="employee-profile-page__info-value">{row.value}</p>
                   )}
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="employee-profile-page__empty-card">
+              <i className="bi bi-truck"></i>
+              <strong>لا توجد بيانات مركبة حالياً</strong>
+              <p>ستظهر بيانات المركبة هنا بمجرد إضافتها إلى ملف الموظف.</p>
+            </div>
+          )}
         </article>
 
         <article className="employee-profile-page__section-card">
           <div className="employee-profile-page__section-head">
-            <h3 className="employee-profile-page__section-title">معلومات المركبة</h3>
-
-            {isVehicleEditing ? (
-              <div className="employee-profile-page__section-actions">
-                <button
-                  type="button"
-                  className="employee-profile-page__section-link employee-profile-page__section-link--ghost"
-                  onClick={() => cancelEdit("vehicle")}
-                >
-                  إلغاء
-                </button>
+            <div>
+              <h3 className="employee-profile-page__section-title">الوثائق الرسمية</h3>
+              <p className="employee-profile-page__section-subtitle">
+                حالة الوثائق المرتبطة بالموظف والمركبة.
+              </p>
+            </div>
+            <div className="employee-profile-page__section-actions">
+              {!showNewDocumentForm ? (
                 <button
                   type="button"
                   className="employee-profile-page__section-link"
-                  onClick={() =>
-                    saveEdit("vehicle", ["vehicleType", "licenseNumber", "plateNumber"])
-                  }
+                  onClick={() => {
+                    setShowNewDocumentForm(true);
+                    setNewDocumentForm(EMPTY_DOCUMENT_FORM);
+                  }}
                 >
-                  حفظ
+                  إضافة وثيقة
                 </button>
+              ) : null}
+              <div className="employee-profile-page__section-icon">
+                <i className="bi bi-file-earmark-text"></i>
               </div>
-            ) : (
-              <button
-                type="button"
-                className="employee-profile-page__section-link"
-                onClick={() => startEdit("vehicle")}
-              >
-                تعديل
-              </button>
-            )}
+            </div>
           </div>
 
-          <div className="employee-profile-page__info-list">
-            {vehicleFields.map((item) => (
-              <div key={item.key} className="employee-profile-page__info-item">
-                <div className="employee-profile-page__info-icon employee-profile-page__info-icon--vehicle">
-                  <i className={`bi ${item.icon}`}></i>
-                </div>
-                <div className="employee-profile-page__info-copy">
-                  <p className="employee-profile-page__info-label">{item.label}</p>
-                  {isVehicleEditing ? (
-                    <input
-                      type="text"
-                      className="employee-profile-page__input"
-                      value={draftProfile[item.key]}
-                      onChange={(event) => handleDraftChange(item.key, event.target.value)}
-                    />
-                  ) : (
-                    <p className="employee-profile-page__info-value">{profile[item.key]}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </article>
-      </section>
-
-      <section className="employee-profile-page__section-card employee-profile-page__section-card--documents">
-        <div className="employee-profile-page__section-head">
-          <div>
-            <h3 className="employee-profile-page__section-title">الوثائق الرسمية</h3>
-            <p className="employee-profile-page__section-subtitle">
-              لكل وثيقة اسم وملف وتاريخ انتهاء واضح، ويمكن تحديثها أو إضافة وثيقة جديدة بشكل منطقي.
-            </p>
-          </div>
-        </div>
-
-        <div className="employee-profile-page__documents-list">
-          {documents.map((document) => (
-            <div key={document.id} className="employee-profile-page__document-row employee-profile-page__document-row--stacked">
-              <div className="employee-profile-page__document-main">
-                <div className="employee-profile-page__document-icon">
-                  <i className="bi bi-file-earmark-text"></i>
-                </div>
-                <div className="employee-profile-page__document-copy">
-                  <h4 className="employee-profile-page__document-name">{document.name}</h4>
-                  <p className="employee-profile-page__document-date">تاريخ الانتهاء: {document.expiryDate}</p>
-                  <p className="employee-profile-page__document-file">{document.fileName}</p>
-                </div>
-                <span
-                  className={`employee-profile-page__document-status employee-profile-page__document-status--${document.tone}`}
+          {documents.length > 0 ? (
+            <div className="employee-profile-page__documents-list">
+              {documents.map((document) => (
+                <div
+                  key={document.id}
+                  className={`employee-profile-page__document-row ${
+                    editingDocumentId === document.id ? 'employee-profile-page__document-row--stacked' : ''
+                  }`}
                 >
-                  {document.status}
-                </span>
-              </div>
-
-              {activeDocumentId === document.id ? (
-                <div className="employee-profile-page__document-form">
-                  <div className="employee-profile-page__form-grid">
-                    <div className="employee-profile-page__field">
-                      <label className="employee-profile-page__info-label">اسم الوثيقة</label>
-                      <input
-                        type="text"
-                        className="employee-profile-page__input"
-                        value={documentDraft.name}
-                        onChange={(event) =>
-                          setDocumentDraft((current) => ({ ...current, name: event.target.value }))
-                        }
-                      />
+                  <div className="employee-profile-page__document-main">
+                    <div className="employee-profile-page__document-copy">
+                      <h4 className="employee-profile-page__document-name">
+                        {DOCUMENT_TYPE_OPTIONS.find((item) => item.value === document.documentType)?.label ||
+                          document.name}
+                      </h4>
+                      <p className="employee-profile-page__document-date">
+                        تاريخ الانتهاء: {document.expiryDate || '-'}
+                      </p>
+                      <p className="employee-profile-page__document-file">
+                        {document.fileUrl ? 'ملف مرفق' : 'لا يوجد ملف'}
+                      </p>
                     </div>
-
-                    <div className="employee-profile-page__field">
-                      <label className="employee-profile-page__info-label">تاريخ الانتهاء</label>
-                      <input
-                        type="date"
-                        className="employee-profile-page__input"
-                        value={documentDraft.expiryDate}
-                        onChange={(event) =>
-                          setDocumentDraft((current) => ({ ...current, expiryDate: event.target.value }))
-                        }
-                      />
-                    </div>
-
-                    <div className="employee-profile-page__field employee-profile-page__field--wide">
-                      <label className="employee-profile-page__info-label">ملف الوثيقة</label>
-                      <input
-                        type="file"
-                        className="employee-profile-page__input employee-profile-page__input--file"
-                        onChange={(event) =>
-                          setDocumentDraft((current) => ({ ...current, file: event.target.files?.[0] || null }))
-                        }
-                      />
-                    </div>
+                    <span
+                      className={`employee-profile-page__document-status employee-profile-page__document-status--${
+                        DOCUMENT_TONE_MAP[document.status] || 'valid'
+                      }`}
+                    >
+                      {document.statusLabel || document.status}
+                    </span>
                   </div>
 
-                  <div className="employee-profile-page__section-actions">
+                  <div className="employee-profile-page__document-actions">
+                    <button
+                      type="button"
+                      className="employee-profile-page__update-btn"
+                      onClick={() => startEditingDocument(document)}
+                    >
+                      تعديل
+                    </button>
                     <button
                       type="button"
                       className="employee-profile-page__section-link employee-profile-page__section-link--ghost"
-                      onClick={cancelDocumentEdit}
+                      onClick={() => handleDeleteDocument(document.id)}
+                      disabled={deletingDocumentId === document.id}
                     >
-                      إلغاء
-                    </button>
-                    <button
-                      type="button"
-                      className="employee-profile-page__section-link"
-                      onClick={() => saveDocumentEdit(document.id)}
-                    >
-                      حفظ التحديث
+                      {deletingDocumentId === document.id ? 'جارٍ الحذف...' : 'حذف'}
                     </button>
                   </div>
+
+                  {editingDocumentId === document.id ? (
+                    <DocumentUploader
+                      form={editingDocumentForm}
+                      onChange={setEditingDocumentForm}
+                      inputRef={editDocumentInputRef}
+                      title="تحديث الوثيقة"
+                      submitLabel="حفظ الوثيقة"
+                      onSubmit={handleUpdateDocument}
+                      onCancel={cancelEditingDocument}
+                      isSubmitting={savingSection === `document-${document.id}`}
+                    />
+                  ) : null}
                 </div>
-              ) : (
-                <div className="employee-profile-page__document-actions">
-                  <button
-                    type="button"
-                    className="employee-profile-page__update-btn"
-                    onClick={() => startDocumentEdit(document)}
-                  >
-                    <i className="bi bi-pencil-square"></i>
-                    تحديث الوثيقة
-                  </button>
-                </div>
-              )}
+              ))}
             </div>
-          ))}
-        </div>
+          ) : (
+            <div className="employee-profile-page__empty-card">
+              <i className="bi bi-folder2-open"></i>
+              <strong>لا توجد وثائق مرفقة</strong>
+              <p>عند إضافة الوثائق الرسمية ستظهر هنا مع حالتها وتاريخ انتهائها.</p>
+            </div>
+          )}
 
-        <div className="employee-profile-page__upload-box">
-          <h4 className="employee-profile-page__upload-title">رفع وثيقة جديدة</h4>
-
-          <div className="employee-profile-page__form-grid">
-            <div className="employee-profile-page__field">
-              <label className="employee-profile-page__info-label">اسم الوثيقة</label>
-              <input
-                type="text"
-                className="employee-profile-page__input"
-                placeholder="مثال: رخصة مهنة"
-                value={newDocumentDraft.name}
-                onChange={(event) =>
-                  setNewDocumentDraft((current) => ({ ...current, name: event.target.value }))
-                }
+          {showNewDocumentForm ? (
+            <div className="employee-profile-page__upload-box">
+              <DocumentUploader
+                form={newDocumentForm}
+                onChange={setNewDocumentForm}
+                inputRef={newDocumentInputRef}
+                title="إضافة وثيقة جديدة"
+                submitLabel="إضافة الوثيقة"
+                onSubmit={handleCreateDocument}
+                onCancel={() => {
+                  setShowNewDocumentForm(false);
+                  setNewDocumentForm(EMPTY_DOCUMENT_FORM);
+                }}
+                isSubmitting={savingSection === 'new-document'}
               />
             </div>
-
-            <div className="employee-profile-page__field">
-              <label className="employee-profile-page__info-label">تاريخ الانتهاء</label>
-              <input
-                type="date"
-                className="employee-profile-page__input"
-                value={newDocumentDraft.expiryDate}
-                onChange={(event) =>
-                  setNewDocumentDraft((current) => ({ ...current, expiryDate: event.target.value }))
-                }
-              />
-            </div>
-
-            <div className="employee-profile-page__field employee-profile-page__field--wide">
-              <label className="employee-profile-page__info-label">ملف الوثيقة</label>
-              <input
-                type="file"
-                className="employee-profile-page__input employee-profile-page__input--file"
-                onChange={(event) =>
-                  setNewDocumentDraft((current) => ({ ...current, file: event.target.files?.[0] || null }))
-                }
-              />
-            </div>
-          </div>
-
-          <button type="button" className="employee-profile-page__upload-btn" onClick={addNewDocument}>
-            <i className="bi bi-cloud-arrow-up"></i>
-            رفع الوثيقة
-          </button>
-
-          {documentMessage ? (
-            <p className="employee-profile-page__upload-message">{documentMessage}</p>
           ) : null}
-        </div>
+        </article>
       </section>
+
+      {isPasswordModalOpen ? (
+        <div className="employee-profile-page__modal-overlay" onClick={closePasswordModal}>
+          <div className="employee-profile-page__modal" onClick={(event) => event.stopPropagation()}>
+            <div className="employee-profile-page__modal-head">
+              <div>
+                <h3 className="employee-profile-page__section-title">تغيير كلمة المرور</h3>
+                <p className="employee-profile-page__section-subtitle">
+                  أدخل كلمة المرور الحالية ثم اختر كلمة مرور جديدة وأكدها.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="employee-profile-page__modal-close"
+                onClick={closePasswordModal}
+              >
+                <i className="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <form className="employee-profile-page__form-grid" onSubmit={handlePasswordChange}>
+              <input
+                className="employee-profile-page__input"
+                type="password"
+                placeholder="كلمة المرور الحالية"
+                value={passwordForm.currentPassword}
+                onChange={(event) =>
+                  setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))
+                }
+              />
+              <input
+                className="employee-profile-page__input"
+                type="password"
+                placeholder="كلمة المرور الجديدة"
+                value={passwordForm.newPassword}
+                onChange={(event) =>
+                  setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))
+                }
+              />
+              <input
+                className="employee-profile-page__input employee-profile-page__field--wide"
+                type="password"
+                placeholder="تأكيد كلمة المرور الجديدة"
+                value={passwordForm.confirmPassword}
+                onChange={(event) =>
+                  setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))
+                }
+              />
+              {passwordFeedback.message ? (
+                <p
+                  className={`employee-profile-page__password-message ${
+                    passwordFeedback.type === 'error'
+                      ? 'employee-profile-page__password-message--error'
+                      : ''
+                  }`}
+                >
+                  {passwordFeedback.message}
+                </p>
+              ) : null}
+              <div className="employee-profile-page__password-actions">
+                <button
+                  type="submit"
+                  className="employee-profile-page__upload-btn"
+                  disabled={savingSection === 'password'}
+                >
+                  {savingSection === 'password' ? 'جارٍ الحفظ...' : 'حفظ'}
+                </button>
+                <button
+                  type="button"
+                  className="employee-profile-page__section-link employee-profile-page__section-link--ghost"
+                  onClick={closePasswordModal}
+                >
+                  إلغاء
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

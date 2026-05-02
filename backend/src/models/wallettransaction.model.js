@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       transaction_type: {
-        type: DataTypes.ENUM('earning', 'withdrawal', 'adjustment'),
+        type: DataTypes.ENUM('earning', 'handover', 'withdrawal', 'adjustment'),
         allowNull: false,
       },
       amount: {

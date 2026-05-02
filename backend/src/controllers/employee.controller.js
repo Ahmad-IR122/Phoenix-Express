@@ -8,12 +8,18 @@ const {
   EmployeeWallet,
   WithdrawalRequest,
 } = require('../models');
-const { getEmployeeDashboardData } = require('../services/employee-dashboard.service');
 const {
+  getEmployeeDashboardData,
   getEmployeeOrdersData,
   getEmployeeOrderDetailsData,
   updateEmployeeOrderStatus,
   getEmployeeProfileData,
+  updateEmployeeProfileData,
+  updateEmployeeVehicleData,
+  createEmployeeDocumentData,
+  updateEmployeeDocumentData,
+  deleteEmployeeDocumentData,
+  updateEmployeeAvailabilityStatus,
   getEmployeeWalletData,
   createEmployeeWithdrawalRequest,
 } = require('../services/employee-portal.service');
@@ -44,13 +50,14 @@ const employeeIncludes = [
 
 const createEmployee = async (req, res) => {
   try {
-    const { user_id, full_name, address, is_active } = req.body;
+    const { user_id, full_name, address, is_active, availability_status } = req.body;
 
     const employee = await Employee.create({
       user_id,
       full_name,
       address,
       is_active,
+      availability_status,
     });
 
     const createdEmployee = await Employee.findByPk(employee.id, {
@@ -125,7 +132,7 @@ const findEmployeeById = async (req, res) => {
 const updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
-    const { user_id, full_name, address, is_active } = req.body;
+    const { user_id, full_name, address, is_active, availability_status } = req.body;
     const employee = await Employee.findByPk(id);
 
     if (!employee) {
@@ -140,6 +147,10 @@ const updateEmployee = async (req, res) => {
       full_name: full_name !== undefined ? full_name : employee.full_name,
       address: address !== undefined ? address : employee.address,
       is_active: is_active !== undefined ? is_active : employee.is_active,
+      availability_status:
+        availability_status !== undefined
+          ? availability_status
+          : employee.availability_status,
     });
 
     const updatedEmployee = await Employee.findByPk(id, {
@@ -232,6 +243,138 @@ const getAuthenticatedEmployeeProfile = async (req, res) => {
     return res.status(error.statusCode || 500).json({
       success: false,
       message: error.message || 'Failed to fetch employee profile',
+      errors: error.errors ? error.errors.map((err) => err.message) : undefined,
+    });
+  }
+};
+
+const updateAuthenticatedEmployeeAvailabilityStatus = async (req, res) => {
+  try {
+    const statusData = await updateEmployeeAvailabilityStatus({
+      userId: req.user.id,
+      availabilityStatus: req.body.availabilityStatus,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Employee availability status updated successfully',
+      data: statusData,
+      mockAuth: Boolean(req.user.isMockAuth),
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to update employee availability status',
+    });
+  }
+};
+
+const updateAuthenticatedEmployeeProfile = async (req, res) => {
+  try {
+    const profileData = await updateEmployeeProfileData({
+      userId: req.user.id,
+      payload: req.body,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Employee profile updated successfully',
+      data: profileData,
+      mockAuth: Boolean(req.user.isMockAuth),
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to update employee profile',
+      errors: error.errors ? error.errors.map((err) => err.message) : undefined,
+    });
+  }
+};
+
+const updateAuthenticatedEmployeeVehicle = async (req, res) => {
+  try {
+    const profileData = await updateEmployeeVehicleData({
+      userId: req.user.id,
+      payload: req.body,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Employee vehicle updated successfully',
+      data: profileData,
+      mockAuth: Boolean(req.user.isMockAuth),
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to update employee vehicle',
+      errors: error.errors ? error.errors.map((err) => err.message) : undefined,
+    });
+  }
+};
+
+const createAuthenticatedEmployeeDocument = async (req, res) => {
+  try {
+    const profileData = await createEmployeeDocumentData({
+      userId: req.user.id,
+      payload: req.body,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Employee document created successfully',
+      data: profileData,
+      mockAuth: Boolean(req.user.isMockAuth),
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to create employee document',
+      errors: error.errors ? error.errors.map((err) => err.message) : undefined,
+    });
+  }
+};
+
+const updateAuthenticatedEmployeeDocument = async (req, res) => {
+  try {
+    const profileData = await updateEmployeeDocumentData({
+      userId: req.user.id,
+      documentId: Number(req.params.id),
+      payload: req.body,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Employee document updated successfully',
+      data: profileData,
+      mockAuth: Boolean(req.user.isMockAuth),
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to update employee document',
+      errors: error.errors ? error.errors.map((err) => err.message) : undefined,
+    });
+  }
+};
+
+const deleteAuthenticatedEmployeeDocument = async (req, res) => {
+  try {
+    const profileData = await deleteEmployeeDocumentData({
+      userId: req.user.id,
+      documentId: Number(req.params.id),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Employee document deleted successfully',
+      data: profileData,
+      mockAuth: Boolean(req.user.isMockAuth),
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to delete employee document',
       errors: error.errors ? error.errors.map((err) => err.message) : undefined,
     });
   }
@@ -340,14 +483,14 @@ const submitAuthenticatedEmployeeWithdrawal = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Withdrawal request created successfully',
+      message: 'Handover request created successfully',
       data: requestData,
       mockAuth: Boolean(req.user.isMockAuth),
     });
   } catch (error) {
     return res.status(error.statusCode || 500).json({
       success: false,
-      message: error.message || 'Failed to create withdrawal request',
+      message: error.message || 'Failed to create handover request',
     });
   }
 };
@@ -360,6 +503,12 @@ module.exports = {
   deleteEmployee,
   getEmployeeDashboard,
   getAuthenticatedEmployeeProfile,
+  updateAuthenticatedEmployeeProfile,
+  updateAuthenticatedEmployeeVehicle,
+  createAuthenticatedEmployeeDocument,
+  updateAuthenticatedEmployeeDocument,
+  deleteAuthenticatedEmployeeDocument,
+  updateAuthenticatedEmployeeAvailabilityStatus,
   getAuthenticatedEmployeeOrders,
   getAuthenticatedEmployeeOrderDetails,
   updateAuthenticatedEmployeeOrderStatus,

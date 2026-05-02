@@ -4,6 +4,8 @@ import DashboardLayout from "../Components/layout/DashboardLayout";
 import AdminProfilePage from "../features/Admin/pages/AdminProfilePage";
 import DashboardPage from "../features/Admin/pages/DashboardPage";
 import DelegatesPage from "../features/Admin/pages/DelegatesPage";
+import ReturnedShipmentsPage from "../features/Admin/pages/ReturnedShipmentsPage";
+import HandoverRequestsPage from "../features/Admin/pages/HandoverRequestsPage";
 import MerchantsPage from "../features/Admin/pages/MerchantsPage";
 import ParcelDistributionPage from "../features/Admin/pages/ParcelDistributionPage";
 import ReportsPage from "../features/Admin/pages/ReportsPage";
@@ -40,8 +42,10 @@ const notifications = [
 const adminNav = [
   { key: "dashboard", label: "لوحة التحكم", icon: "bi-grid-1x2" },
   { key: "shipments", label: "توزيع الطرود", icon: "bi-box-seam" },
+  { key: "returns", label: "الشحنات المرتجعة", icon: "bi-arrow-return-right" },
   { key: "traders", label: "التجار", icon: "bi-shop" },
   { key: "couriers", label: "المناديب", icon: "bi-people" },
+  { key: "handover", label: "تسليم المبالغ", icon: "bi-cash-coin" },
   { key: "reports", label: "التقارير", icon: "bi-file-earmark-text" },
   { key: "profile", label: "الملف الشخصي", icon: "bi-person" },
 ];
@@ -100,12 +104,16 @@ function DashboardContainer() {
         return <DashboardPage />;
       case "shipments":
         return <ParcelDistributionPage />;
+      case "returns":
+        return <ReturnedShipmentsPage />;
       case "traders":
         return <MerchantsPage />;
       case "couriers":
         return <DelegatesPage />;
       case "reports":
         return <ReportsPage />;
+      case "handover":
+        return <HandoverRequestsPage />;
       case "profile":
         return <AdminProfilePage />;
       default:

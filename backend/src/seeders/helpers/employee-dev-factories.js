@@ -16,8 +16,8 @@ const formatDateOnly = (date) => {
   return date.toISOString().slice(0, 10);
 };
 
-const buildPasswordHash = () => {
-  return bcrypt.hashSync('Password123!', 10);
+const buildPasswordHash = (plainPassword = 'Password123!') => {
+  return bcrypt.hashSync(plainPassword, 10);
 };
 
 const buildTimestamps = (createdAtOffset = {}) => {
@@ -28,21 +28,29 @@ const buildTimestamps = (createdAtOffset = {}) => {
   };
 };
 
-const makeUser = ({ id, email, phone, role }) => ({
+const makeUser = ({ id, email, phone, role, password = 'Password123!' }) => ({
   id,
   email,
   phone,
-  password: buildPasswordHash(),
+  password: buildPasswordHash(password),
   role,
   ...buildTimestamps({ days: -12 }),
 });
 
-const makeEmployee = ({ id, userId, fullName, address }) => ({
+const makeAdmin = ({ id, userId, isActive = true }) => ({
+  id,
+  user_id: userId,
+  is_active: isActive,
+  ...buildTimestamps({ days: -10 }),
+});
+
+const makeEmployee = ({ id, userId, fullName, address, availabilityStatus = 'available' }) => ({
   id,
   user_id: userId,
   full_name: fullName,
   address,
   is_active: true,
+  availability_status: availabilityStatus,
   ...buildTimestamps({ days: -10 }),
 });
 
@@ -258,6 +266,7 @@ module.exports = {
   createRelativeDate,
   formatDateOnly,
   makeUser,
+  makeAdmin,
   makeEmployee,
   makeCustomer,
   makeVehicle,
