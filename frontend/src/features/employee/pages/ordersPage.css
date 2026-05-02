@@ -258,6 +258,11 @@
   color: #15803d;
 }
 
+.employee-orders-page__status--returned {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
 .employee-orders-page__card-body {
   display: grid;
   gap: 16px;
@@ -275,6 +280,17 @@
   font-size: 27px;
   font-weight: 800;
   line-height: 1;
+}
+
+.employee-orders-page__price-stack {
+  display: grid;
+  gap: 4px;
+}
+
+.employee-orders-page__price-caption {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .employee-orders-page__time {
@@ -360,6 +376,21 @@
 .employee-orders-page__action-btn--completed {
   background: linear-gradient(135deg, #16a34a, #22c55e);
   box-shadow: 0 12px 22px rgba(22, 163, 74, 0.16);
+}
+
+.employee-orders-page__action-btn--return,
+.employee-orders-page__confirm-btn--return,
+.employee-orders-page__action-btn--returned,
+.employee-orders-page__confirm-btn--returned {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  box-shadow: 0 12px 22px rgba(220, 38, 38, 0.16);
+}
+
+.employee-orders-page__card-actions,
+.employee-orders-page__dual-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .employee-orders-page__details-card {
@@ -643,6 +674,11 @@
   }
 
   .employee-orders-page__info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .employee-orders-page__card-actions,
+  .employee-orders-page__dual-actions {
     grid-template-columns: 1fr;
   }
 

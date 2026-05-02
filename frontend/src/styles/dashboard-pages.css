@@ -426,7 +426,8 @@
 }
 
 .employee-dashboard__stats-grid {
-  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin-top: 14px;
 }
 
 .employee-dashboard__stat-card {
@@ -479,9 +480,27 @@
   font-weight: 700;
 }
 
+.employee-dashboard__info-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  background: #f8fbff;
+  border: 1px solid #dbeafe;
+  font-size: 12px;
+}
+
 .employee-dashboard__tasks-section {
   display: flex;
   flex-direction: column;
+}
+
+.employee-dashboard__availability-section {
+  padding: 16px 18px;
+  margin-bottom: 14px;
 }
 
 .employee-dashboard__sections-single {
@@ -494,6 +513,7 @@
 
 .employee-dashboard__section-header {
   align-items: flex-start;
+  margin-bottom: 12px;
 }
 
 .employee-dashboard__section-hint {
@@ -501,6 +521,53 @@
   color: #64748b;
   font-size: 13px;
   line-height: 1.8;
+}
+
+.employee-dashboard__availability-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.employee-dashboard__availability-option {
+  border: 1px solid #dbeafe;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  border-radius: 16px;
+  padding: 12px 14px;
+  text-align: right;
+  display: grid;
+  gap: 4px;
+  color: #0f172a;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.employee-dashboard__availability-option strong {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.employee-dashboard__availability-option span {
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.employee-dashboard__availability-option:hover {
+  transform: translateY(-1px);
+  border-color: #93c5fd;
+}
+
+.employee-dashboard__availability-option--active {
+  border-color: #38b6ff;
+  box-shadow: 0 14px 28px rgba(56, 182, 255, 0.14);
+  background: linear-gradient(180deg, #eff8ff, #ffffff);
+}
+
+.employee-dashboard__availability-note {
+  margin: 10px 0 0;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .employee-dashboard__tasks-list {
@@ -582,7 +649,7 @@
 /* Responsive */
 @media (max-width: 1200px) {
   .employee-dashboard__stats-grid {
-    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 
   .employee-dashboard__header {
@@ -599,6 +666,14 @@
 @media (max-width: 768px) {
   .employee-dashboard__hero {
     padding: 22px 20px;
+  }
+
+  .employee-dashboard__availability-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .employee-dashboard__availability-section {
+    padding: 14px 16px;
   }
 
   .employee-dashboard__hero-title {

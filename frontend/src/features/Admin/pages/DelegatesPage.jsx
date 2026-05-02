@@ -75,6 +75,22 @@ function formatMonthLabel(monthValue) {
   );
 }
 
+function getOperationalStatusLabel(courier) {
+  if (!courier.isActive) {
+    return "معطّل";
+  }
+
+  return STATUS_LABELS[courier.status] || "-";
+}
+
+function getOperationalStatusClass(courier) {
+  if (!courier.isActive) {
+    return "phoenix-delegates__badge--disabled";
+  }
+
+  return STATUS_CLASS[courier.status] || "phoenix-delegates__badge--offline";
+}
+
 function buildFormFromCourier(courier) {
   if (!courier) {
     return emptyForm;
@@ -200,7 +216,7 @@ function DelegatesPage() {
   };
 
   const handleToggleCourierStatus = async (courier) => {
-    await submitToggleCourierStatus(courier.id);
+    await submitToggleCourierStatus(courier.id, !courier.isActive);
 
     if (selectedCourierDetails?.id === courier.id) {
       const details = await loadCourierDetails(courier.id);
@@ -382,9 +398,9 @@ function DelegatesPage() {
                 <th>رقم الهاتف</th>
                 <th>المنطقة</th>
                 <th>الحالة</th>
-                <th>الطلبات النشطة</th>
-                <th>إجمالي التوصيلات</th>
-                <th>المرتجعات</th>
+                <th>الطلبات الجارية</th>
+                <th>توصيلات هذا الأسبوع</th>
+                <th>مرتجعات هذا الأسبوع</th>
                 <th>المبالغ المحصلة</th>
                 <th>إجراءات</th>
               </tr>
@@ -393,7 +409,10 @@ function DelegatesPage() {
             <tbody>
               {!isLoading && filteredCouriers.length > 0 ? (
                 filteredCouriers.map((courier) => (
-                  <tr key={courier.id}>
+                  <tr
+                    key={courier.id}
+                    className={courier.isActive ? "" : "phoenix-delegates__row--disabled"}
+                  >
                     <td>
                       <div className="phoenix-delegates__identity">
                         <div className="phoenix-delegates__avatar">{courier.name.charAt(0)}</div>
@@ -415,8 +434,8 @@ function DelegatesPage() {
                     </td>
                     <td>{courier.area}</td>
                     <td>
-                      <span className={`phoenix-delegates__badge ${STATUS_CLASS[courier.status]}`}>
-                        {STATUS_LABELS[courier.status]}
+                      <span className={`phoenix-delegates__badge ${getOperationalStatusClass(courier)}`}>
+                        {getOperationalStatusLabel(courier)}
                       </span>
                     </td>
                     <td>{courier.activeOrdersCount}</td>
@@ -469,7 +488,12 @@ function DelegatesPage() {
         <div className="phoenix-delegates__mobile-list">
           {!isLoading && filteredCouriers.length > 0 ? (
             filteredCouriers.map((courier) => (
-              <article key={courier.id} className="phoenix-delegates__mobile-card">
+              <article
+                key={courier.id}
+                className={`phoenix-delegates__mobile-card ${
+                  courier.isActive ? "" : "phoenix-delegates__mobile-card--disabled"
+                }`}
+              >
                 <div className="phoenix-delegates__mobile-head">
                   <div className="phoenix-delegates__identity">
                     <div className="phoenix-delegates__avatar">{courier.name.charAt(0)}</div>
@@ -479,8 +503,8 @@ function DelegatesPage() {
                     </div>
                   </div>
 
-                  <span className={`phoenix-delegates__badge ${STATUS_CLASS[courier.status]}`}>
-                    {STATUS_LABELS[courier.status]}
+                  <span className={`phoenix-delegates__badge ${getOperationalStatusClass(courier)}`}>
+                    {getOperationalStatusLabel(courier)}
                   </span>
                 </div>
 
@@ -494,15 +518,15 @@ function DelegatesPage() {
                     <strong>{vehicleTypeLabels[courier.vehicleType] || courier.vehicleType}</strong>
                   </div>
                   <div>
-                    <span>الطلبات النشطة</span>
+                    <span>الطلبات الجارية</span>
                     <strong>{courier.activeOrdersCount}</strong>
                   </div>
                   <div>
-                    <span>إجمالي التوصيلات</span>
+                    <span>توصيلات هذا الأسبوع</span>
                     <strong>{formatNumber(courier.totalDeliveries)}</strong>
                   </div>
                   <div>
-                    <span>المرتجعات</span>
+                    <span>مرتجعات هذا الأسبوع</span>
                     <strong>{formatNumber(courier.returnedOrders)}</strong>
                   </div>
                   <div>
@@ -717,7 +741,7 @@ function DelegatesPage() {
                       </div>
                       <div>
                         <span>الحالة التشغيلية</span>
-                        <strong>{STATUS_LABELS[selectedCourierDetails.status]}</strong>
+                        <strong>{getOperationalStatusLabel(selectedCourierDetails)}</strong>
                       </div>
                       <div>
                         <span>النشاط الإداري</span>
@@ -734,11 +758,11 @@ function DelegatesPage() {
                         <strong>{selectedCourierDetails.activeOrdersCount}</strong>
                       </div>
                       <div>
-                        <span>إجمالي التوصيلات</span>
+                        <span>توصيلات هذا الأسبوع</span>
                         <strong>{formatNumber(selectedCourierDetails.totalDeliveries)}</strong>
                       </div>
                       <div>
-                        <span>المرتجعات</span>
+                        <span>مرتجعات هذا الأسبوع</span>
                         <strong>{formatNumber(selectedCourierDetails.returnedOrders)}</strong>
                       </div>
                       <div>

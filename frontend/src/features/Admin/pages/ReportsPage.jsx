@@ -27,26 +27,10 @@ const paymentMethodMeta = {
   bank_transfer: "تحويل بنكي",
 };
 
-const returnActionMeta = {
-  retry_delivery: {
-    label: "إعادة محاولة التوصيل",
-    className: "phoenix-reports__decision-btn--primary",
-  },
-  return_to_merchant: {
-    label: "إرجاع للتاجر",
-    className: "phoenix-reports__decision-btn--neutral",
-  },
-  cancel_final: {
-    label: "إلغاء نهائي",
-    className: "phoenix-reports__decision-btn--danger",
-  },
-};
-
 const statusFilterOptions = [
   { value: "all", label: "كل الحالات" },
   { value: "delivered", label: "تم التسليم" },
   { value: "in_delivery", label: "قيد التوصيل" },
-  { value: "returned", label: "مرتجع" },
   { value: "pending", label: "قيد المراجعة" },
 ];
 
@@ -122,8 +106,7 @@ function ReportsPage() {
   const {
     reports,
     filteredReports,
-    filteredReturnedOrders,
-    summaryCards,
+      summaryCards,
     cities,
     filters,
     setFilters,
@@ -131,8 +114,6 @@ function ReportsPage() {
   } = useReports();
 
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [selectedReturnedOrder, setSelectedReturnedOrder] = useState(null);
-  const [selectedDecision, setSelectedDecision] = useState("");
 
   const filtersCount = useMemo(() => {
     return Object.entries(filters).reduce((count, [key, value]) => {
@@ -260,7 +241,7 @@ function ReportsPage() {
           <span className="phoenix-reports__eyebrow">Phoenix Admin</span>
           <h1 className="phoenix-reports__title">سجل العمليات والتقارير</h1>
           <p className="phoenix-reports__subtitle">
-            مركز موحد لمتابعة الطلبات والتحصيلات وحالات التسليم والمرتجعات بصورة
+            مركز موحد لمتابعة الطلبات والتحصيلات وحالات التسليم بصورة
             تشغيلية واضحة.
           </p>
         </div>
@@ -548,66 +529,6 @@ function ReportsPage() {
         </div>
       </article>
 
-      <article className="phoenix-reports__panel">
-        <div className="phoenix-reports__panel-head">
-          <div>
-            <h2 className="phoenix-reports__panel-title">قسم المرتجعات</h2>
-            <p className="phoenix-reports__panel-subtitle">
-              متابعة الطلبات المرتجعة مع سبب الإرجاع وخيارات المعالجة التشغيلية.
-            </p>
-          </div>
-          <span className="phoenix-reports__mini-badge phoenix-reports__mini-badge--danger">
-            {formatNumber(filteredReturnedOrders.length)} مرتجع
-          </span>
-        </div>
-
-        <div className="phoenix-reports__returns-list">
-          {filteredReturnedOrders.length > 0 ? (
-            filteredReturnedOrders.map((item) => (
-              <article key={item.id} className="phoenix-reports__return-card">
-                <div className="phoenix-reports__return-main">
-                  <div>
-                    <span className="phoenix-reports__mobile-label">رقم الطلب</span>
-                    <strong>{item.orderNumber}</strong>
-                  </div>
-                  <p>{item.returnReason}</p>
-                </div>
-
-                <div className="phoenix-reports__return-meta">
-                  <div>
-                    <span>المندوب</span>
-                    <strong>{item.delegateName}</strong>
-                  </div>
-                  <div>
-                    <span>التاجر</span>
-                    <strong>{item.merchantName}</strong>
-                  </div>
-                  <div>
-                    <span>تاريخ الإرجاع</span>
-                    <strong>{formatDateTime(item.returnedAt)}</strong>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  className="phoenix-reports__return-action"
-                  onClick={() => {
-                    setSelectedReturnedOrder(item);
-                    setSelectedDecision("");
-                  }}
-                >
-                  معالجة المرتجع
-                </button>
-              </article>
-            ))
-          ) : (
-            <div className="phoenix-reports__empty">
-              لا توجد مرتجعات مطابقة للفلاتر الحالية.
-            </div>
-          )}
-        </div>
-      </article>
-
       {selectedOrder && (
         <div
           className="phoenix-reports__modal-backdrop"
@@ -688,75 +609,6 @@ function ReportsPage() {
               </div>
             </div>
 
-            <div className="phoenix-reports__note-box">
-              <h4>جاهزية الربط الخلفي</h4>
-              <p>
-                تم تجهيز الواجهة لتُغذى لاحقًا من `useReports()` و
-                `getAdminReports()` و`getReturnedOrders()` مع الحفاظ على نفس البنية
-                الحالية للحقول والملخصات.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {selectedReturnedOrder && (
-        <div
-          className="phoenix-reports__modal-backdrop"
-          onClick={() => setSelectedReturnedOrder(null)}
-        >
-          <div
-            className="phoenix-reports__modal phoenix-reports__modal--compact"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="phoenix-reports__modal-head">
-              <div>
-                <h3>معالجة المرتجع</h3>
-                <p>{selectedReturnedOrder.orderNumber}</p>
-              </div>
-              <button type="button" onClick={() => setSelectedReturnedOrder(null)}>
-                <i className="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-            <div className="phoenix-reports__return-summary">
-              <div>
-                <span>سبب الإرجاع</span>
-                <strong>{selectedReturnedOrder.returnReason}</strong>
-              </div>
-              <div>
-                <span>المندوب</span>
-                <strong>{selectedReturnedOrder.delegateName}</strong>
-              </div>
-              <div>
-                <span>التاجر</span>
-                <strong>{selectedReturnedOrder.merchantName}</strong>
-              </div>
-            </div>
-
-            <div className="phoenix-reports__decision-list">
-              {Object.entries(returnActionMeta).map(([key, item]) => (
-                <button
-                  key={key}
-                  type="button"
-                  className={`phoenix-reports__decision-btn ${item.className} ${
-                    selectedDecision === key ? "is-active" : ""
-                  }`}
-                  onClick={() => setSelectedDecision(key)}
-                >
-                  <strong>{item.label}</strong>
-                  <span>{item.description}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="phoenix-reports__note-box phoenix-reports__note-box--muted">
-              <h4>ملاحظة تشغيلية</h4>
-              <p>
-                الاختيار الحالي توضيحي فقط ضمن الواجهة، وسيتم ربط تنفيذ الإجراء
-                الفعلي بعد اعتماد مسار المعالجة الخلفي للمرتجعات.
-              </p>
-            </div>
           </div>
         </div>
       )}

@@ -7,6 +7,7 @@ function DashboardSidebar({
   activeKey,
   onNavigate,
   user,
+  onLogout,
   isMobile = false,
   onClose,
 }) {
@@ -19,9 +20,7 @@ function DashboardSidebar({
     >
       <div className="phoenix-sidebar-top">
         <div className="phoenix-brand-block">
-          <div className="phoenix-brand-avatar">
-            {brand.avatarText || "P"}
-          </div>
+          <div className="phoenix-brand-avatar">{brand.avatarText || "P"}</div>
 
           <div className="phoenix-brand-text text-end">
             <h2 className="phoenix-brand-title">{brand.name}</h2>
@@ -38,9 +37,7 @@ function DashboardSidebar({
             <button
               key={item.key}
               type="button"
-              className={`phoenix-nav-item ${
-                activeKey === item.key ? "active" : ""
-              }`}
+              className={`phoenix-nav-item ${activeKey === item.key ? "active" : ""}`}
               onClick={() => {
                 onNavigate(item.key);
                 onClose?.();
@@ -51,6 +48,20 @@ function DashboardSidebar({
               <span>{item.label}</span>
             </button>
           ))}
+
+          {onLogout ? (
+            <button
+              type="button"
+              className="phoenix-nav-item"
+              onClick={() => {
+                onClose?.();
+                onLogout();
+              }}
+            >
+              <i className="bi bi-box-arrow-right"></i>
+              <span>تسجيل الخروج</span>
+            </button>
+          ) : null}
         </nav>
       </div>
 

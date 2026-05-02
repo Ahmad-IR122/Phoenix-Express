@@ -21,9 +21,12 @@ import ForgotPasswordPage from "../features/auth/pages/ForgotPasswordPage";
 
 import DashboardPage from "../features/Admin/pages/DashboardPage";
 import ParcelDistributionPage from "../features/Admin/pages/ParcelDistributionPage";
+import ReturnedShipmentsPage from "../features/Admin/pages/ReturnedShipmentsPage";
 import MerchantsPage from "../features/Admin/pages/MerchantsPage";
 import DelegatesPage from "../features/Admin/pages/DelegatesPage";
+import HandoverRequestsPage from "../features/Admin/pages/HandoverRequestsPage";
 import ReportsPage from "../features/Admin/pages/ReportsPage";
+import AdminProfilePage from "../features/Admin/pages/AdminProfilePage";
 
 import EmployeeHomePage from "../features/employee/pages/HomePage";
 import OrdersPage from "../features/employee/pages/OrdersPage";
@@ -76,9 +79,12 @@ export default function AppRoutes() {
             path="/admin/parcel-distribution"
             element={<ParcelDistributionPage />}
           />
+          <Route path="/admin/returned-shipments" element={<ReturnedShipmentsPage />} />
           <Route path="/admin/merchants" element={<MerchantsPage />} />
           <Route path="/admin/delegates" element={<DelegatesPage />} />
+          <Route path="/admin/handover-requests" element={<HandoverRequestsPage />} />
           <Route path="/admin/reports" element={<ReportsPage />} />
+          <Route path="/admin/profile" element={<AdminProfilePage />} />
         </Route>
 
         {/* Employee protected routes */}

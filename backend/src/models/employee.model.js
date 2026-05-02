@@ -46,7 +46,12 @@ module.exports = (sequelize, DataTypes) => {
       is_active: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
-      }
+      },
+      availability_status: {
+        type: DataTypes.ENUM('available', 'busy', 'offline'),
+        allowNull: false,
+        defaultValue: 'available',
+      },
     },
     {
       sequelize,

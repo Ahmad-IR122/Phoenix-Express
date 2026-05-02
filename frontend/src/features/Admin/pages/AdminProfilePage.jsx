@@ -1,303 +1,371 @@
-import React, { useState } from "react";
-import "./AdminProfilePage.css";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  changeAdminPassword,
+  getAdminProfile,
+  updateAdminProfile,
+} from "../services/adminService";
+import "../../employee/pages/profilePage.css";
 
-const initialProfile = {
-  fullName: "إدارة النظام",
-  jobTitle: "مدير النظام",
-  phone: "0599 555 120",
-  email: "admin@phoenix.com",
-  office: "رام الله - المقر الرئيسي",
-  role: "Super Admin",
-  lastLogin: "2026-04-24 09:30",
-  avatarInitials: "PS",
-};
-
-const activityItems = [
-  { id: 1, label: "اعتماد تقرير يومي", time: "منذ 15 دقيقة" },
-  { id: 2, label: "مراجعة مرتجع جديد", time: "منذ 40 دقيقة" },
-  { id: 3, label: "تحديث بيانات تاجر", time: "اليوم 08:10" },
-];
+const mapProfileToForm = (data) => ({
+  email: data?.user?.email || "",
+  phone: data?.user?.phone || "",
+});
 
 function AdminProfilePage() {
-  const [profile, setProfile] = useState(initialProfile);
-  const [draftProfile, setDraftProfile] = useState(initialProfile);
+  const [profile, setProfile] = useState(null);
+  const [form, setForm] = useState(() => mapProfileToForm(null));
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [feedback, setFeedback] = useState({ message: "", type: "" });
   const [isEditing, setIsEditing] = useState(false);
-  const [isPasswordOpen, setIsPasswordOpen] = useState(false);
-  const [passwordDraft, setPasswordDraft] = useState({
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
-  const [passwordMessage, setPasswordMessage] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const [passwordFeedback, setPasswordFeedback] = useState({ message: "", type: "" });
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
-  const profileFields = [
-    { key: "phone", label: "رقم الهاتف", icon: "bi-telephone" },
-    { key: "email", label: "البريد الإلكتروني", icon: "bi-envelope" },
-    { key: "office", label: "المكتب", icon: "bi-geo-alt" },
-  ];
-
-  const accountFields = [
-    { key: "role", label: "الصلاحية", icon: "bi-shield-check" },
-    { key: "lastLogin", label: "آخر تسجيل دخول", icon: "bi-clock-history" },
-  ];
-
-  const handleDraftChange = (key, value) => {
-    setDraftProfile((current) => ({
-      ...current,
-      [key]: value,
-    }));
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await getAdminProfile();
+      const nextProfile = response?.data || null;
+      setProfile(nextProfile);
+      setForm(mapProfileToForm(nextProfile));
+    } catch (requestError) {
+      setError(requestError?.response?.data?.message || "تعذر تحميل الملف الشخصي للإدارة.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const startEdit = () => {
-    setDraftProfile(profile);
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  useEffect(() => {
+    if (feedback.type !== "success" || !feedback.message) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setFeedback({ message: "", type: "" });
+    }, 2000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [feedback]);
+
+  useEffect(() => {
+    if (passwordFeedback.type !== "success" || !passwordFeedback.message) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsPasswordModalOpen(false);
+      setPasswordFeedback({ message: "", type: "" });
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    }, 2000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [passwordFeedback]);
+
+  const profileRows = useMemo(
+    () => [
+      { label: "البريد الإلكتروني", field: "email", value: profile?.user?.email || "-" },
+      { label: "رقم الهاتف", field: "phone", value: profile?.user?.phone || "-" },
+      { label: "الدور", value: profile?.user?.role || "admin", readOnly: true },
+      { label: "الحالة", value: profile?.is_active ? "نشط" : "غير نشط", readOnly: true },
+    ],
+    [profile]
+  );
+
+  const startEditing = () => {
+    setForm(mapProfileToForm(profile));
+    setFeedback({ message: "", type: "" });
     setIsEditing(true);
   };
 
-  const cancelEdit = () => {
-    setDraftProfile(profile);
+  const cancelEditing = () => {
+    setForm(mapProfileToForm(profile));
+    setFeedback({ message: "", type: "" });
     setIsEditing(false);
   };
 
-  const saveEdit = () => {
-    setProfile((current) => ({
-      ...current,
-      phone: draftProfile.phone,
-      email: draftProfile.email,
-      office: draftProfile.office,
-    }));
-    setIsEditing(false);
+  const handleSaveProfile = async () => {
+    try {
+      setIsSavingProfile(true);
+      setFeedback({ message: "", type: "" });
+      const response = await updateAdminProfile(form);
+      const nextProfile = response?.data || null;
+      setProfile(nextProfile);
+      setForm(mapProfileToForm(nextProfile));
+      setIsEditing(false);
+      setFeedback({
+        message: response?.message || "تم تحديث بيانات الإدارة بنجاح.",
+        type: "success",
+      });
+    } catch (requestError) {
+      setFeedback({
+        message: requestError?.response?.data?.message || "تعذر تحديث بيانات الإدارة.",
+        type: "error",
+      });
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
-  const handlePasswordChange = (key, value) => {
-    setPasswordDraft((current) => ({
-      ...current,
-      [key]: value,
-    }));
-  };
-
-  const handlePasswordSubmit = (event) => {
-    event.preventDefault();
-    setPasswordError("");
-    setPasswordMessage("");
-
-    if (
-      !passwordDraft.currentPassword ||
-      !passwordDraft.newPassword ||
-      !passwordDraft.confirmPassword
-    ) {
-      setPasswordError("يرجى تعبئة جميع حقول كلمة المرور.");
-      return;
-    }
-
-    if (passwordDraft.newPassword.length < 6) {
-      setPasswordError("كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل.");
-      return;
-    }
-
-    if (passwordDraft.newPassword !== passwordDraft.confirmPassword) {
-      setPasswordError("تأكيد كلمة المرور غير مطابق.");
-      return;
-    }
-
-    setPasswordDraft({
+  const openPasswordModal = () => {
+    setPasswordFeedback({ message: "", type: "" });
+    setPasswordForm({
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
     });
-    setPasswordMessage("تم تحديث كلمة المرور بنجاح.");
-    setIsPasswordOpen(false);
+    setIsPasswordModalOpen(true);
   };
 
-  return (
-    <div className="admin-profile-page" dir="rtl">
-      <section className="admin-profile-page__hero">
-        <div className="admin-profile-page__hero-main">
-          <div className="admin-profile-page__avatar">
-            <span>{profile.avatarInitials}</span>
-          </div>
+  const closePasswordModal = () => {
+    if (isSavingPassword) return;
+    setIsPasswordModalOpen(false);
+    setPasswordFeedback({ message: "", type: "" });
+    setPasswordForm({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+  };
 
-          <div className="admin-profile-page__hero-copy">
-            <div className="admin-profile-page__identity">
-              <h1 className="admin-profile-page__name">{profile.fullName}</h1>
-              <p className="admin-profile-page__job">{profile.jobTitle}</p>
+  const handlePasswordSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      setIsSavingPassword(true);
+      setPasswordFeedback({ message: "", type: "" });
+      const response = await changeAdminPassword(passwordForm);
+      setPasswordFeedback({
+        message: response?.message || "تم تغيير كلمة المرور بنجاح.",
+        type: "success",
+      });
+    } catch (requestError) {
+      setPasswordFeedback({
+        message: requestError?.response?.data?.message || "تعذر تغيير كلمة المرور.",
+        type: "error",
+      });
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="employee-profile-page" dir="rtl">
+        <section className="employee-profile-page__section-card employee-profile-page__state-card">
+          <h2 className="employee-profile-page__empty-title">جاري تحميل الملف الشخصي</h2>
+        </section>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="employee-profile-page" dir="rtl">
+        <section className="employee-profile-page__section-card employee-profile-page__state-card">
+          <h2 className="employee-profile-page__empty-title">تعذر تحميل الملف الشخصي</h2>
+          <p className="employee-profile-page__empty-text">{error}</p>
+          <button type="button" className="employee-profile-page__upload-btn" onClick={loadProfile}>
+            إعادة المحاولة
+          </button>
+        </section>
+      </div>
+    );
+  }
+
+  return (
+    <div className="employee-profile-page" dir="rtl">
+      <section className="employee-profile-page__hero">
+        <div className="employee-profile-page__hero-main">
+          <div className="employee-profile-page__avatar">
+            <span>إد</span>
+          </div>
+          <div className="employee-profile-page__hero-copy">
+            <div className="employee-profile-page__identity">
+              <h1 className="employee-profile-page__name">الملف الشخصي للإدارة</h1>
+              <p className="employee-profile-page__job">عرض معلومات الحساب وتحديثها وإدارة كلمة المرور</p>
             </div>
           </div>
         </div>
-
-        <div className="admin-profile-page__hero-actions">
+        <div className="employee-profile-page__hero-actions">
           <button
             type="button"
-            className="admin-profile-page__action-btn admin-profile-page__action-btn--secondary"
-            onClick={() => setIsPasswordOpen((prev) => !prev)}
+            className="employee-profile-page__hero-secondary-btn"
+            onClick={openPasswordModal}
           >
             <i className="bi bi-shield-lock"></i>
-            {isPasswordOpen ? "إغلاق كلمة المرور" : "تغيير كلمة المرور"}
+            <span>تغيير كلمة المرور</span>
           </button>
-
-          {isEditing ? (
-            <>
-              <button
-                type="button"
-                className="admin-profile-page__action-btn admin-profile-page__action-btn--ghost"
-                onClick={cancelEdit}
-              >
-                إلغاء
-              </button>
-              <button
-                type="button"
-                className="admin-profile-page__action-btn"
-                onClick={saveEdit}
-              >
-                حفظ
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              className="admin-profile-page__action-btn"
-              onClick={startEdit}
-            >
-              <i className="bi bi-pencil-square"></i>
-              تعديل
-            </button>
-          )}
         </div>
       </section>
 
-      {isPasswordOpen && (
-        <section className="admin-profile-page__card admin-profile-page__card--password">
-          <div className="admin-profile-page__section-head">
-            <h3 className="admin-profile-page__section-title">تغيير كلمة المرور</h3>
-          </div>
+      {feedback.message ? (
+        <p
+          className={`employee-profile-page__upload-message ${
+            feedback.type === "error" ? "employee-profile-page__password-message--error" : ""
+          }`}
+        >
+          {feedback.message}
+        </p>
+      ) : null}
 
-          <form className="admin-profile-page__password-grid" onSubmit={handlePasswordSubmit}>
-            <div className="admin-profile-page__field">
-              <label className="admin-profile-page__info-label">كلمة المرور الحالية</label>
-              <input
-                type="password"
-                className="admin-profile-page__input"
-                value={passwordDraft.currentPassword}
-                onChange={(event) => handlePasswordChange("currentPassword", event.target.value)}
-              />
+      <section className="employee-profile-page__details-grid employee-profile-page__details-grid--single">
+        <article className="employee-profile-page__section-card">
+          <div className="employee-profile-page__section-head">
+            <div>
+              <h3 className="employee-profile-page__section-title">بيانات الحساب</h3>
             </div>
-
-            <div className="admin-profile-page__field">
-              <label className="admin-profile-page__info-label">كلمة المرور الجديدة</label>
-              <input
-                type="password"
-                className="admin-profile-page__input"
-                value={passwordDraft.newPassword}
-                onChange={(event) => handlePasswordChange("newPassword", event.target.value)}
-              />
-            </div>
-
-            <div className="admin-profile-page__field admin-profile-page__field--wide">
-              <label className="admin-profile-page__info-label">تأكيد كلمة المرور الجديدة</label>
-              <input
-                type="password"
-                className="admin-profile-page__input"
-                value={passwordDraft.confirmPassword}
-                onChange={(event) => handlePasswordChange("confirmPassword", event.target.value)}
-              />
-            </div>
-
-            <div className="admin-profile-page__password-actions">
-              <button type="submit" className="admin-profile-page__action-btn">
-                <i className="bi bi-shield-lock"></i>
-                تحديث كلمة المرور
-              </button>
-            </div>
-
-            {passwordError ? (
-              <p className="admin-profile-page__password-message admin-profile-page__password-message--error">
-                {passwordError}
-              </p>
-            ) : null}
-
-            {passwordMessage ? (
-              <p className="admin-profile-page__password-message">{passwordMessage}</p>
-            ) : null}
-          </form>
-        </section>
-      )}
-
-      <section className="admin-profile-page__grid">
-        <article className="admin-profile-page__card">
-          <div className="admin-profile-page__section-head">
-            <h3 className="admin-profile-page__section-title">المعلومات الشخصية</h3>
-          </div>
-
-          <div className="admin-profile-page__info-list">
-            {profileFields.map((item) => (
-              <div key={item.key} className="admin-profile-page__info-item">
-                <div className="admin-profile-page__info-icon">
-                  <i className={`bi ${item.icon}`}></i>
-                </div>
-
-                <div className="admin-profile-page__info-copy">
-                  <p className="admin-profile-page__info-label">{item.label}</p>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      className="admin-profile-page__input"
-                      value={draftProfile[item.key]}
-                      onChange={(event) =>
-                        handleDraftChange(item.key, event.target.value)
-                      }
-                    />
-                  ) : (
-                    <p className="admin-profile-page__info-value">
-                      {profile[item.key]}
-                    </p>
-                  )}
-                </div>
+            <div className="employee-profile-page__section-actions">
+              {isEditing ? (
+                <>
+                  <button
+                    type="button"
+                    className="employee-profile-page__section-link"
+                    onClick={handleSaveProfile}
+                    disabled={isSavingProfile}
+                  >
+                    {isSavingProfile ? "جارٍ الحفظ..." : "حفظ"}
+                  </button>
+                  <button
+                    type="button"
+                    className="employee-profile-page__section-link employee-profile-page__section-link--ghost"
+                    onClick={cancelEditing}
+                  >
+                    إلغاء
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="employee-profile-page__section-link"
+                  onClick={startEditing}
+                >
+                  تعديل
+                </button>
+              )}
+              <div className="employee-profile-page__section-icon">
+                <i className="bi bi-person-badge"></i>
               </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="admin-profile-page__card">
-          <div className="admin-profile-page__section-head">
-            <h3 className="admin-profile-page__section-title">معلومات الحساب</h3>
+            </div>
           </div>
 
-          <div className="admin-profile-page__info-list">
-            {accountFields.map((item) => (
-              <div key={item.key} className="admin-profile-page__info-item">
-                <div className="admin-profile-page__info-icon admin-profile-page__info-icon--accent">
-                  <i className={`bi ${item.icon}`}></i>
-                </div>
-
-                <div className="admin-profile-page__info-copy">
-                  <p className="admin-profile-page__info-label">{item.label}</p>
-                  <p className="admin-profile-page__info-value">
-                    {profile[item.key]}
-                  </p>
-                </div>
+          <div className="employee-profile-page__info-list">
+            {profileRows.map((row) => (
+              <div key={row.label} className="employee-profile-page__info-item">
+                <p className="employee-profile-page__info-label">{row.label}</p>
+                {isEditing && row.field && !row.readOnly ? (
+                  <input
+                    className="employee-profile-page__input"
+                    type={row.field === "email" ? "email" : "text"}
+                    value={form[row.field] || ""}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        [row.field]: event.target.value,
+                      }))
+                    }
+                  />
+                ) : (
+                  <p className="employee-profile-page__info-value">{row.value}</p>
+                )}
               </div>
             ))}
           </div>
         </article>
       </section>
 
-      <section className="admin-profile-page__card">
-        <div className="admin-profile-page__section-head">
-          <h3 className="admin-profile-page__section-title">آخر النشاطات</h3>
-        </div>
-
-        <div className="admin-profile-page__activity-list">
-          {activityItems.map((item) => (
-            <div key={item.id} className="admin-profile-page__activity-item">
-              <div className="admin-profile-page__activity-dot"></div>
-              <div className="admin-profile-page__activity-copy">
-                <p className="admin-profile-page__activity-label">{item.label}</p>
-                <p className="admin-profile-page__activity-time">{item.time}</p>
+      {isPasswordModalOpen ? (
+        <div className="employee-profile-page__modal-overlay" onClick={closePasswordModal}>
+          <div className="employee-profile-page__modal" onClick={(event) => event.stopPropagation()}>
+            <div className="employee-profile-page__modal-head">
+              <div>
+                <h3 className="employee-profile-page__section-title">تغيير كلمة المرور</h3>
+                <p className="employee-profile-page__section-subtitle">
+                  أدخل كلمة المرور الحالية ثم كلمة المرور الجديدة مع التأكيد.
+                </p>
               </div>
+              <button
+                type="button"
+                className="employee-profile-page__modal-close"
+                onClick={closePasswordModal}
+              >
+                <i className="bi bi-x-lg"></i>
+              </button>
             </div>
-          ))}
+
+            <form className="employee-profile-page__form-grid" onSubmit={handlePasswordSubmit}>
+              <input
+                className="employee-profile-page__input"
+                type="password"
+                placeholder="كلمة المرور الحالية"
+                value={passwordForm.currentPassword}
+                onChange={(event) =>
+                  setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))
+                }
+              />
+              <input
+                className="employee-profile-page__input"
+                type="password"
+                placeholder="كلمة المرور الجديدة"
+                value={passwordForm.newPassword}
+                onChange={(event) =>
+                  setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))
+                }
+              />
+              <input
+                className="employee-profile-page__input employee-profile-page__field--wide"
+                type="password"
+                placeholder="تأكيد كلمة المرور الجديدة"
+                value={passwordForm.confirmPassword}
+                onChange={(event) =>
+                  setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))
+                }
+              />
+              {passwordFeedback.message ? (
+                <p
+                  className={`employee-profile-page__password-message ${
+                    passwordFeedback.type === "error"
+                      ? "employee-profile-page__password-message--error"
+                      : ""
+                  }`}
+                >
+                  {passwordFeedback.message}
+                </p>
+              ) : null}
+              <div className="employee-profile-page__password-actions">
+                <button
+                  type="submit"
+                  className="employee-profile-page__upload-btn"
+                  disabled={isSavingPassword}
+                >
+                  {isSavingPassword ? "جارٍ الحفظ..." : "حفظ"}
+                </button>
+                <button
+                  type="button"
+                  className="employee-profile-page__section-link employee-profile-page__section-link--ghost"
+                  onClick={closePasswordModal}
+                >
+                  إلغاء
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </section>
+      ) : null}
     </div>
   );
 }
