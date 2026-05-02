@@ -24,6 +24,13 @@ const STATUS_META = {
     cardActionLabel: 'تم التوصيل',
     detailsActionLabel: 'تم التوصيل',
   },
+  returned: {
+    label: 'مرتجعة',
+    tone: 'returned',
+    group: 'returned',
+    cardActionLabel: 'تعذر التسليم',
+    detailsActionLabel: 'تعذر التسليم',
+  },
 };
 
 const FILTERS = [
@@ -31,6 +38,7 @@ const FILTERS = [
   { key: 'available', label: 'متاحة' },
   { key: 'inProgress', label: 'جارية' },
   { key: 'completed', label: 'مكتملة' },
+  { key: 'returned', label: 'مرتجعة' },
 ];
 
 const currencyFormatter = new Intl.NumberFormat('en-US');
@@ -123,7 +131,7 @@ function EmployeeOrdersPage() {
         accumulator[order.statusGroup] += 1;
         return accumulator;
       },
-      { all: 0, available: 0, inProgress: 0, completed: 0 }
+      { all: 0, available: 0, inProgress: 0, completed: 0, returned: 0 }
     );
   }, [orders]);
 
@@ -204,6 +212,10 @@ function EmployeeOrdersPage() {
       if (nextStatus === 'delivered') {
         setActiveFilter('completed');
       }
+
+      if (nextStatus === 'returned') {
+        setActiveFilter('returned');
+      }
     } catch (error) {
       setActionError('تعذر تحديث حالة الطلب. حاول مرة أخرى.');
     } finally {
@@ -214,6 +226,7 @@ function EmployeeOrdersPage() {
   const handleAcceptOrder = (order) => updateShipmentStatus(order, 'picked_up');
 
   const handleCompleteOrder = (order) => updateShipmentStatus(order, 'delivered');
+  const handleReturnOrder = (order) => updateShipmentStatus(order, 'returned');
 
   const handleCardAction = (order) => {
     if (order.status === 'available') {
@@ -265,8 +278,14 @@ function EmployeeOrdersPage() {
               <p className="employee-orders-page__detail-value">{order.parcelType}</p>
             </div>
             <div className="employee-orders-page__detail-item">
-              <p className="employee-orders-page__detail-label">السعر</p>
+              <p className="employee-orders-page__detail-label">رسوم التوصيل</p>
               <p className="employee-orders-page__detail-value">{order.formattedPrice}</p>
+            </div>
+            <div className="employee-orders-page__detail-item">
+              <p className="employee-orders-page__detail-label">سعر الطرد</p>
+              <p className="employee-orders-page__detail-value">
+                {order.declaredValue ? formatPrice(order.declaredValue) : 'غير محدد'}
+              </p>
             </div>
             <div className="employee-orders-page__detail-item employee-orders-page__detail-item--wide">
               <p className="employee-orders-page__detail-label">الوصف</p>
@@ -341,19 +360,41 @@ function EmployeeOrdersPage() {
             >
               {isUpdating ? 'جارٍ التحديث...' : 'قبول الطلب'}
             </button>
-          ) : (
+          ) : isCompleted ? (
             <button
               type="button"
-              className={`employee-orders-page__confirm-btn ${
-                isCompleted
-                  ? 'employee-orders-page__confirm-btn--completed'
-                  : 'employee-orders-page__confirm-btn--finish'
-              }`}
-              onClick={() => handleCompleteOrder(order)}
-              disabled={isCompleted || isUpdating}
+              className="employee-orders-page__confirm-btn employee-orders-page__confirm-btn--completed"
+              disabled
             >
-              {isCompleted ? 'تم التوصيل' : isUpdating ? 'جارٍ التحديث...' : order.detailsActionLabel}
+              تم التوصيل
             </button>
+          ) : order.status === 'returned' ? (
+            <button
+              type="button"
+              className="employee-orders-page__confirm-btn employee-orders-page__confirm-btn--returned"
+              disabled
+            >
+              تعذر التسليم
+            </button>
+          ) : (
+            <div className="employee-orders-page__dual-actions">
+              <button
+                type="button"
+                className="employee-orders-page__confirm-btn employee-orders-page__confirm-btn--finish"
+                onClick={() => handleCompleteOrder(order)}
+                disabled={isUpdating}
+              >
+                {isUpdating ? 'جارٍ التحديث...' : order.detailsActionLabel}
+              </button>
+              <button
+                type="button"
+                className="employee-orders-page__confirm-btn employee-orders-page__confirm-btn--return"
+                onClick={() => handleReturnOrder(order)}
+                disabled={isUpdating}
+              >
+                {isUpdating ? 'جارٍ التحديث...' : 'تعذر التسليم'}
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -503,7 +544,10 @@ function EmployeeOrdersPage() {
 
                   <div className="employee-orders-page__card-body">
                     <div className="employee-orders-page__price-row">
-                      <span className="employee-orders-page__price">{order.formattedPrice}</span>
+                      <div className="employee-orders-page__price-stack">
+                        <span className="employee-orders-page__price">{order.formattedPrice}</span>
+                        <span className="employee-orders-page__price-caption">رسوم التوصيل</span>
+                      </div>
                       <span className="employee-orders-page__time">
                         <i className="bi bi-clock"></i>
                         {order.time}
@@ -527,29 +571,64 @@ function EmployeeOrdersPage() {
                         <p className="employee-orders-page__info-label">نوع الطرد</p>
                         <p className="employee-orders-page__info-value">{order.parcelType}</p>
                       </div>
+                      <div className="employee-orders-page__info-box">
+                        <p className="employee-orders-page__info-label">سعر الطرد</p>
+                        <p className="employee-orders-page__info-value">
+                          {order.declaredValue ? formatPrice(order.declaredValue) : 'غير محدد'}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
                   <div className="employee-orders-page__card-footer">
-                    <button
-                      type="button"
-                      className={`employee-orders-page__action-btn ${
-                        order.status === 'completed'
-                          ? 'employee-orders-page__action-btn--completed'
-                          : order.status === 'in_progress'
-                            ? 'employee-orders-page__action-btn--finish'
-                            : 'employee-orders-page__action-btn--accept'
-                      }`}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleCardAction(order);
-                      }}
-                      disabled={order.status === 'completed' || updatingShipmentId === order.shipmentId}
-                    >
-                      {updatingShipmentId === order.shipmentId
-                        ? 'جارٍ التحديث...'
-                        : order.cardActionLabel}
-                    </button>
+                    {order.status === 'in_progress' ? (
+                      <div className="employee-orders-page__card-actions">
+                        <button
+                          type="button"
+                          className="employee-orders-page__action-btn employee-orders-page__action-btn--finish"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleCompleteOrder(order);
+                          }}
+                          disabled={updatingShipmentId === order.shipmentId}
+                        >
+                          {updatingShipmentId === order.shipmentId ? 'جارٍ التحديث...' : 'إتمام التوصيل'}
+                        </button>
+                        <button
+                          type="button"
+                          className="employee-orders-page__action-btn employee-orders-page__action-btn--return"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleReturnOrder(order);
+                          }}
+                          disabled={updatingShipmentId === order.shipmentId}
+                        >
+                          {updatingShipmentId === order.shipmentId ? 'جارٍ التحديث...' : 'تعذر التسليم'}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className={`employee-orders-page__action-btn ${
+                          order.status === 'completed'
+                            ? 'employee-orders-page__action-btn--completed'
+                            : order.status === 'returned'
+                              ? 'employee-orders-page__action-btn--returned'
+                              : 'employee-orders-page__action-btn--accept'
+                        }`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleCardAction(order);
+                        }}
+                        disabled={order.status === 'completed' || order.status === 'returned' || updatingShipmentId === order.shipmentId}
+                      >
+                        {updatingShipmentId === order.shipmentId
+                          ? 'جارٍ التحديث...'
+                          : order.status === 'returned'
+                            ? 'تعذر التسليم'
+                            : order.cardActionLabel}
+                      </button>
+                    )}
                   </div>
                 </article>
               ))}

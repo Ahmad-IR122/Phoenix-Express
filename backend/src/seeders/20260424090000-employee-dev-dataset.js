@@ -4,6 +4,7 @@ const {
   createRelativeDate,
   formatDateOnly,
   makeUser,
+  makeAdmin,
   makeEmployee,
   makeCustomer,
   makeVehicle,
@@ -20,6 +21,7 @@ const {
 const TRUNCATE_TABLES = [
   'tracking_updates',
   'shipments',
+  'merchant_settlements',
   'wallet_transactions',
   'withdrawal_requests',
   'employee_documents',
@@ -70,55 +72,90 @@ module.exports = {
       const users = [
         makeUser({
           id: 1,
+          email: 'admin@phoenix.ps',
+          phone: '0599000000',
+          role: 'admin',
+          password: '12345',
+        }),
+        makeUser({
+          id: 2,
           email: 'ahmad.employee@phoenix.ps',
           phone: '0599000001',
           role: 'employee',
         }),
         makeUser({
-          id: 2,
+          id: 3,
           email: 'samer.employee@phoenix.ps',
           phone: '0599000002',
           role: 'employee',
         }),
         makeUser({
-          id: 3,
+          id: 4,
           email: 'lama.customer@phoenix.ps',
           phone: '0599000003',
           role: 'customer',
         }),
         makeUser({
-          id: 4,
+          id: 5,
           email: 'yousef.customer@phoenix.ps',
           phone: '0599000004',
           role: 'customer',
         }),
         makeUser({
-          id: 5,
+          id: 6,
           email: 'nour.customer@phoenix.ps',
           phone: '0599000005',
           role: 'customer',
+        }),
+        makeUser({
+          id: 7,
+          email: 'merchant.demo@phoenix.ps',
+          phone: '0599000006',
+          role: 'customer',
+        }),
+      ];
+
+      const admins = [
+        makeAdmin({
+          id: 1,
+          userId: 1,
         }),
       ];
 
       const employees = [
         makeEmployee({
           id: 1,
-          userId: 1,
+          userId: 2,
           fullName: 'أحمد أبو الهيجا',
           address: 'نابلس - رفيديا - شارع الجامعة',
+          availabilityStatus: 'available',
         }),
         makeEmployee({
           id: 2,
-          userId: 2,
+          userId: 3,
           fullName: 'سامر دويكات',
           address: 'رام الله - الطيرة - قرب الدوار',
+          availabilityStatus: 'busy',
         }),
       ];
 
       const customers = [
-        makeCustomer({ id: 1, userId: 3 }),
-        makeCustomer({ id: 2, userId: 4 }),
-        makeCustomer({ id: 3, userId: 5 }),
+        makeCustomer({ id: 1, userId: 4 }),
+        makeCustomer({ id: 2, userId: 5 }),
+        makeCustomer({ id: 3, userId: 6 }),
+        makeCustomer({ id: 4, userId: 7, customerType: 'company' }),
+      ];
+
+      const companyCustomerProfiles = [
+        {
+          id: 1,
+          customer_id: 4,
+          company_name: 'تاجر تجريبي',
+          company_phone: '0599000006',
+          company_location: 'رام الله',
+          created_at: createRelativeDate({ days: -10 }),
+          updated_at: createRelativeDate({ days: -10 }),
+        },
       ];
 
       const vehicles = [
@@ -678,7 +715,7 @@ module.exports = {
           id: 5,
           walletId: 1,
           orderId: null,
-          type: 'withdrawal',
+          type: 'handover',
           amount: -100,
           description: 'خصم عملية سحب مدفوعة',
           createdOffset: { days: -5 },
@@ -714,7 +751,7 @@ module.exports = {
           id: 9,
           walletId: 2,
           orderId: null,
-          type: 'withdrawal',
+          type: 'handover',
           amount: -110,
           description: 'خصم سحب تمت معالجته',
           createdOffset: { days: -7 },
@@ -1019,25 +1056,30 @@ module.exports = {
 
       await queryInterface.bulkInsert('regions', regions, { transaction });
       await queryInterface.bulkInsert('users', users, { transaction });
+      await queryInterface.bulkInsert('admins', admins, { transaction });
       await queryInterface.bulkInsert('employees', employees, { transaction });
       await queryInterface.bulkInsert('customers', customers, { transaction });
+      await queryInterface.bulkInsert('company_customer_profiles', companyCustomerProfiles, { transaction });
       await queryInterface.bulkInsert('vehicles', vehicles, { transaction });
       await queryInterface.bulkInsert('employee_documents', documents, { transaction });
       await queryInterface.bulkInsert('employee_wallets', wallets, { transaction });
       await queryInterface.bulkInsert('orders', orders, { transaction });
       await queryInterface.bulkInsert('shipments', shipments, { transaction });
+      // await queryInterface.bulkInsert('merchant_settlements', merchantSettlements, { transaction });
       await queryInterface.bulkInsert('wallet_transactions', walletTransactions, { transaction });
       await queryInterface.bulkInsert('withdrawal_requests', withdrawalRequests, { transaction });
       await queryInterface.bulkInsert('tracking_updates', trackingUpdates, { transaction });
 
       await syncSequenceToTableMax(queryInterface, 'users', transaction);
       await syncSequenceToTableMax(queryInterface, 'customers', transaction);
+      await syncSequenceToTableMax(queryInterface, 'company_customer_profiles', transaction);
       await syncSequenceToTableMax(queryInterface, 'employees', transaction);
       await syncSequenceToTableMax(queryInterface, 'vehicles', transaction);
       await syncSequenceToTableMax(queryInterface, 'employee_documents', transaction);
       await syncSequenceToTableMax(queryInterface, 'employee_wallets', transaction);
       await syncSequenceToTableMax(queryInterface, 'orders', transaction);
       await syncSequenceToTableMax(queryInterface, 'shipments', transaction);
+      await syncSequenceToTableMax(queryInterface, 'merchant_settlements', transaction);
       await syncSequenceToTableMax(queryInterface, 'wallet_transactions', transaction);
       await syncSequenceToTableMax(queryInterface, 'withdrawal_requests', transaction);
       await syncSequenceToTableMax(queryInterface, 'tracking_updates', transaction);

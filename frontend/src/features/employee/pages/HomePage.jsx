@@ -1,11 +1,23 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import '../../../styles/dashboard-pages.css';
-import { getEmployeeDashboard } from '../services/employeeService';
+import {
+  getEmployeeDashboard,
+  updateEmployeeAvailabilityStatus,
+} from '../services/employeeService';
+
+const AVAILABILITY_OPTIONS = [
+  { value: 'available', label: 'متاح' },
+  { value: 'busy', label: 'مشغول' },
+  { value: 'offline', label: 'غير متصل' },
+];
 
 function EmployeeDashboardPage() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [availabilityStatus, setAvailabilityStatus] = useState('available');
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -18,6 +30,7 @@ function EmployeeDashboardPage() {
 
         if (isMounted) {
           setDashboard(response?.data || null);
+          setAvailabilityStatus(response?.data?.employee?.availabilityStatus || 'available');
         }
       } catch (requestError) {
         if (isMounted) {
@@ -41,9 +54,7 @@ function EmployeeDashboardPage() {
   }, []);
 
   const getStatusType = (status) => {
-    if (['delivered'].includes(status)) {
-      return 'completed';
-    }
+    if (['delivered'].includes(status)) return 'completed';
 
     if (
       ['accepted', 'picked_up', 'in_transit', 'out_for_delivery', 'confirmed', 'arrived_to_destination_city'].includes(
@@ -72,14 +83,14 @@ function EmployeeDashboardPage() {
         title: 'الطلبات الجارية',
         value: loading ? '—' : String(safeStats.activeOrders || 0),
         icon: 'bi-box-seam',
-        helper: 'طلبات قيد التنفيذ الآن',
+        helper: '',
         tone: 'info',
       },
       {
         title: 'المكتملة اليوم',
         value: loading ? '—' : String(safeStats.completedToday || 0),
         icon: 'bi-check2-circle',
-        helper: 'طلبات أُنجزت خلال اليوم',
+        helper: 'إجمالي الطلبات المكتملة اليوم',
         tone: 'success',
       },
     ],
@@ -100,21 +111,88 @@ function EmployeeDashboardPage() {
 
   const employeeName = dashboard?.employee?.full_name || 'الموظف';
 
+  const handleAvailabilityChange = async (nextStatus) => {
+    if (nextStatus === availabilityStatus) return;
+
+    const previousStatus = availabilityStatus;
+
+    try {
+      setUpdatingStatus(true);
+      setStatusMessage('');
+      setAvailabilityStatus(nextStatus);
+
+      const response = await updateEmployeeAvailabilityStatus(nextStatus);
+      const nextLabel = response?.data?.availabilityStatusLabel || 'تم التحديث';
+
+      setDashboard((current) =>
+        current
+          ? {
+              ...current,
+              employee: {
+                ...current.employee,
+                availabilityStatus: response?.data?.availabilityStatus || nextStatus,
+                availabilityStatusLabel: nextLabel,
+              },
+            }
+          : current
+      );
+
+      setStatusMessage(`تم تحديث حالة التوفر إلى ${nextLabel}`);
+    } catch (requestError) {
+      setAvailabilityStatus(previousStatus);
+      setStatusMessage(
+        requestError?.response?.data?.message || 'تعذر تحديث حالة التوفر حالياً.'
+      );
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   return (
     <div className="employee-dashboard" dir="rtl">
       <section className="employee-dashboard__hero">
         <div className="employee-dashboard__hero-copy">
-          <h1 className="employee-dashboard__hero-title"> الرئيسية</h1>
+          <h1 className="employee-dashboard__hero-title">الرئيسية</h1>
           <p className="employee-dashboard__hero-subtitle">
             {loading
-              ? 'جاري تحميل ملخص النشاط والمهام الخاصة بك...'
-              : `مرحبًا ${employeeName}، هنا ستجد ملخص يومك والمهام المخصصة لك بشكل واضح ومنظم.`}
+              ? 'جاري تحميل الملخص...'
+              : `مرحبًا ${employeeName}`}
           </p>
         </div>
 
         <div className="employee-dashboard__hero-icon">
           <i className="bi bi-grid-1x2"></i>
         </div>
+      </section>
+
+      <section className="dashboard-page__section employee-dashboard__availability-section">
+        <div className="dashboard-page__section-header employee-dashboard__section-header">
+          <div>
+            <h2 className="dashboard-page__section-title">حالة التوفر</h2>
+          </div>
+        </div>
+
+        <div className="employee-dashboard__availability-grid">
+          {AVAILABILITY_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={`employee-dashboard__availability-option ${
+                availabilityStatus === option.value
+                  ? 'employee-dashboard__availability-option--active'
+                  : ''
+              }`}
+              onClick={() => handleAvailabilityChange(option.value)}
+              disabled={updatingStatus}
+            >
+              <strong>{option.label}</strong>
+            </button>
+          ))}
+        </div>
+
+        {statusMessage ? (
+          <p className="employee-dashboard__availability-note">{statusMessage}</p>
+        ) : null}
       </section>
 
       <div className="dashboard-page__stats employee-dashboard__stats-grid">
@@ -127,7 +205,15 @@ function EmployeeDashboardPage() {
             </div>
             <h3 className="dashboard-page__stat-title employee-dashboard__stat-title">{stat.title}</h3>
             <p className="dashboard-page__stat-value employee-dashboard__stat-value">{stat.value}</p>
-            <p className="employee-dashboard__stat-helper">{stat.helper}</p>
+            {stat.helper ? (
+              <span
+                className="employee-dashboard__info-icon"
+                title={stat.helper}
+                aria-label={stat.helper}
+              >
+                <i className="bi bi-info-circle"></i>
+              </span>
+            ) : null}
           </article>
         ))}
       </div>
@@ -137,9 +223,6 @@ function EmployeeDashboardPage() {
           <div className="dashboard-page__section-header employee-dashboard__section-header">
             <div>
               <h2 className="dashboard-page__section-title">المهام اليومية</h2>
-              <p className="employee-dashboard__section-hint">
-                راجع الشحنات المخصصة لك اليوم وتابع حالتها بسرعة ووضوح.
-              </p>
             </div>
           </div>
 
@@ -167,10 +250,6 @@ function EmployeeDashboardPage() {
                 </div>
                 <strong className="employee-dashboard__empty-title">تعذر تحميل البيانات</strong>
                 <p className="dashboard-page__task-address-from employee-dashboard__empty-text">{error}</p>
-                <p className="dashboard-page__task-address-to employee-dashboard__empty-subtext">
-                  لا تحتاج إلى تسجيل دخول كامل الآن. يكفي تشغيل الـ backend ووجود بيانات موظف
-                  تجريبية.
-                </p>
               </div>
             )}
 
@@ -179,10 +258,7 @@ function EmployeeDashboardPage() {
                 <div className="employee-dashboard__empty-icon">
                   <i className="bi bi-inbox"></i>
                 </div>
-                <strong className="employee-dashboard__empty-title">لا توجد مهام حاليًا</strong>
-                <p className="employee-dashboard__empty-subtext">
-                  ستظهر الشحنات هنا بمجرد إسنادها إليك.
-                </p>
+                <strong className="employee-dashboard__empty-title">لا توجد مهام حالياً</strong>
               </div>
             )}
 

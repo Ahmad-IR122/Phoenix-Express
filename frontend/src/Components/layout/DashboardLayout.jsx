@@ -14,6 +14,7 @@ function DashboardLayout({
   notifications,
   user,
   employeeName,
+  onLogout,
   children,
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -28,6 +29,7 @@ function DashboardLayout({
           activeKey={activeKey}
           onNavigate={onNavigate}
           user={user}
+          onLogout={onLogout}
         />
       </aside>
 
@@ -38,6 +40,7 @@ function DashboardLayout({
           notifications={notifications}
           customDate={pageDate}
           employeeName={employeeName}
+          onLogout={onLogout}
           onOpenSidebar={() => setIsSidebarOpen(true)}
         />
 
@@ -80,6 +83,7 @@ function DashboardLayout({
             activeKey={activeKey}
             onNavigate={onNavigate}
             user={user}
+            onLogout={onLogout}
             isMobile
             onClose={() => setIsSidebarOpen(false)}
           />

@@ -47,6 +47,47 @@
   gap: 16px;
 }
 
+.admin-distribution__toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.6fr) repeat(3, minmax(0, 0.8fr)) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.admin-distribution__search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--phoenix-admin-border);
+  border-radius: 14px;
+  padding: 0 14px;
+  min-height: 48px;
+  background: #f8fbff;
+}
+
+.admin-distribution__search i {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.admin-distribution__search input,
+.admin-distribution__select {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+}
+
+.admin-distribution__select {
+  min-height: 48px;
+  border: 1px solid var(--phoenix-admin-border);
+  border-radius: 14px;
+  padding: 0 14px;
+  background: #f8fbff;
+}
+
 .admin-distribution__summary-card {
   background: #fff;
   border-radius: var(--phoenix-admin-radius-xl);
@@ -116,8 +157,8 @@
 
 .admin-distribution__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.95fr);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
   align-items: start;
   min-width: 0;
 }
@@ -125,8 +166,12 @@
 .admin-distribution__main,
 .admin-distribution__side {
   display: grid;
-  gap: 20px;
+  gap: 24px;
   min-width: 0;
+}
+
+.admin-distribution__delegates-card {
+  margin-bottom: 0;
 }
 
 .admin-distribution__card {
@@ -229,6 +274,13 @@
   white-space: nowrap;
 }
 
+.admin-distribution__parcel-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
 .admin-distribution__priority {
   background: #fee2e2;
   color: #dc2626;
@@ -237,6 +289,11 @@
 .admin-distribution__status-chip {
   background: #dbeafe;
   color: #2563eb;
+}
+
+.admin-distribution__status-chip--muted {
+  background: #f1f5f9;
+  color: #475569;
 }
 
 .admin-distribution__parcel-grid,
@@ -295,6 +352,12 @@
   color: #2563eb;
 }
 
+.admin-distribution__action-btn--ghost {
+  background: #fff;
+  color: #475569;
+  border: 1px solid var(--phoenix-admin-border);
+}
+
 .admin-distribution__driver-row,
 .admin-distribution__modal-driver {
   padding: 16px;
@@ -334,6 +397,11 @@
 .admin-distribution__driver-badge--busy {
   background: #fee2e2;
   color: #dc2626;
+}
+
+.admin-distribution__driver-badge--offline {
+  background: #e2e8f0;
+  color: #475569;
 }
 
 .admin-distribution__insight-card {
@@ -406,6 +474,11 @@
   justify-items: center;
   text-align: center;
   color: #64748b;
+}
+
+.admin-distribution__empty i {
+  color: #94a3b8;
+  font-size: 1.2rem;
 }
 
 .admin-distribution__state-card i {
@@ -492,6 +565,23 @@
   cursor: not-allowed;
 }
 
+.admin-distribution__modal-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 16px;
+  border: 1px solid #e5eefc;
+  border-radius: 16px;
+  padding: 16px;
+  background: #f8fbff;
+}
+
+.admin-distribution__modal-summary p {
+  margin: 0;
+  color: #0f172a;
+  font-size: var(--phoenix-admin-body);
+  font-weight: 700;
+}
+
 .admin-distribution__modal-error {
   margin: 0;
   color: #dc2626;
@@ -509,8 +599,8 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .admin-distribution__layout {
-    grid-template-columns: 1fr;
+  .admin-distribution__toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -524,8 +614,10 @@
 @media (max-width: 768px) {
   .admin-distribution__summary-grid,
   .admin-distribution__insight-metrics,
+  .admin-distribution__toolbar,
   .admin-distribution__parcel-grid,
-  .admin-distribution__assigned-grid {
+  .admin-distribution__assigned-grid,
+  .admin-distribution__modal-summary {
     grid-template-columns: 1fr;
   }
 

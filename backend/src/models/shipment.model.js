@@ -42,7 +42,9 @@ module.exports = (sequelize, DataTypes) => {
           'in_transit',
           'arrived_to_destination_city',
           'out_for_delivery',
-          'delivered'
+          'delivered',
+          'returned',
+          'cancelled'
         ),
         defaultValue: 'accepted',
       },

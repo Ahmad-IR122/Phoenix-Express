@@ -63,7 +63,8 @@ const EmployeeLayout = () => {
 
   const storedUser = useMemo(() => {
     try {
-      return JSON.parse(localStorage.getItem("user")) || null;
+      const rawUser = localStorage.getItem("user") || sessionStorage.getItem("user");
+      return rawUser ? JSON.parse(rawUser) : null;
     } catch {
       return null;
     }
@@ -75,8 +76,15 @@ const EmployeeLayout = () => {
     name: storedUser?.full_name || storedUser?.name || "الموظف",
     email: storedUser?.email || "employee@phoenix.com",
     avatarText:
-      (storedUser?.full_name || storedUser?.name || "الموظف").trim().charAt(0) ||
-      "م",
+      (storedUser?.full_name || storedUser?.name || "الموظف").trim().charAt(0) || "م",
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -91,6 +99,7 @@ const EmployeeLayout = () => {
       notifications={notifications}
       user={user}
       employeeName={user.name}
+      onLogout={handleLogout}
     >
       <Outlet />
     </DashboardLayout>
