@@ -6,6 +6,7 @@ const trackingController = require('../controllers/tracking.controller');
 
 router.post('/', trackingController.createTracking);
 router.get('/', trackingController.getAllTrackings);
+router.get('/number/:trackingNumber', trackingController.lookupTrackingByNumber);
 router.get('/:id', trackingController.findTrackingById);
 router.put('/:id', trackingController.updateTracking);
 router.delete('/:id', trackingController.deleteTracking);

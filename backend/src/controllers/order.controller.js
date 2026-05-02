@@ -174,15 +174,15 @@ const createOrder = async (req, res) => {
       { transaction }
     );
 
-    await TrackingUpdate.create(
-      {
-        shipment_id: shipment.id,
-        status: 'accepted',
-        note: 'Order confirmed and added to the tracking system',
-        current_location: order.origin_city || null,
-      },
-      { transaction }
-    );
+    // await TrackingUpdate.create(
+    //   {
+    //     shipment_id: shipment.id,
+    //     status: 'accepted',
+    //     note: 'Order confirmed and added to the tracking system',
+    //     current_location: order.origin_city || null,
+    //   },
+    //   { transaction }
+    // );
 
     await transaction.commit();
 
