@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import API from "../../../apis/api";
 import "./HandoverRequestsPage.css";
 
@@ -66,7 +66,7 @@ function HandoverRequestsPage() {
   const [submittingAction, setSubmittingAction] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
 
-  const loadRequests = async (filters = {}) => {
+  const loadRequests = useCallback(async (filters = {}) => {
     try {
       setIsLoading(true);
       setPageError("");
@@ -76,13 +76,6 @@ function HandoverRequestsPage() {
         method: filters.method ?? methodFilter,
         search: filters.search ?? debouncedSearchQuery,
       };
-
-      const searchParams = new URLSearchParams();
-      Object.entries(requestParams).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-          searchParams.set(key, value);
-        }
-      });
 
       const response = await API.get("/admin/handover-requests", {
         params: requestParams,
@@ -95,11 +88,11 @@ function HandoverRequestsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [debouncedSearchQuery, methodFilter, statusFilter]);
 
   useEffect(() => {
     loadRequests();
-  }, []);
+  }, [loadRequests]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -110,18 +103,6 @@ function HandoverRequestsPage() {
       window.clearTimeout(timeoutId);
     };
   }, [searchQuery]);
-
-  useEffect(() => {
-    if (isLoading && !requestsData.items.length) {
-      return;
-    }
-
-    loadRequests({
-      status: statusFilter,
-      method: methodFilter,
-      search: debouncedSearchQuery,
-    });
-  }, [statusFilter, methodFilter, debouncedSearchQuery]);
 
   useEffect(() => {
     if (!feedbackMessage) {

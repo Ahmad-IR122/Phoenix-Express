@@ -68,8 +68,8 @@ function ReturnedShipmentsPage() {
     return () => window.clearTimeout(timeoutId);
   }, [feedbackMessage]);
 
-  const items = pageData.items || [];
-  const availableDrivers = pageData.availableDrivers || [];
+  const items = pageData.items ?? FALLBACK_DATA.items;
+  const availableDrivers = pageData.availableDrivers ?? FALLBACK_DATA.availableDrivers;
 
   const summary = useMemo(
     () => ({

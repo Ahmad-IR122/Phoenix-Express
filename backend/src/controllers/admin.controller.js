@@ -1,6 +1,5 @@
 "use strict";
 
-const bcrypt = require("bcrypt");
 const moment = require("moment-timezone");
 const { Op } = require("sequelize");
 const {
@@ -55,6 +54,8 @@ const ARABIC_DAY_NAMES = [
   "السبت",
 ];
 const DASHBOARD_TIME_ZONE = process.env.DASHBOARD_TIME_ZONE || "Asia/Hebron";
+const normalizeEmail = (value) => String(value || "").trim().toLowerCase();
+const normalizePhone = (value) => String(value || "").trim();
 
 const getStartOfDay = (date = new Date()) => {
   return moment.tz(date, DASHBOARD_TIME_ZONE).startOf("day").toDate();
@@ -685,7 +686,9 @@ const assignParcelToDriver = async (req, res) => {
       },
     });
   } catch (error) {
-    await transaction.rollback();
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
     return res.status(500).json({
       success: false,
       message: "فشل في تخصيص الطرد للمندوب",
@@ -2241,7 +2244,9 @@ const reassignReturnedShipment = async (req, res) => {
       message: "تمت إعادة تخصيص الشحنة المرتجعة بنجاح",
     });
   } catch (error) {
-    await transaction.rollback();
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
     return res.status(500).json({
       success: false,
       message: "فشل في إعادة تخصيص الشحنة المرتجعة",
@@ -2406,7 +2411,9 @@ const updateAdminHandoverRequestStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("Admin handover status update error:", error);
-    await transaction.rollback();
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
     return res.status(500).json({
       success: false,
       message:
@@ -2430,13 +2437,12 @@ const createAdmin = async (req, res) => {
     }
 
     transaction = await sequelize.transaction();
-    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create(
       {
-        email,
-        phone,
-        password: hashedPassword,
+        email: normalizeEmail(email),
+        phone: normalizePhone(phone),
+        password,
         role,
       },
       { transaction },
@@ -2468,7 +2474,7 @@ const createAdmin = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    if (transaction) {
+    if (transaction && !transaction.finished) {
       await transaction.rollback();
     }
 
@@ -2566,11 +2572,11 @@ const updateAdmin = async (req, res) => {
     }
 
     await user.update({
-      email: email !== undefined ? email : user.email,
-      phone: phone !== undefined ? phone : user.phone,
+      email: email !== undefined ? normalizeEmail(email) : user.email,
+      phone: phone !== undefined ? normalizePhone(phone) : user.phone,
       password:
         password !== undefined
-          ? await bcrypt.hash(password, 10)
+          ? password
           : user.password,
       role: role !== undefined ? role : user.role,
     });

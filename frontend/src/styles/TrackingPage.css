@@ -59,6 +59,182 @@
   padding: 5rem 1rem 2rem;
 }
 
+.tracking-feedback-card,
+.tracking-result-card {
+  max-width: 1020px;
+  margin-inline: auto;
+  border-radius: 1.75rem;
+  background-color: #ffffff;
+  box-shadow: 0 1rem 2.5rem rgba(34, 48, 73, 0.12);
+}
+
+.tracking-feedback-text {
+  color: #445068;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.tracking-spinner {
+  width: 3rem;
+  height: 3rem;
+}
+
+.tracking-progress-card {
+  overflow: hidden;
+}
+
+.tracking-meta-label {
+  color: #6f7b91;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.tracking-meta-value {
+  color: #081224;
+  font-size: clamp(1.55rem, 2.8vw, 2.25rem);
+  font-weight: 800;
+}
+
+.tracking-number-text {
+  color: #38b6ff;
+}
+
+.tracking-location-value,
+.tracking-route-value,
+.tracking-section-title,
+.tracking-details-title,
+.tracking-support-title {
+  color: #081224;
+  font-weight: 800;
+}
+
+.tracking-location-value {
+  font-size: clamp(1.7rem, 3vw, 2.55rem);
+}
+
+.tracking-route-value {
+  font-size: clamp(1.4rem, 2.5vw, 2.2rem);
+}
+
+.tracking-section-title {
+  font-size: clamp(1.85rem, 3vw, 2.7rem);
+}
+
+.tracking-progress-line {
+  padding-top: 1.25rem;
+}
+
+.tracking-progress-track,
+.tracking-progress-fill {
+  position: absolute;
+  top: 2rem;
+  right: 0;
+  height: 0.5rem;
+  border-radius: 999px;
+}
+
+.tracking-progress-track {
+  width: 100%;
+  background-color: #dfe4ec;
+}
+
+.tracking-progress-fill {
+  background-color: #38b6ff;
+  transition: width 0.3s ease;
+}
+
+.tracking-step {
+  position: relative;
+  z-index: 1;
+}
+
+.tracking-step-icon {
+  width: 5.6rem;
+  height: 5.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #e2e6ee;
+  color: #96a0b1;
+  border: 6px solid #f6f8fc;
+  font-size: 2rem;
+}
+
+.tracking-step-icon.is-active,
+.tracking-step-icon.is-completed {
+  background-color: #38b6ff;
+  color: #ffffff;
+}
+
+.tracking-step-label {
+  color: #97a2b3;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.tracking-step-label.is-active {
+  color: #38b6ff;
+}
+
+.tracking-current-badge {
+  background-color: #38b6ff;
+  color: #ffffff;
+  font-size: 0.95rem;
+  padding: 0.55rem 1rem;
+}
+
+.tracking-details-title {
+  color: #38b6ff;
+  font-size: clamp(2rem, 3vw, 2.8rem);
+}
+
+.tracking-person-block {
+  padding: 1rem 1.25rem;
+  border-right: 4px solid #38b6ff;
+}
+
+.tracking-person-title {
+  color: #081224;
+  font-size: clamp(1.6rem, 2.5vw, 2.3rem);
+  font-weight: 800;
+}
+
+.tracking-person-item {
+  color: #38445b;
+  font-size: 1.3rem;
+}
+
+.tracking-support-card {
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+}
+
+.tracking-support-title {
+  font-size: clamp(1.9rem, 3vw, 2.65rem);
+}
+
+.tracking-support-text {
+  color: #5d6780;
+  font-size: clamp(1.15rem, 2vw, 1.8rem);
+}
+
+.tracking-support-btn {
+  min-width: 150px;
+  min-height: 3.75rem;
+  border-radius: 1rem;
+  color: #ffffff !important;
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.tracking-call-btn {
+  background-color: #38b6ff !important;
+}
+
+.tracking-whatsapp-btn {
+  background-color: #06c755 !important;
+}
+
 .tracking-empty-icon {
   color: #d2d8e4;
 }
@@ -72,6 +248,21 @@
 @media (max-width: 767.98px) {
   .tracking-search-btn {
     width: 100%;
+  }
+
+  .tracking-progress-track,
+  .tracking-progress-fill {
+    top: 1.75rem;
+  }
+
+  .tracking-step-icon {
+    width: 4.5rem;
+    height: 4.5rem;
+    font-size: 1.55rem;
+  }
+
+  .tracking-person-block {
+    border-right-width: 3px;
   }
 
   .tracking-empty-state {

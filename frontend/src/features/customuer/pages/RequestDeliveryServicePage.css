@@ -1,0 +1,173 @@
+.request-delivery-service-page {
+  background-color: #f4f6f8;
+  font-family: "Cairo", "Segoe UI", sans-serif;
+}
+
+.request-delivery-service-page__label i{
+  color : #38b6ff;
+}
+.request-delivery-service-page__section-title i{
+  color : #38b6ff;
+}
+.request-delivery-service-page__shell {
+  max-width: 960px;
+}
+
+.request-delivery-service-page__title {
+  color: #38b6ff;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.2;
+}
+
+.request-delivery-service-page__subtitle {
+  color: #6f7d90;
+  font-size: clamp(1rem, 2vw, 1.3rem);
+}
+
+.request-delivery-service-page__card {
+  border-radius: 2rem;
+  background-color: #ffffff;
+  box-shadow: 0 18px 45px rgba(38, 56, 88, 0.1);
+}
+
+.request-delivery-service-page__label {
+  color: #49566a;
+  font-size: 0.98rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.request-delivery-service-page__section-title {
+  color: #38b6ff;
+  font-size: clamp(1.2rem, 2vw, 1.45rem);
+  font-weight: 800;
+  padding-top: 0.5rem;
+}
+
+.request-delivery-service-page__input {
+  min-height: 3.6rem;
+  border: 1px solid #d7deea;
+  border-radius: 1rem;
+  color: #49566a;
+  text-align: right;
+  box-shadow: none !important;
+  
+}
+
+.request-delivery-service-page__input::placeholder {
+  color: #98a3b3;
+}
+
+.request-delivery-service-page__input:focus {
+  border-color: #38b6ff;
+  box-shadow: 0 0 0 0.2rem rgba(56, 182, 255, 0.14) !important;
+}
+
+/* .request-delivery-service-page__input option {
+  background-color: #38b6ff;
+  color: #ffffff;
+} */
+
+.request-delivery-service-page__price {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.request-delivery-service-page__price-value {
+  color: #38b6ff;
+  font-size: clamp(2rem, 4vw, 2.7rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.request-delivery-service-page__price-currency {
+  color: #55657a;
+  font-size: clamp(1.2rem, 2vw, 1.75rem);
+  font-weight: 500;
+}
+
+.request-delivery-service-page__textarea {
+  min-height: 8.25rem;
+  resize: vertical;
+}
+
+.request-delivery-service-page__checkbox-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+}
+
+.request-delivery-service-page__checkbox-input {
+  float: none;
+  margin: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-color: #9db9d7;
+}
+
+.request-delivery-service-page__checkbox-input:checked {
+  background-color: #38b6ff;
+  border-color: #38b6ff;
+}
+
+.request-delivery-service-page__checkbox-input:focus {
+  box-shadow: 0 0 0 0.2rem rgba(56, 182, 255, 0.14);
+}
+
+.request-delivery-service-page__checkbox-label {
+  color: #49566a;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.request-delivery-service-page__button {
+  min-height: 3.7rem;
+  padding: 0.85rem 2rem;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.request-delivery-service-page__button--primary {
+  min-width: 180px;
+  border: none;
+  background-color: #38b6ff;
+  color: #ffffff;
+}
+
+.request-delivery-service-page__button--primary:hover,
+.request-delivery-service-page__button--primary:focus {
+  background-color: #1fa8f5;
+  color: #ffffff;
+}
+
+.request-delivery-service-page__button--secondary {
+  min-width: 140px;
+  border: 1px solid #d7deea;
+  background-color: #ffffff;
+  color: #5f6d82;
+}
+
+.request-delivery-service-page__button--secondary:hover,
+.request-delivery-service-page__button--secondary:focus {
+  border-color: #bfc9d8;
+  background-color: #f8fafc;
+  color: #425065;
+}
+
+@media (max-width: 767.98px) {
+  .request-delivery-service-page__card {
+    border-radius: 1.5rem;
+  }
+
+  .request-delivery-service-page__button--primary,
+  .request-delivery-service-page__button--secondary {
+    width: 100%;
+  }
+}

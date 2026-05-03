@@ -1,6 +1,6 @@
 'use strict';
 
-const { TrackingUpdate, Shipment } = require('../models');
+const { TrackingUpdate, Shipment, Order } = require('../models');
 
 const trackingIncludes = [
   {
@@ -89,6 +89,77 @@ const findTrackingById = async (req, res) => {
   }
 };
 
+const lookupTrackingByNumber = async (req, res) => {
+  try {
+    const trackingNumber = String(req.params.trackingNumber || '').trim();
+
+    if (!trackingNumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tracking number is required',
+      });
+    }
+
+    const shipment = await Shipment.findOne({
+      where: { tracking_number: trackingNumber },
+      include: [
+        {
+          model: Order,
+          as: 'order',
+        },
+        {
+          model: TrackingUpdate,
+          as: 'tracking_updates',
+        },
+      ],
+    });
+
+    if (!shipment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shipment not found',
+      });
+    }
+
+    const latestTrackingUpdate = [...(shipment.tracking_updates || [])].sort(
+      (left, right) => {
+        const leftTime = new Date(left.createdAt || 0).getTime();
+        const rightTime = new Date(right.createdAt || 0).getTime();
+
+        return rightTime - leftTime || right.id - left.id;
+      }
+    )[0];
+
+    const status = latestTrackingUpdate?.status || shipment.current_status || null;
+    const currentLocation =
+      latestTrackingUpdate?.current_location ||
+      (status === 'delivered'
+        ? shipment.order?.destination_city || null
+        : shipment.order?.origin_city || null);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Shipment tracking fetched successfully',
+      data: {
+        tracking_number: shipment.tracking_number,
+        status,
+        current_location: currentLocation,
+        expected_delivery_date: shipment.estimated_delivery_date,
+        origin_city: shipment.order?.origin_city || null,
+        destination_city: shipment.order?.destination_city || null,
+        sender_name: shipment.order?.sender_name || null,
+        receiver_name: shipment.order?.receiver_name || null,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch shipment tracking',
+      errors: [error.message],
+    });
+  }
+};
+
 const updateTracking = async (req, res) => {
   try {
     const { id } = req.params;
@@ -164,6 +235,7 @@ module.exports = {
   createTracking,
   getAllTrackings,
   findTrackingById,
+  lookupTrackingByNumber,
   updateTracking,
   deleteTracking,
 };

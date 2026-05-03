@@ -1,0 +1,56 @@
+.topbar-header {
+  background: #38b6ff;
+  color: #ffffff;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.topbar-header-inner {
+  min-height: 42px;
+  padding-block: 0.35rem;
+}
+
+.topbar-link {
+  transition: opacity 0.2s ease;
+}
+
+.topbar-link:hover,
+.topbar-link:focus {
+  opacity: 0.82;
+}
+
+.topbar-icon {
+  flex: 0 0 auto;
+  font-size: 0.95rem;
+}
+
+.topbar-contact {
+  font-weight: 500;
+}
+
+@media (max-width: 991.98px) {
+  .topbar-header {
+    font-size: 0.85rem;
+  }
+
+  .topbar-header-inner {
+    min-height: 38px;
+    justify-content: center !important;
+  }
+
+  .topbar-contact,
+  .topbar-social {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .topbar-header-inner {
+    padding-block: 0.45rem;
+  }
+
+  .topbar-contact {
+    gap: 0.5rem 1rem !important;
+  }
+}

@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
-dotenv = require('dotenv');
+const dotenv = require('dotenv');
+
 dotenv.config();
 
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
@@ -8,4 +9,5 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
   dialect: 'postgres',
   logging: process.env.SEQUELIZE_DEBUG === 'true' ? console.log : false,
 });
-export default sequelize;
+
+module.exports = sequelize;

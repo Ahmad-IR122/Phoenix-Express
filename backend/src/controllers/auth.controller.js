@@ -5,17 +5,21 @@ const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 
 const resetCodes = {};
+const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
+const normalizePhone = (value) => String(value || '').trim();
 
 const register = async (req, res) => {
   const t = await sequelize.transaction();
 
   try {
     const { email, phone, password, role, fullName, address } = req.body;
+    const normalizedEmail = normalizeEmail(email);
+    const normalizedPhone = normalizePhone(phone);
 
     const user = await User.create(
       {
-        email,
-        phone,
+        email: normalizedEmail,
+        phone: normalizedPhone,
         password,
         role,
       },
@@ -54,7 +58,9 @@ const register = async (req, res) => {
       data: createdUser,
     });
   } catch (error) {
-    await t.rollback();
+    if (!t.finished) {
+      await t.rollback();
+    }
 
     return res.status(400).json({
       success: false,
@@ -67,9 +73,18 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { phone, email, password } = req.body;
+    const normalizedPhone = normalizePhone(phone);
+    const normalizedEmail = normalizeEmail(email);
+
+    if (!normalizedPhone && !normalizedEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "رقم الهاتف أو البريد الإلكتروني مطلوب",
+      });
+    }
 
     const user = await User.findOne({
-      where: phone ? { phone } : { email },
+      where: normalizedPhone ? { phone: normalizedPhone } : { email: normalizedEmail },
       include: ['customer', 'employee'],
     });
 
@@ -113,8 +128,9 @@ const login = async (req, res) => {
 const forgotPassword = async (req, res) => {
   try {
     const { phone } = req.body;
+    const normalizedPhone = normalizePhone(phone);
 
-    const user = await User.findOne({ where: { phone } });
+    const user = await User.findOne({ where: { phone: normalizedPhone } });
 
     if (!user) {
       return res.status(404).json({
@@ -125,7 +141,7 @@ const forgotPassword = async (req, res) => {
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-    resetCodes[phone] = {
+    resetCodes[normalizedPhone] = {
       code,
       expiresAt: Date.now() + 5 * 60 * 1000,
     };
@@ -147,8 +163,9 @@ const forgotPassword = async (req, res) => {
 const resetPasswordWithCode = async (req, res) => {
   try {
     const { phone, code, newPassword } = req.body;
+    const normalizedPhone = normalizePhone(phone);
 
-    const savedCode = resetCodes[phone];
+    const savedCode = resetCodes[normalizedPhone];
 
     if (!savedCode) {
       return res.status(400).json({
@@ -158,7 +175,7 @@ const resetPasswordWithCode = async (req, res) => {
     }
 
     if (Date.now() > savedCode.expiresAt) {
-      delete resetCodes[phone];
+      delete resetCodes[normalizedPhone];
 
       return res.status(400).json({
         success: false,
@@ -173,7 +190,7 @@ const resetPasswordWithCode = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ where: { phone } });
+    const user = await User.findOne({ where: { phone: normalizedPhone } });
 
     if (!user) {
       return res.status(404).json({
@@ -185,7 +202,7 @@ const resetPasswordWithCode = async (req, res) => {
     user.password = newPassword;
     await user.save();
 
-    delete resetCodes[phone];
+    delete resetCodes[normalizedPhone];
 
     return res.status(200).json({
       success: true,
@@ -260,7 +277,11 @@ const updateAuth = async (req, res) => {
       });
     }
 
-    const updateData = { email, phone, role };
+    const updateData = {
+      role,
+      ...(email !== undefined ? { email: normalizeEmail(email) } : {}),
+      ...(phone !== undefined ? { phone: normalizePhone(phone) } : {}),
+    };
 
     if (password) {
       updateData.password = password;
