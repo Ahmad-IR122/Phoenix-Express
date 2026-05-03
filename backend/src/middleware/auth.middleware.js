@@ -1,7 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
-const { Employee, User } = require('../models');
+const { Admin, Employee, User } = require('../models');
 
 const decodeBase64Url = (value) => {
   const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
@@ -106,6 +106,77 @@ const authenticateEmployee = async (req, res, next) => {
   }
 };
 
+const authenticateUser = async (req, res, next) => {
+  try {
+    const token = getBearerToken(req);
+    const payload = verifyJwtToken(token);
+    const userId = Number(extractUserId(payload, req));
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+      });
+    }
+
+    const user = await User.findByPk(userId, {
+      attributes: ['id', 'role', 'email', 'phone'],
+      include: [
+        { model: Admin, as: 'admin', attributes: ['id', 'is_active'], required: false },
+        { model: Employee, as: 'employee', attributes: ['id', 'is_active'], required: false },
+      ],
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authenticated user not found',
+      });
+    }
+
+    req.user = {
+      id: user.id,
+      role: user.role,
+      email: user.email,
+      phone: user.phone,
+      adminId: user.admin?.id || null,
+      employeeId: user.employee?.id || null,
+      isAdminActive: user.admin?.is_active,
+      isEmployeeActive: user.employee?.is_active,
+      isMockAuth: false,
+    };
+
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid authentication data',
+      errors: [error.message],
+    });
+  }
+};
+
+const authenticateAdmin = async (req, res, next) => {
+  try {
+    return authenticateUser(req, res, async () => {
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Admin access only',
+        });
+      }
+
+      next();
+    });
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid authentication data',
+      errors: [error.message],
+    });
+  }
+};
+
 const findMockEmployee = async (preferredUserId) => {
   const employeeInclude = [
     {
@@ -185,6 +256,8 @@ const mockEmployeeAuth = async (req, res, next) => {
 };
 
 module.exports = {
+  authenticateAdmin,
+  authenticateUser,
   authenticateEmployee,
   mockEmployeeAuth,
 };

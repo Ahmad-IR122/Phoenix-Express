@@ -45,6 +45,53 @@ module.exports = (sequelize, DataTypes) => {
       modelName: 'WithdrawalRequest',
       tableName: 'withdrawal_requests',
       underscored: true,
+      hooks: {
+        afterUpdate: async (request, options) => {
+          if (!request.changed('status') || request.status !== 'paid') {
+            return;
+          }
+
+          const wallet = await sequelize.models.EmployeeWallet.findOne({
+            where: { employee_id: request.employee_id },
+            transaction: options.transaction,
+          });
+
+          if (!wallet) {
+            return;
+          }
+
+          const existingHandover = await sequelize.models.WalletTransaction.findOne({
+            where: {
+              wallet_id: wallet.id,
+              transaction_type: 'handover',
+              description: `تسليم مبالغ للشركة - طلب #${request.id}`,
+            },
+            transaction: options.transaction,
+          });
+
+          if (existingHandover) {
+            return;
+          }
+
+          await wallet.update(
+            {
+              available_balance: Number(wallet.available_balance || 0) - Number(request.amount || 0),
+            },
+            { transaction: options.transaction }
+          );
+
+          await sequelize.models.WalletTransaction.create(
+            {
+              wallet_id: wallet.id,
+              order_id: null,
+              transaction_type: 'handover',
+              amount: -Math.abs(Number(request.amount || 0)),
+              description: `تسليم مبالغ للشركة - طلب #${request.id}`,
+            },
+            { transaction: options.transaction }
+          );
+        },
+      },
     }
   );
 

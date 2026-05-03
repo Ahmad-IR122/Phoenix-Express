@@ -2,65 +2,21 @@ import React, { useEffect, useMemo, useState } from "react";
 import API from "../../../apis/api";
 import "./DashboardPage.css";
 
-const fallbackStats = {
-  activeOrders: 156,
-  availableEmployees: 24,
-  pendingOrders: 12,
-  dailyRevenue: 24600,
-};
-
-const fallbackWeeklyRevenue = [
-  { day: "السبت", total: 4400 },
-  { day: "الأحد", total: 5000 },
-  { day: "الاثنين", total: 4800 },
-  { day: "الثلاثاء", total: 6200 },
-  { day: "الأربعاء", total: 5800 },
-  { day: "الخميس", total: 7200 },
-  { day: "الجمعة", total: 7000 },
-];
-
-const fallbackOrdersByCity = [
-  { name: "رام الله", total: 240 },
-  { name: "نابلس", total: 190 },
-  { name: "الخليل", total: 155 },
-  { name: "بيت لحم", total: 140 },
-  { name: "جنين", total: 95 },
-];
-
-const fallbackRecentOrders = [
-  {
-    id: 4521,
-    merchant: "متجر الأناقة",
-    status: "in_transit",
-    driver: "أحمد محمد",
-    time: "10:30 ص",
-  },
-  {
-    id: 4520,
-    merchant: "متجر الإلكترونيات",
-    status: "delivered",
-    driver: "محمد علي",
-    time: "10:15 ص",
-  },
-  {
-    id: 4519,
-    merchant: "متجر الأزياء",
-    status: "pending",
-    driver: "-",
-    time: "10:00 ص",
-  },
-  {
-    id: 4518,
-    merchant: "متجر الكتب",
-    status: "in_transit",
-    driver: "خالد أحمد",
-    time: "09:45 ص",
-  },
-];
-
+const DASHBOARD_REFRESH_INTERVAL_MS = 15000;
 const getStatusLabel = (status) => {
   if (status === "delivered") return "تم التسليم";
-  if (["in_transit", "picked_up", "confirmed", "out_for_delivery", "accepted"].includes(status)) {
+  if (
+    [
+      "in_transit",
+      "picked_up",
+      "confirmed",
+      "out_for_delivery",
+      "accepted",
+      "assigned",
+      "in_progress",
+      "in_delivery",
+    ].includes(status)
+  ) {
     return "قيد التوصيل";
   }
   return "جديد";
@@ -68,27 +24,66 @@ const getStatusLabel = (status) => {
 
 const getStatusBadgeClass = (status) => {
   if (status === "delivered") return "admin-dashboard__status admin-dashboard__status--delivered";
-  if (["in_transit", "picked_up", "confirmed", "out_for_delivery", "accepted"].includes(status)) {
+  if (
+    [
+      "in_transit",
+      "picked_up",
+      "confirmed",
+      "out_for_delivery",
+      "accepted",
+      "assigned",
+      "in_progress",
+      "in_delivery",
+    ].includes(status)
+  ) {
     return "admin-dashboard__status admin-dashboard__status--in-progress";
   }
   return "admin-dashboard__status admin-dashboard__status--new";
 };
 
-const formatCurrency = (value) => `${new Intl.NumberFormat("ar").format(Number(value) || 0)} ₪`;
+const formatCurrency = (value) =>
+  `${new Intl.NumberFormat("ar").format(Number(value) || 0)} ₪`;
+
+const formatNumber = (value) => new Intl.NumberFormat("ar").format(Number(value) || 0);
+
+const formatDateTime = (value) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return date.toLocaleString("ar", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 const buildRevenueChart = (data) => {
-  const width = 640;
-  const height = 260;
-  const paddingX = 30;
-  const paddingTop = 24;
-  const paddingBottom = 42;
-  const maxValue = Math.max(...data.map((item) => item.value), 1);
+  const width = 960;
+  const height = 320;
+  const paddingLeft = 76;
+  const paddingRight = 28;
+  const paddingTop = 22;
+  const paddingBottom = 54;
+  const chartWidth = width - paddingLeft - paddingRight;
   const chartHeight = height - paddingTop - paddingBottom;
-  const chartWidth = width - paddingX * 2;
+  const maxValue = Math.max(...data.map((item) => item.value), 0);
+  const normalizedMax = maxValue <= 0 ? 10 : Math.ceil(maxValue / 10) * 10;
+  const yAxisTicks = Array.from({ length: 5 }, (_, index) => {
+    const step = index / 4;
+    const value = Math.round(normalizedMax * (1 - step));
+    const y = paddingTop + chartHeight * step;
+    return { value, y };
+  });
 
   const points = data.map((item, index) => {
-    const x = paddingX + (index * chartWidth) / Math.max(data.length - 1, 1);
-    const y = paddingTop + chartHeight - (item.value / maxValue) * chartHeight;
+    const x = paddingLeft + (index * chartWidth) / Math.max(data.length - 1, 1);
+    const y =
+      paddingTop +
+      chartHeight -
+      ((item.value || 0) / Math.max(normalizedMax, 1)) * chartHeight;
 
     return { ...item, x, y };
   });
@@ -96,136 +91,213 @@ const buildRevenueChart = (data) => {
   const linePath = points
     .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
     .join(" ");
-
-  const areaPath = `${linePath} L ${points[points.length - 1].x} ${height - paddingBottom} L ${points[0].x} ${height - paddingBottom} Z`;
+  const areaPath = points.length
+    ? `${linePath} L ${points[points.length - 1].x} ${height - paddingBottom} L ${points[0].x} ${
+        height - paddingBottom
+      } Z`
+    : "";
 
   return {
     width,
     height,
+    paddingLeft,
+    paddingRight,
     paddingBottom,
     points,
     linePath,
     areaPath,
+    yAxisTicks,
   };
 };
 
 function DashboardPage() {
   const [dashboardData, setDashboardData] = useState({
-    stats: fallbackStats,
-    weeklyRevenue: fallbackWeeklyRevenue,
-    ordersByCity: fallbackOrdersByCity,
-    recentOrders: fallbackRecentOrders,
+    dailyProfit: 0,
+    deliveredTodayCount: 0,
+    pendingShipments: 0,
+    activeShipments: 0,
+    availableDelegates: 0,
+    regionDistribution: [],
+    ordersByCity: [],
+    weeklyRevenue: [],
+    recentOrders: [],
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
 
-    const fetchDashboard = async () => {
+    const fetchDashboard = async ({ showLoader = false } = {}) => {
       try {
+        if (showLoader) setIsLoading(true);
+        setError("");
+
         const response = await API.get("/admin/dashboard");
         const payload = response?.data?.data;
 
-        if (!isMounted || !payload) {
-          return;
-        }
+        if (!isMounted || !payload) return;
 
         setDashboardData({
-          stats: {
-            activeOrders: Number(payload.stats?.activeOrders) || 0,
-            availableEmployees: Number(payload.stats?.availableEmployees) || 0,
-            pendingOrders: Number(payload.stats?.pendingOrders) || 0,
-            dailyRevenue: Number(payload.stats?.dailyRevenue) || 0,
-          },
-          weeklyRevenue:
-            payload.weeklyRevenue?.length > 0 ? payload.weeklyRevenue : fallbackWeeklyRevenue,
-          ordersByCity:
-            payload.ordersByCity?.length > 0 ? payload.ordersByCity : fallbackOrdersByCity,
-          recentOrders:
-            payload.recentOrders?.length > 0 ? payload.recentOrders : fallbackRecentOrders,
+          dailyProfit: Number(payload.dailyProfit) || 0,
+          deliveredTodayCount: Number(payload.deliveredTodayCount) || 0,
+          pendingShipments: Number(payload.pendingShipments) || 0,
+          activeShipments: Number(payload.activeShipments) || 0,
+          availableDelegates: Number(payload.availableDelegates) || 0,
+          regionDistribution: Array.isArray(payload.regionDistribution)
+            ? payload.regionDistribution
+            : [],
+          ordersByCity: Array.isArray(payload.ordersByCity) ? payload.ordersByCity : [],
+          weeklyRevenue: Array.isArray(payload.weeklyRevenue) ? payload.weeklyRevenue : [],
+          recentOrders: Array.isArray(payload.recentOrders)
+            ? payload.recentOrders.slice(0, 10)
+            : [],
         });
-      } catch (error) {
-        console.error("تعذر تحميل بيانات لوحة تحكم الأدمن:", error);
+      } catch (requestError) {
+        setError(
+          requestError?.response?.data?.message || "تعذر تحميل بيانات لوحة التحكم حالياً."
+        );
+      } finally {
+        if (isMounted && showLoader) {
+          setIsLoading(false);
+        }
       }
     };
 
-    fetchDashboard();
+    const refreshDashboard = () => {
+      fetchDashboard();
+    };
+
+    fetchDashboard({ showLoader: true });
+    const intervalId = window.setInterval(refreshDashboard, DASHBOARD_REFRESH_INTERVAL_MS);
+    window.addEventListener("focus", refreshDashboard);
 
     return () => {
       isMounted = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", refreshDashboard);
     };
   }, []);
 
   const stats = useMemo(
     () => [
       {
-        id: "active-orders",
+        id: "active-shipments",
         title: "الطلبات النشطة",
-        value: String(dashboardData.stats.activeOrders),
-        note: "الطرود الجديدة مع الطرود المسندة النشطة ضمن التشغيل",
+        value: String(dashboardData.activeShipments),
+        note: "الشحنات المسندة وقيد التوصيل",
         noteType: "positive",
         icon: "bi-box-seam",
       },
       {
-        id: "available-couriers",
-        title: "المناديب المتاحين",
-        value: String(dashboardData.stats.availableEmployees),
-        note: "المناديب النشطون الذين لديهم أقل من 5 طرود جارية",
+        id: "available-delegates",
+        title: "المناديب المتاحون",
+        value: String(dashboardData.availableDelegates),
+        note: "نشطون ومتاحة حالتهم",
         noteType: "positive",
         icon: "bi-people",
       },
       {
-        id: "pending-assignment",
-        title: "الطرود المعلقة",
-        value: String(dashboardData.stats.pendingOrders),
-        note: "الطرود التي ما زالت بانتظار التخصيص",
-        noteType: "negative",
-        icon: "bi-hourglass-split",
-      },
-      {
         id: "daily-profit",
         title: "الأرباح اليومية",
-        value: formatCurrency(dashboardData.stats.dailyRevenue),
-        note: "إجمالي أرباح الطلبات التي تم تسليمها اليوم",
+        value: formatCurrency(dashboardData.dailyProfit),
+        note: "رسوم التوصيل للطلبات المسلّمة اليوم",
         noteType: "positive",
         icon: "bi-cash-stack",
       },
+      {
+        id: "delivered-today",
+        title: "المسلّمة اليوم",
+        value: String(dashboardData.deliveredTodayCount),
+        note: "تحديث مباشر من الخادم",
+        noteType: "positive",
+        icon: "bi-check2-circle",
+      },
+      {
+        id: "pending-shipments",
+        title: "الطرود المعلقة",
+        value: String(dashboardData.pendingShipments),
+        note: "بانتظار التخصيص",
+        noteType: "negative",
+        icon: "bi-hourglass-split",
+      },
     ],
-    [dashboardData.stats],
+    [dashboardData]
   );
 
   const weeklyRevenue = useMemo(
     () =>
       dashboardData.weeklyRevenue.map((item) => ({
         day: item.day,
-        value: Number(item.total) || 0,
+        date: item.date,
+        value: Number(item.value ?? item.total) || 0,
       })),
-    [dashboardData.weeklyRevenue],
+    [dashboardData.weeklyRevenue]
   );
 
   const ordersByCity = useMemo(
     () =>
-      dashboardData.ordersByCity.map((item) => ({
-        city: item.name,
-        orders: Number(item.total) || 0,
+      (dashboardData.ordersByCity.length > 0
+        ? dashboardData.ordersByCity
+        : dashboardData.regionDistribution
+      ).map((item) => ({
+        city: item.city || "-",
+        label: item.city || "-",
+        count: Number(item.count) || 0,
       })),
-    [dashboardData.ordersByCity],
+    [dashboardData.ordersByCity, dashboardData.regionDistribution]
   );
 
   const recentOrders = useMemo(
     () =>
       dashboardData.recentOrders.map((order) => ({
         id: `#${order.id}`,
-        merchant: order.merchant || "-",
+        merchant: order.merchant_name || "-",
         status: order.status || "pending",
-        courier: order.driver || "-",
-        time: order.time || "-",
+        courier: order.delegate_name || "-",
+        createdAt: formatDateTime(order.created_at),
       })),
-    [dashboardData.recentOrders],
+    [dashboardData.recentOrders]
   );
 
   const revenueChart = buildRevenueChart(weeklyRevenue);
-  const maxCityOrders = Math.max(...ordersByCity.map((item) => item.orders), 1);
   const weeklyRevenueTotal = weeklyRevenue.reduce((sum, item) => sum + item.value, 0);
+  const maxRegionCount = Math.max(...ordersByCity.map((item) => item.count), 1);
+  const isEmpty =
+    !isLoading &&
+    !error &&
+    dashboardData.dailyProfit === 0 &&
+    dashboardData.deliveredTodayCount === 0 &&
+    dashboardData.pendingShipments === 0 &&
+    dashboardData.activeShipments === 0 &&
+    dashboardData.availableDelegates === 0 &&
+    ordersByCity.length === 0 &&
+    weeklyRevenue.every((item) => item.value === 0) &&
+    recentOrders.length === 0;
+
+  if (error) {
+    return (
+      <section dir="rtl" className="admin-dashboard">
+        <article className="admin-dashboard__card admin-dashboard__state-card">
+          <h2 className="admin-dashboard__card-title">تعذر تحميل لوحة التحكم</h2>
+          <p className="admin-dashboard__card-subtitle">{error}</p>
+        </article>
+      </section>
+    );
+  }
+
+  if (isEmpty) {
+    return (
+      <section dir="rtl" className="admin-dashboard">
+        <article className="admin-dashboard__card admin-dashboard__state-card">
+          <h2 className="admin-dashboard__card-title">لا توجد بيانات للعرض</h2>
+          <p className="admin-dashboard__card-subtitle">
+            ستظهر بيانات لوحة التحكم هنا عند توفر الشحنات والعمليات.
+          </p>
+        </article>
+      </section>
+    );
+  }
 
   return (
     <section dir="rtl" className="admin-dashboard">
@@ -238,7 +310,7 @@ function DashboardPage() {
 
             <div className="admin-dashboard__stat-content">
               <p className="admin-dashboard__stat-title">{stat.title}</p>
-              <h3 className="admin-dashboard__stat-value">{stat.value}</h3>
+              <h3 className="admin-dashboard__stat-value">{isLoading ? "—" : stat.value}</h3>
               <p
                 className={`admin-dashboard__stat-note ${
                   stat.noteType === "positive"
@@ -253,99 +325,120 @@ function DashboardPage() {
         ))}
       </div>
 
-      <div className="admin-dashboard__charts">
-        <article className="admin-dashboard__card admin-dashboard__card--wide">
+      <div className="admin-dashboard__chart-grid">
+        <article className="admin-dashboard__card admin-dashboard__chart-card">
           <div className="admin-dashboard__card-head">
             <div>
               <h2 className="admin-dashboard__card-title">الإيرادات الأسبوعية</h2>
               <p className="admin-dashboard__card-subtitle">
-                إجمالي: {formatCurrency(weeklyRevenueTotal)}
+                الإجمالي الأسبوعي: {isLoading ? "—" : formatCurrency(weeklyRevenueTotal)}
               </p>
             </div>
           </div>
 
           <div className="admin-dashboard__revenue-chart">
-            <svg
-              className="admin-dashboard__revenue-svg"
-              viewBox={`0 0 ${revenueChart.width} ${revenueChart.height}`}
-              preserveAspectRatio="none"
-              aria-label="مخطط الإيرادات الأسبوعية"
-              role="img"
-            >
-              <defs>
-                <linearGradient id="phoenixRevenueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2563eb" stopOpacity="0.28" />
-                  <stop offset="100%" stopColor="#2563eb" stopOpacity="0.02" />
-                </linearGradient>
-              </defs>
+            {isLoading ? (
+              <div className="admin-dashboard__state-inline">جاري تحميل البيانات...</div>
+            ) : weeklyRevenue.length === 0 ? (
+              <div className="admin-dashboard__state-inline">لا توجد إيرادات أسبوعية</div>
+            ) : (
+              <svg
+                className="admin-dashboard__revenue-svg"
+                viewBox={`0 0 ${revenueChart.width} ${revenueChart.height}`}
+                preserveAspectRatio="none"
+                aria-label="مخطط الإيرادات الأسبوعية"
+                role="img"
+              >
+                <defs>
+                  <linearGradient id="phoenixRevenueGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#2563eb" stopOpacity="0.28" />
+                    <stop offset="100%" stopColor="#2563eb" stopOpacity="0.04" />
+                  </linearGradient>
+                </defs>
 
-              {[0.25, 0.5, 0.75, 1].map((step) => {
-                const y =
-                  24 +
-                  (revenueChart.height - 24 - revenueChart.paddingBottom) *
-                    (1 - step);
+                {revenueChart.yAxisTicks.map((tick) => (
+                  <g key={`${tick.value}-${tick.y}`}>
+                    <line
+                      x1={revenueChart.paddingLeft}
+                      x2={revenueChart.width - revenueChart.paddingRight}
+                      y1={tick.y}
+                      y2={tick.y}
+                      className="admin-dashboard__grid-line"
+                    />
+                    <text
+                      x={revenueChart.paddingLeft - 12}
+                      y={tick.y + 4}
+                      textAnchor="end"
+                      className="admin-dashboard__y-axis-label"
+                    >
+                      {formatNumber(tick.value)}
+                    </text>
+                  </g>
+                ))}
 
-                return (
-                  <line
-                    key={step}
-                    x1="24"
-                    x2={revenueChart.width - 24}
-                    y1={y}
-                    y2={y}
-                    className="admin-dashboard__grid-line"
-                  />
-                );
-              })}
+                <path d={revenueChart.areaPath} className="admin-dashboard__area-path" />
+                <path d={revenueChart.linePath} className="admin-dashboard__line-path" />
 
-              <path d={revenueChart.areaPath} className="admin-dashboard__area-path" />
-              <path d={revenueChart.linePath} className="admin-dashboard__line-path" />
-
-              {revenueChart.points.map((point) => (
-                <g key={point.day}>
-                  <circle
-                    cx={point.x}
-                    cy={point.y}
-                    r="5.5"
-                    className="admin-dashboard__point"
-                  />
-                  <text
-                    x={point.x}
-                    y={revenueChart.height - 12}
-                    textAnchor="middle"
-                    className="admin-dashboard__axis-label"
-                  >
-                    {point.day}
-                  </text>
-                </g>
-              ))}
-            </svg>
+                {revenueChart.points.map((point) => (
+                  <g key={point.date}>
+                    <title>{`اليوم: ${point.day} | الإيراد: ${formatCurrency(point.value)}`}</title>
+                    <circle
+                      cx={point.x}
+                      cy={point.y}
+                      r="5"
+                      className="admin-dashboard__point"
+                    />
+                    <text
+                      x={point.x}
+                      y={revenueChart.height - 14}
+                      textAnchor="middle"
+                      className="admin-dashboard__axis-label"
+                    >
+                      {point.day}
+                    </text>
+                  </g>
+                ))}
+              </svg>
+            )}
           </div>
         </article>
 
-        <article className="admin-dashboard__card">
+        <article className="admin-dashboard__card admin-dashboard__chart-card">
           <div className="admin-dashboard__card-head">
             <div>
-              <h2 className="admin-dashboard__card-title">الطلبات حسب المنطقة</h2>
-              <p className="admin-dashboard__card-subtitle">توزيع الطلبات الحالية</p>
+              <h2 className="admin-dashboard__card-title">الطلبات حسب مدينة الاستلام</h2>
+              <p className="admin-dashboard__card-subtitle">توزيع الشحنات النشطة حسب مدينة الاستلام</p>
             </div>
           </div>
 
-          <div className="admin-dashboard__bars">
-            {ordersByCity.map((item) => (
-              <div key={item.city} className="admin-dashboard__bar-item">
-                <div className="admin-dashboard__bar-head">
-                  <span>{item.city}</span>
-                  <span>{item.orders}</span>
-                </div>
-
-                <div className="admin-dashboard__bar-track">
-                  <div
-                    className="admin-dashboard__bar-fill"
-                    style={{ width: `${(item.orders / maxCityOrders) * 100}%` }}
-                  ></div>
-                </div>
+          <div className="admin-dashboard__region-chart">
+            {isLoading ? (
+              <div className="admin-dashboard__state-inline">جاري تحميل البيانات...</div>
+            ) : ordersByCity.length === 0 ? (
+              <div className="admin-dashboard__state-inline">لا توجد بيانات مدن</div>
+            ) : (
+              <div className="admin-dashboard__region-list">
+                {ordersByCity.map((item) => (
+                  <div key={item.city} className="admin-dashboard__region-row">
+                    <div className="admin-dashboard__region-row-head">
+                      <span className="admin-dashboard__region-row-label">{item.label}</span>
+                      <span className="admin-dashboard__region-row-value">
+                        {formatNumber(item.count)}
+                      </span>
+                    </div>
+                    <div
+                      className="admin-dashboard__region-row-track"
+                      title={`المدينة: ${item.label} | عدد الطلبات: ${formatNumber(item.count)}`}
+                    >
+                      <div
+                        className="admin-dashboard__region-row-bar"
+                        style={{ width: `${Math.max((item.count / maxRegionCount) * 100, 8)}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         </article>
       </div>
@@ -353,74 +446,46 @@ function DashboardPage() {
       <article className="admin-dashboard__card admin-dashboard__table-card">
         <div className="admin-dashboard__card-head admin-dashboard__card-head--table">
           <div>
-            <h2 className="admin-dashboard__card-title">الطلبات الأخيرة</h2>
-            <p className="admin-dashboard__card-subtitle">آخر التحديثات في النظام</p>
+            <h2 className="admin-dashboard__card-title">آخر الشحنات</h2>
+            <p className="admin-dashboard__card-subtitle">آخر 10 شحنات في النظام</p>
           </div>
-
-          <button type="button" className="admin-dashboard__view-all">
-            عرض الكل
-          </button>
         </div>
 
-        <div className="admin-dashboard__table-wrap">
-          <table className="admin-dashboard__table">
-            <thead>
-              <tr>
-                <th>رقم الطلب</th>
-                <th>التاجر</th>
-                <th>الحالة</th>
-                <th>المندوب</th>
-                <th>الوقت</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {recentOrders.map((order) => (
-                <tr key={order.id}>
-                  <td className="admin-dashboard__order-id">{order.id}</td>
-                  <td>{order.merchant}</td>
-                  <td>
-                    <span className={getStatusBadgeClass(order.status)}>
-                      {getStatusLabel(order.status)}
-                    </span>
-                  </td>
-                  <td>{order.courier}</td>
-                  <td>{order.time}</td>
+        {isLoading ? (
+          <div className="admin-dashboard__state-inline">جاري تحميل البيانات...</div>
+        ) : recentOrders.length === 0 ? (
+          <div className="admin-dashboard__state-inline">لا توجد شحنات حديثة</div>
+        ) : (
+          <div className="admin-dashboard__table-wrap">
+            <table className="admin-dashboard__table">
+              <thead>
+                <tr>
+                  <th>رقم الطلب</th>
+                  <th>التاجر</th>
+                  <th>الحالة</th>
+                  <th>المندوب</th>
+                  <th>تاريخ الإنشاء</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
 
-        <div className="admin-dashboard__mobile-orders">
-          {recentOrders.map((order) => (
-            <article key={order.id} className="admin-dashboard__mobile-order-card">
-              <div className="admin-dashboard__mobile-order-top">
-                <span className="admin-dashboard__order-id">{order.id}</span>
-                <span className={getStatusBadgeClass(order.status)}>
-                  {getStatusLabel(order.status)}
-                </span>
-              </div>
-
-              <div className="admin-dashboard__mobile-order-grid">
-                <div className="admin-dashboard__mobile-order-row">
-                  <span className="admin-dashboard__mobile-order-label">Ø§Ù„ØªØ§Ø¬Ø±</span>
-                  <span className="admin-dashboard__mobile-order-value">{order.merchant}</span>
-                </div>
-
-                <div className="admin-dashboard__mobile-order-row">
-                  <span className="admin-dashboard__mobile-order-label">Ø§Ù„Ù…Ù†Ø¯ÙˆØ¨</span>
-                  <span className="admin-dashboard__mobile-order-value">{order.courier}</span>
-                </div>
-
-                <div className="admin-dashboard__mobile-order-row">
-                  <span className="admin-dashboard__mobile-order-label">Ø§Ù„ÙˆÙ‚Øª</span>
-                  <span className="admin-dashboard__mobile-order-value">{order.time}</span>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              <tbody>
+                {recentOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td className="admin-dashboard__order-id">{order.id}</td>
+                    <td>{order.merchant}</td>
+                    <td>
+                      <span className={getStatusBadgeClass(order.status)}>
+                        {getStatusLabel(order.status)}
+                      </span>
+                    </td>
+                    <td>{order.courier}</td>
+                    <td>{order.createdAt}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </article>
     </section>
   );

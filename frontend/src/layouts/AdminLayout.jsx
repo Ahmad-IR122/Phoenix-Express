@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import DashboardLayout from "../Components/layout/DashboardLayout";
 import adminNav from "../data/adminNav";
@@ -29,9 +30,12 @@ const adminNotifications = [
 const adminRouteByKey = {
   dashboard: "/admin/dashboard",
   shipments: "/admin/parcel-distribution",
+  returns: "/admin/returned-shipments",
   traders: "/admin/merchants",
   couriers: "/admin/delegates",
+  handover: "/admin/handover-requests",
   reports: "/admin/reports",
+  profile: "/admin/profile",
 };
 
 const adminNavItems = adminNav
@@ -52,10 +56,33 @@ const getTodayLabel = () =>
 export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const storedUser = useMemo(() => {
+    try {
+      const rawUser = localStorage.getItem("user") || sessionStorage.getItem("user");
+      return rawUser ? JSON.parse(rawUser) : null;
+    } catch {
+      return null;
+    }
+  }, []);
 
   const activeItem =
     adminNavItems.find((item) => location.pathname.startsWith(item.path)) ||
     adminNavItems[0];
+
+  const user = {
+    name: storedUser?.full_name || storedUser?.name || "إدارة النظام",
+    email: storedUser?.email || "admin@phoenix.com",
+    avatarText:
+      (storedUser?.full_name || storedUser?.name || "إدارة النظام").trim().charAt(0) || "إ",
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    navigate("/login", { replace: true });
+  };
 
   return (
     <DashboardLayout
@@ -78,15 +105,11 @@ export default function AdminLayout() {
       pageDate={getTodayLabel()}
       notificationCount={adminNotifications.length}
       notifications={adminNotifications}
-      user={{
-        name: "إدارة النظام",
-        email: "admin@phoenix.com",
-        avatarText: "P",
-      }}
-      employeeName="إدارة النظام"
+      user={user}
+      employeeName={user.name}
+      onLogout={handleLogout}
     >
       <Outlet />
     </DashboardLayout>
   );
 }
-//

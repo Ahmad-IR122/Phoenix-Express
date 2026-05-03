@@ -36,6 +36,15 @@ function normalize(value) {
 
 export function useCouriers() {
   const [couriers, setCouriers] = useState([]);
+  const [couriersSummary, setCouriersSummary] = useState({
+    totalDelegates: 0,
+    availableDelegates: 0,
+    busyDelegates: 0,
+    offlineDelegates: 0,
+    totalCollectedAmount: 0,
+    totalDeliveriesThisWeek: 0,
+    totalReturnsThisWeek: 0,
+  });
   const [filters, setFilters] = useState(initialFilters);
   const [isLoading, setIsLoading] = useState(true);
   const [isMutating, setIsMutating] = useState(false);
@@ -45,7 +54,18 @@ export function useCouriers() {
 
     try {
       const data = await getAllCouriers();
-      setCouriers(Array.isArray(data) ? data : []);
+      setCouriers(Array.isArray(data?.delegates) ? data.delegates : []);
+      setCouriersSummary(
+        data?.summary || {
+          totalDelegates: 0,
+          availableDelegates: 0,
+          busyDelegates: 0,
+          offlineDelegates: 0,
+          totalCollectedAmount: 0,
+          totalDeliveriesThisWeek: 0,
+          totalReturnsThisWeek: 0,
+        },
+      );
     } finally {
       setIsLoading(false);
     }
@@ -79,76 +99,61 @@ export function useCouriers() {
     });
   }, [couriers, filters]);
 
-  const operationalCouriers = useMemo(() => couriers, [couriers]);
-
   const summaryCards = useMemo(() => {
-    const availableCouriers = operationalCouriers.filter((courier) => courier.status === "available");
-    const busyCouriers = operationalCouriers.filter((courier) => courier.status === "busy");
-    const offlineCouriers = operationalCouriers.filter((courier) => courier.status === "offline");
-
-    const totalDeliveries = operationalCouriers.reduce(
-      (sum, courier) => sum + Number(courier.totalDeliveries || 0),
-      0
-    );
-    const totalCollectedAmount = operationalCouriers.reduce(
-      (sum, courier) => sum + Number(courier.collectedAmount || 0),
-      0
-    );
-
     return [
       {
         id: "total-couriers",
         label: "إجمالي المناديب",
-        value: formatNumber(operationalCouriers.length),
+        value: formatNumber(couriersSummary.totalDelegates),
         icon: "bi-people",
         iconClass: "phoenix-delegates__summary-icon--blue",
       },
       {
         id: "available-couriers",
         label: "المناديب المتاحين",
-        value: formatNumber(availableCouriers.length),
+        value: formatNumber(couriersSummary.availableDelegates),
         icon: "bi-person-check",
         iconClass: "phoenix-delegates__summary-icon--green",
       },
       {
         id: "busy-couriers",
         label: "المناديب المشغولين",
-        value: formatNumber(busyCouriers.length),
+        value: formatNumber(couriersSummary.busyDelegates),
         icon: "bi-truck",
         iconClass: "phoenix-delegates__summary-icon--orange",
       },
       {
+        id: "weekly-deliveries",
+        label: "إجمالي التوصيلات هذا الأسبوع",
+        value: formatNumber(couriersSummary.totalDeliveriesThisWeek),
+        icon: "bi-box-seam",
+        iconClass: "phoenix-delegates__summary-icon--teal",
+      },
+      {
         id: "offline-couriers",
-        label: "غير المتصلين / غير النشطين",
-        value: formatNumber(offlineCouriers.length),
+        label: "المناديب غير المتصلين",
+        value: formatNumber(couriersSummary.offlineDelegates),
         icon: "bi-person-x",
         iconClass: "phoenix-delegates__summary-icon--slate",
       },
       {
-        id: "total-deliveries",
-        label: "إجمالي التوصيلات",
-        value: formatNumber(totalDeliveries),
-        icon: "bi-check2-circle",
-        iconClass: "phoenix-delegates__summary-icon--blue",
-      },
-      {
         id: "total-collected",
         label: "إجمالي المبالغ المحصلة",
-        value: formatCurrency(totalCollectedAmount),
+        value: formatCurrency(couriersSummary.totalCollectedAmount),
         icon: "bi-cash-stack",
         iconClass: "phoenix-delegates__summary-icon--purple",
       },
     ];
-  }, [operationalCouriers]);
+  }, [couriersSummary]);
 
   const areas = useMemo(
     () => [...new Set(couriers.map((courier) => courier.area).filter(Boolean))].sort(),
-    [couriers]
+    [couriers],
   );
 
   const vehicleTypes = useMemo(
     () => [...new Set(couriers.map((courier) => courier.vehicleType).filter(Boolean))],
-    [couriers]
+    [couriers],
   );
 
   const submitCreateCourier = async (payload) => {
@@ -173,11 +178,11 @@ export function useCouriers() {
     }
   };
 
-  const submitToggleCourierStatus = async (courierId) => {
+  const submitToggleCourierStatus = async (courierId, isActive) => {
     setIsMutating(true);
 
     try {
-      await toggleCourierStatus(courierId);
+      await toggleCourierStatus(courierId, isActive);
       await loadCouriers();
     } finally {
       setIsMutating(false);

@@ -7,6 +7,7 @@ function DashboardHeader({
   notifications = [],
   customDate,
   employeeName,
+  onLogout,
   onOpenSidebar,
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,7 +17,7 @@ function DashboardHeader({
     if (customDate) return customDate;
 
     const now = new Date();
-   const weekdays = [
+    const weekdays = [
       "الأحد",
       "الاثنين",
       "الثلاثاء",
@@ -41,7 +42,7 @@ function DashboardHeader({
       "ديسمبر",
     ];
 
-    return `${weekdays[now.getDay()]}ØŒ ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    return `${weekdays[now.getDay()]}، ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
   }, [customDate]);
 
   useEffect(() => {
@@ -55,11 +56,10 @@ function DashboardHeader({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-    const isEmployeeLayout = layoutType === "employee";
-    const headerTitle = isEmployeeLayout
-    ? `مرحبًا، ${employeeName || "رغد"}`
+  const isEmployeeLayout = layoutType === "employee";
+  const headerTitle = isEmployeeLayout
+    ? `مرحبًا، ${employeeName || "الموظف"}`
     : "مرحبًا بك في لوحة التحكم";
-
 
   return (
     <header dir="rtl" className="phoenix-header">
@@ -79,6 +79,18 @@ function DashboardHeader({
             <i className="bi bi-list"></i>
           </button>
 
+          {onLogout ? (
+            <button
+              type="button"
+              className="phoenix-bell-btn"
+              onClick={onLogout}
+              aria-label="Logout"
+              title="تسجيل الخروج"
+            >
+              <i className="bi bi-box-arrow-right"></i>
+            </button>
+          ) : null}
+
           <div className="phoenix-header-notification">
             <button
               type="button"
@@ -96,7 +108,7 @@ function DashboardHeader({
             {isOpen && (
               <div dir="rtl" className="phoenix-notification-dropdown">
                 <div className="phoenix-notification-dropdown-header">
-                  <h3>Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª</h3>
+                  <h3>التنبيهات</h3>
                 </div>
 
                 <div className="phoenix-notification-list">
@@ -104,32 +116,24 @@ function DashboardHeader({
                     notifications.map((item) => (
                       <div key={item.id} className="phoenix-notification-item">
                         <div className="phoenix-notification-item-text">
-                          <div className="phoenix-notification-text">
-                            {item.title}
-                          </div>
-                          <div className="phoenix-notification-time">
-                            {item.time}
-                          </div>
+                          <div className="phoenix-notification-text">{item.title}</div>
+                          <div className="phoenix-notification-time">{item.time}</div>
                         </div>
 
-                        <div
-                          className={`phoenix-notification-icon ${
-                            item.type || "info"
-                          }`}
-                        >
+                        <div className={`phoenix-notification-icon ${item.type || "info"}`}>
                           <i className={`bi ${item.icon || "bi-bell"}`}></i>
                         </div>
                       </div>
                     ))
                   ) : (
                     <div className="phoenix-notification-empty">
-                      Ù„Ø§ ÙŠÙˆØ¬Ø¯ ØªÙ†Ø¨ÙŠÙ‡Ø§Øª Ø­Ø§Ù„ÙŠØ§Ù‹
+                      لا يوجد تنبيهات حالياً
                     </div>
                   )}
                 </div>
 
                 <button type="button" className="phoenix-view-all-btn">
-                  Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª
+                  عرض جميع التنبيهات
                 </button>
               </div>
             )}

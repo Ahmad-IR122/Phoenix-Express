@@ -1,4 +1,6 @@
-// TODO: Replace this local in-memory service with real admin courier endpoints.
+import API from "../../../apis/api";
+
+// TODO: Replace the remaining local details/create/edit mutations with dedicated admin endpoints.
 const NOW = new Date("2026-04-24T12:00:00");
 const ACTIVE_SHIPMENT_STATUSES = ["assigned", "picked_up", "in_transit", "out_for_delivery"];
 const DELIVERED_SHIPMENT_STATUSES = ["delivered"];
@@ -776,7 +778,33 @@ function buildDetailsSection(employeeId) {
 }
 
 export async function getAllCouriers() {
-  return employeesTable.map(deriveCourierRow);
+  const response = await API.get("/admin/delegates");
+  const payload = response.data?.data || { delegates: [], summary: {} };
+
+  return {
+    delegates: (payload.delegates || []).map((delegate) => ({
+      id: delegate.id,
+      userId: delegate.userId,
+      name: delegate.full_name,
+      phone: delegate.phone || "-",
+      city: delegate.vehicle?.brand || "-",
+      area: delegate.vehicle?.model || "-",
+      vehicleType: delegate.vehicle?.type || "motorcycle",
+      nationalId: "-",
+      licenseNumber: delegate.vehicle?.plate_number || "-",
+      isActive: Boolean(delegate.is_active),
+      activityState: delegate.is_active ? "active" : "inactive",
+      status: delegate.availability_status,
+      activeOrdersCount: Number(delegate.activeOrdersCount || 0),
+      totalDeliveries: Number(delegate.deliveredOrdersCount || 0),
+      returnedOrders: Number(delegate.returnedOrdersCount || 0),
+      collectedAmount: Number(delegate.collectedAmount || 0),
+      lastActivity: null,
+      walletBalance: Number(delegate.collectedAmount || 0),
+      vehicle: delegate.vehicle,
+    })),
+    summary: payload.summary || {},
+  };
 }
 
 export async function createCourier(payload) {
@@ -832,19 +860,11 @@ export async function updateCourier(courierId, payload) {
   return updated ? deriveCourierRow(updated) : null;
 }
 
-export async function toggleCourierStatus(courierId) {
-  employeesTable = employeesTable.map((employee) =>
-    employee.id === courierId
-      ? {
-          ...employee,
-          isActive: !employee.isActive,
-          lastSeenAt: !employee.isActive ? NOW.toISOString() : employee.lastSeenAt,
-        }
-      : employee
-  );
-
-  const updated = employeesTable.find((employee) => employee.id === courierId);
-  return updated ? deriveCourierRow(updated) : null;
+export async function toggleCourierStatus(courierId, isActive) {
+  const response = await API.patch(`/admin/delegates/${courierId}/status`, {
+    is_active: isActive,
+  });
+  return response.data?.data || null;
 }
 
 export async function getCourierDetails(courierId) {

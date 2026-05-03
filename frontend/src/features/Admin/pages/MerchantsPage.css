@@ -49,8 +49,12 @@
 /* Summary Cards */
 .phoenix-merchants__summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+}
+
+.phoenix-merchants__summary-grid--secondary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .phoenix-merchants__summary-card {
@@ -432,6 +436,10 @@
   gap: 4px;
 }
 
+.phoenix-merchants__modal-item--wide {
+  grid-column: 1 / -1;
+}
+
 .phoenix-merchants__modal-label {
   font-size: var(--phoenix-admin-micro);
   color: #94a3b8;
@@ -472,6 +480,128 @@
   font-size: var(--phoenix-admin-body);
   color: #64748b;
   line-height: 1.6;
+}
+
+.phoenix-merchants__input,
+.phoenix-merchants__textarea {
+  width: 100%;
+  border: 1px solid var(--phoenix-admin-border-strong);
+  border-radius: 12px;
+  background: #fff;
+  color: #0f172a;
+  font-size: var(--phoenix-admin-body);
+  font-family: inherit;
+  padding: 10px 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.phoenix-merchants__input {
+  min-height: 42px;
+}
+
+.phoenix-merchants__textarea {
+  resize: vertical;
+}
+
+.phoenix-merchants__input:focus,
+.phoenix-merchants__textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.phoenix-merchants__settlement-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.phoenix-merchants__settlement-form {
+  display: grid;
+  gap: 14px;
+}
+
+.phoenix-merchants__settlement-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.phoenix-merchants__settle-btn {
+  min-width: 180px;
+  min-height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb, #38b6ff);
+  color: #fff;
+  font-size: var(--phoenix-admin-body);
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 12px 22px rgba(37, 99, 235, 0.18);
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.phoenix-merchants__settle-btn:hover {
+  transform: translateY(-1px);
+}
+
+.phoenix-merchants__settle-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.phoenix-merchants__feedback {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: var(--phoenix-admin-caption);
+  font-weight: 700;
+}
+
+.phoenix-merchants__feedback--error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.phoenix-merchants__settlement-history {
+  display: grid;
+  gap: 10px;
+}
+
+.phoenix-merchants__settlement-record {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.phoenix-merchants__settlement-record > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.phoenix-merchants__settlement-record p,
+.phoenix-merchants__settlement-record small {
+  margin: 0;
+}
+
+.phoenix-merchants__settlement-record p {
+  color: #475569;
+  line-height: 1.7;
+}
+
+.phoenix-merchants__settlement-record small {
+  color: #94a3b8;
 }
 
 /* Responsive */

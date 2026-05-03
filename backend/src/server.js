@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-console.log("server file loaded");
 const app = express();
 const port = 5000;
 const adminRoutes = require("./routes/admin.routes");
@@ -36,7 +35,6 @@ app.use('/api/shipments', shipmentRoutes);
 app.use('/api/tracking', trackingRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/wallets', walletRoutes);
-console.log("routes mounted");
 /*   <!-- END of AHMAD code  --> */
 
 /*   <!-- RAGHAD  code  --> */
@@ -51,20 +49,11 @@ app.get("/", (req, res) => {
 });
 
 const server = app.listen(port, () => {
-  console.log("listen callback reached");
   console.log(`Server is running on http://localhost:${port}`);
 });
 
 server.on("error", (err) => {
   console.error("Server error:", err);
-});
-
-server.on("close", () => {
-  console.log("Server was closed");
-});
-
-process.on("exit", (code) => {
-  console.log("Process exit with code:", code);
 });
 
 process.on("uncaughtException", (err) => {

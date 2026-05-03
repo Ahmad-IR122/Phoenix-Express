@@ -19,9 +19,24 @@ module.exports = (sequelize, DataTypes) => {
         as: 'company_profile',
       });
 
+      Customer.hasOne(models.CompanyCustomerProfile, {
+        foreignKey: 'customer_id',
+        as: 'companyProfile',
+      });
+
       Customer.hasMany(models.Order, {
         foreignKey: 'customer_id',
         as: 'orders',
+      });
+
+      Customer.hasMany(models.MerchantSettlement, {
+        foreignKey: 'customer_id',
+        as: 'merchant_settlements',
+      });
+
+      Customer.hasMany(models.MerchantSettlement, {
+        foreignKey: 'customer_id',
+        as: 'settlements',
       });
 
       Customer.hasMany(models.Feedback, {

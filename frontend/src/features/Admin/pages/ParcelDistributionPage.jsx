@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import API from "../../../apis/api";
 import "./ParcelDistributionPage.css";
 
@@ -6,6 +6,7 @@ const FALLBACK_DATA = {
   newParcels: [],
   assignedParcels: [],
   availableDrivers: [],
+  allDrivers: [],
   summary: {
     newParcelsCount: 0,
     assignedParcelsCount: 0,
@@ -18,6 +19,7 @@ const FALLBACK_DATA = {
 const DRIVER_STATUS_CLASS = {
   متاح: "admin-distribution__driver-badge--available",
   مشغول: "admin-distribution__driver-badge--busy",
+  "غير متصل": "admin-distribution__driver-badge--offline",
 };
 
 const SUMMARY_ITEMS = [
@@ -30,26 +32,61 @@ const SUMMARY_ITEMS = [
   },
   {
     id: "assigned",
-    label: "الطرود المسندة",
+    label: "الشحنات المسندة",
     key: "assignedParcelsCount",
     icon: "bi-truck",
     tone: "admin-distribution__summary-card--sky",
   },
   {
     id: "available",
-    label: "المناديب المتاحين",
+    label: "المندوبون المتاحون",
     key: "availableDriversCount",
     icon: "bi-person-check",
     tone: "admin-distribution__summary-card--green",
   },
   {
     id: "busy",
-    label: "المناديب المشغولين",
+    label: "المندوبون المشغولون",
     key: "busyDriversCount",
     icon: "bi-person-fill-lock",
     tone: "admin-distribution__summary-card--red",
   },
 ];
+
+const STATUS_FILTERS = [
+  { value: "all", label: "كل حالات الشحنات" },
+  { value: "accepted", label: "مسند" },
+  { value: "picked_up", label: "تم الاستلام" },
+  { value: "in_transit", label: "جارية" },
+  { value: "arrived_to_destination_city", label: "وصلت للمدينة" },
+  { value: "out_for_delivery", label: "قيد التوصيل" },
+];
+
+const moneyFormatter = new Intl.NumberFormat("en-US");
+
+const formatMoney = (value) => `${moneyFormatter.format(Number(value || 0))} ₪`;
+
+const buildParams = (filters) => {
+  const params = {};
+
+  if (filters.search.trim()) {
+    params.search = filters.search.trim();
+  }
+
+  if (filters.regionId) {
+    params.regionId = filters.regionId;
+  }
+
+  if (filters.shipmentStatus !== "all") {
+    params.shipmentStatus = filters.shipmentStatus;
+  }
+
+  if (filters.driverId) {
+    params.driverId = filters.driverId;
+  }
+
+  return params;
+};
 
 function ParcelDistributionPage() {
   const [distributionData, setDistributionData] = useState(FALLBACK_DATA);
@@ -59,33 +96,84 @@ function ParcelDistributionPage() {
   const [selectedParcel, setSelectedParcel] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submittingDriverId, setSubmittingDriverId] = useState(null);
+  const [filters, setFilters] = useState({
+    search: "",
+    regionId: "",
+    shipmentStatus: "all",
+    driverId: "",
+  });
+  const deferredSearch = useDeferredValue(filters.search);
+  const requestFilters = useMemo(
+    () => ({
+      ...filters,
+      search: deferredSearch,
+    }),
+    [deferredSearch, filters],
+  );
 
-  const loadDistributionData = async () => {
+  const loadDistributionData = async (nextFilters) => {
     try {
       setIsLoading(true);
       setPageError("");
 
-      const response = await API.get("/admin/parcel-distribution");
+      const response = await API.get("/admin/parcel-distribution", {
+        params: buildParams(nextFilters),
+      });
       setDistributionData(response.data?.data || FALLBACK_DATA);
     } catch (error) {
       setDistributionData(FALLBACK_DATA);
-      setPageError("تعذر تحميل بيانات توزيع الطرود حاليًا.");
+      setPageError("تعذر تحميل بيانات توزيع الطرود حالياً.");
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadDistributionData();
-  }, []);
+    loadDistributionData(requestFilters);
+  }, [requestFilters]);
 
   const summary = distributionData.summary || FALLBACK_DATA.summary;
-  const newParcels = distributionData.newParcels || [];
-  const assignedParcels = distributionData.assignedParcels || [];
-  const drivers = useMemo(
-    () => distributionData.availableDrivers || [],
-    [distributionData.availableDrivers],
+  const newParcels = useMemo(
+    () => distributionData.newParcels || [],
+    [distributionData.newParcels],
   );
+  const assignedParcels = useMemo(
+    () => distributionData.assignedParcels || [],
+    [distributionData.assignedParcels],
+  );
+  const allDrivers = distributionData.allDrivers || [];
+  const drivers = distributionData.availableDrivers || [];
+
+  const regions = useMemo(() => {
+    const regionsMap = new Map();
+
+    [...newParcels, ...assignedParcels].forEach((parcel) => {
+      if (parcel.region?.id) {
+        regionsMap.set(parcel.region.id, parcel.region.name || parcel.regionName || "-");
+      }
+    });
+
+    return Array.from(regionsMap.entries()).map(([id, name]) => ({ id, name }));
+  }, [assignedParcels, newParcels]);
+
+  const handleFilterChange = (key, value) => {
+    setFilters((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      search: "",
+      regionId: "",
+      shipmentStatus: "all",
+      driverId: "",
+    });
+  };
+
+  const refreshData = () =>
+    loadDistributionData(requestFilters);
 
   const openAssignModal = (parcel) => {
     setSelectedParcel(parcel);
@@ -114,7 +202,7 @@ function ParcelDistributionPage() {
       });
 
       closeAssignModal();
-      await loadDistributionData();
+      await refreshData();
     } catch (error) {
       setActionError(
         error.response?.data?.message || "تعذر تخصيص الطرد للمندوب في الوقت الحالي.",
@@ -129,12 +217,77 @@ function ParcelDistributionPage() {
       <div className="admin-distribution__hero">
         <div className="admin-distribution__hero-copy">
           <span className="admin-distribution__eyebrow">لوحة التوزيع</span>
-          <h1 className="admin-distribution__title">نظام توزيع الطرود الذكي</h1>
+          <h1 className="admin-distribution__title">توزيع الشحنات على المندوبين</h1>
           <p className="admin-distribution__subtitle">
-            إدارة وتوزيع الطرود على المناديب
+            راجع الطرود المعلقة، الشحنات المسندة، والمندوبين المتاحين من نفس الصفحة.
           </p>
         </div>
+        <button
+          type="button"
+          className="admin-distribution__action-btn admin-distribution__action-btn--secondary"
+          onClick={refreshData}
+        >
+          تحديث البيانات
+        </button>
       </div>
+
+      <article className="admin-distribution__card admin-distribution__toolbar">
+        <label className="admin-distribution__search">
+          <i className="bi bi-search"></i>
+          <input
+            type="text"
+            value={filters.search}
+            onChange={(event) => handleFilterChange("search", event.target.value)}
+            placeholder="ابحث برقم الشحنة أو الطلب أو اسم التاجر أو المستلم"
+          />
+        </label>
+
+        <select
+          className="admin-distribution__select"
+          value={filters.regionId}
+          onChange={(event) => handleFilterChange("regionId", event.target.value)}
+        >
+          <option value="">كل المناطق</option>
+          {regions.map((region) => (
+            <option key={region.id} value={region.id}>
+              {region.name}
+            </option>
+          ))}
+        </select>
+
+        <select
+          className="admin-distribution__select"
+          value={filters.shipmentStatus}
+          onChange={(event) => handleFilterChange("shipmentStatus", event.target.value)}
+        >
+          {STATUS_FILTERS.map((status) => (
+            <option key={status.value} value={status.value}>
+              {status.label}
+            </option>
+          ))}
+        </select>
+
+        <select
+          className="admin-distribution__select"
+          value={filters.driverId}
+          onChange={(event) => handleFilterChange("driverId", event.target.value)}
+        >
+          <option value="">كل المندوبين</option>
+          {allDrivers.map((driver) => (
+            <option key={driver.id} value={driver.id}>
+              {driver.fullName}
+            </option>
+          ))}
+        </select>
+
+        <button
+          type="button"
+          className="admin-distribution__action-btn admin-distribution__action-btn--ghost"
+          onClick={resetFilters}
+        >
+          إعادة ضبط
+        </button>
+      </article>
 
       <div className="admin-distribution__summary-grid">
         {SUMMARY_ITEMS.map((item) => (
@@ -161,7 +314,7 @@ function ParcelDistributionPage() {
           <button
             type="button"
             className="admin-distribution__action-btn admin-distribution__action-btn--primary"
-            onClick={loadDistributionData}
+            onClick={refreshData}
           >
             إعادة المحاولة
           </button>
@@ -175,15 +328,52 @@ function ParcelDistributionPage() {
       ) : (
         <>
           <div className="admin-distribution__layout">
+            <article className="admin-distribution__card admin-distribution__delegates-card">
+              <div className="admin-distribution__section-head">
+                <div>
+                  <h2 className="admin-distribution__section-title">المندوبون المتاحون</h2>
+                  <p className="admin-distribution__section-subtitle">
+                    يمكن الإسناد فقط للمندوب النشط الذي حالته الحالية متاح.
+                  </p>
+                </div>
+              </div>
+
+              {drivers.length === 0 ? (
+                <div className="admin-distribution__empty">
+                  <i className="bi bi-person-x"></i>
+                  <span>لا يوجد مندوب متاح حالياً للاستلام.</span>
+                </div>
+              ) : (
+                <div className="admin-distribution__drivers">
+                  {drivers.map((driver) => (
+                    <div key={driver.id} className="admin-distribution__driver-row">
+                      <div className="admin-distribution__driver-copy">
+                        <h3>{driver.fullName}</h3>
+                        <p>{driver.phone}</p>
+                        <p>{driver.address}</p>
+                        <p>{driver.activeParcels} طرود نشطة</p>
+                      </div>
+                      <span
+                        className={`admin-distribution__driver-badge ${
+                          DRIVER_STATUS_CLASS[driver.availabilityStatus] ||
+                          "admin-distribution__driver-badge--available"
+                        }`}
+                      >
+                        {driver.availabilityStatus}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </article>
+
             <section className="admin-distribution__main">
               <article className="admin-distribution__card">
                 <div className="admin-distribution__section-head">
                   <div>
-                    <h2 className="admin-distribution__section-title">
-                      الطرود المعلقة
-                    </h2>
+                    <h2 className="admin-distribution__section-title">الطرود المعلقة</h2>
                     <p className="admin-distribution__section-subtitle">
-                      الطرود التي لم تُخصص بعد إلى أي مندوب.
+                      الطرود التي ما زالت في الشركة ولم تُسند بعد إلى أي مندوب.
                     </p>
                   </div>
                   <span className="admin-distribution__count">{summary.newParcelsCount}</span>
@@ -191,7 +381,8 @@ function ParcelDistributionPage() {
 
                 {newParcels.length === 0 ? (
                   <div className="admin-distribution__empty">
-                    لا توجد طرود جديدة تحتاج تخصيصًا الآن.
+                    <i className="bi bi-inbox"></i>
+                    <span>لا توجد طرود معلقة مطابقة للفلاتر الحالية.</span>
                   </div>
                 ) : (
                   <div className="admin-distribution__parcel-list">
@@ -199,13 +390,26 @@ function ParcelDistributionPage() {
                       <article key={parcel.orderId} className="admin-distribution__parcel-card">
                         <div className="admin-distribution__parcel-top">
                           <div>
-                            <h3 className="admin-distribution__parcel-id">#{parcel.orderId}</h3>
+                            <h3 className="admin-distribution__parcel-id">طلب #{parcel.orderId}</h3>
                             <p className="admin-distribution__parcel-merchant">{parcel.merchant}</p>
                           </div>
-                          <span className="admin-distribution__priority">{parcel.priority}</span>
+                          <div className="admin-distribution__parcel-badges">
+                            <span className="admin-distribution__priority">{parcel.priority}</span>
+                            <span className="admin-distribution__status-chip admin-distribution__status-chip--muted">
+                              {parcel.orderStatus}
+                            </span>
+                          </div>
                         </div>
 
                         <div className="admin-distribution__parcel-grid">
+                          <div>
+                            <span className="admin-distribution__label">رقم الشحنة</span>
+                            <p>{parcel.shipmentNumber}</p>
+                          </div>
+                          <div>
+                            <span className="admin-distribution__label">المنطقة</span>
+                            <p>{parcel.regionName}</p>
+                          </div>
                           <div>
                             <span className="admin-distribution__label">المستلم</span>
                             <p>{parcel.receiverName}</p>
@@ -215,12 +419,24 @@ function ParcelDistributionPage() {
                             <p>{parcel.receiverPhone}</p>
                           </div>
                           <div>
-                            <span className="admin-distribution__label">المدينة</span>
+                            <span className="admin-distribution__label">من</span>
+                            <p>{parcel.originCity}</p>
+                          </div>
+                          <div>
+                            <span className="admin-distribution__label">إلى</span>
                             <p>{parcel.destinationCity}</p>
                           </div>
                           <div>
                             <span className="admin-distribution__label">الحجم</span>
                             <p>{parcel.packageSize}</p>
+                          </div>
+                          <div>
+                            <span className="admin-distribution__label">رسوم التوصيل</span>
+                            <p>{formatMoney(parcel.deliveryFee)}</p>
+                          </div>
+                          <div>
+                            <span className="admin-distribution__label">سعر المنتج</span>
+                            <p>{formatMoney(parcel.productPrice)}</p>
                           </div>
                           <div className="admin-distribution__parcel-grid-wide">
                             <span className="admin-distribution__label">العنوان</span>
@@ -236,19 +452,22 @@ function ParcelDistributionPage() {
                           type="button"
                           className="admin-distribution__action-btn admin-distribution__action-btn--primary"
                           onClick={() => openAssignModal(parcel)}
+                          disabled={drivers.length === 0}
                         >
-                          تخصيص لمندوب
+                          {drivers.length === 0 ? "لا يوجد مندوب متاح" : "تخصيص لمندوب متاح"}
                         </button>
                       </article>
                     ))}
                   </div>
                 )}
               </article>
-
+            </section>
+            
+            <section className="admin-distribution__main">
               <article className="admin-distribution__card">
                 <div className="admin-distribution__section-head">
                   <div>
-                    <h2 className="admin-distribution__section-title">الطرود المسندة النشطة</h2>
+                    <h2 className="admin-distribution__section-title">الشحنات المسندة النشطة</h2>
                     <p className="admin-distribution__section-subtitle">
                       الشحنات المرتبطة بمندوب وما زالت ضمن الحالات التشغيلية النشطة.
                     </p>
@@ -259,7 +478,10 @@ function ParcelDistributionPage() {
                 </div>
 
                 {assignedParcels.length === 0 ? (
-                  <div className="admin-distribution__empty">لا توجد طرود مسندة حاليًا.</div>
+                  <div className="admin-distribution__empty">
+                    <i className="bi bi-truck"></i>
+                    <span>لا توجد شحنات مسندة مطابقة للفلاتر الحالية.</span>
+                  </div>
                 ) : (
                   <div className="admin-distribution__assigned-list">
                     {assignedParcels.map((parcel) => (
@@ -269,7 +491,7 @@ function ParcelDistributionPage() {
                       >
                         <div className="admin-distribution__assigned-top">
                           <div>
-                            <h3 className="admin-distribution__parcel-id">#{parcel.orderId}</h3>
+                            <h3 className="admin-distribution__parcel-id">طلب #{parcel.orderId}</h3>
                             <p className="admin-distribution__parcel-merchant">{parcel.merchant}</p>
                           </div>
                           <span className="admin-distribution__status-chip">
@@ -279,20 +501,48 @@ function ParcelDistributionPage() {
 
                         <div className="admin-distribution__assigned-grid">
                           <div>
+                            <span className="admin-distribution__label">رقم التتبع</span>
+                            <p>{parcel.trackingNumber}</p>
+                          </div>
+                          <div>
+                            <span className="admin-distribution__label">المنطقة</span>
+                            <p>{parcel.regionName}</p>
+                          </div>
+                          <div>
                             <span className="admin-distribution__label">المندوب</span>
                             <p>{parcel.driverName}</p>
                           </div>
                           <div>
-                            <span className="admin-distribution__label">رقم التتبع</span>
-                            <p>{parcel.trackingNumber}</p>
+                            <span className="admin-distribution__label">هاتف المندوب</span>
+                            <p>{parcel.driverPhone}</p>
                           </div>
                           <div>
                             <span className="admin-distribution__label">المستلم</span>
                             <p>{parcel.receiverName}</p>
                           </div>
                           <div>
-                            <span className="admin-distribution__label">الهاتف</span>
+                            <span className="admin-distribution__label">هاتف المستلم</span>
                             <p>{parcel.receiverPhone}</p>
+                          </div>
+                          <div>
+                            <span className="admin-distribution__label">من</span>
+                            <p>{parcel.originCity}</p>
+                          </div>
+                          <div>
+                            <span className="admin-distribution__label">إلى</span>
+                            <p>{parcel.destinationCity}</p>
+                          </div>
+                          <div>
+                            <span className="admin-distribution__label">رسوم التوصيل</span>
+                            <p>{formatMoney(parcel.deliveryFee)}</p>
+                          </div>
+                          <div>
+                            <span className="admin-distribution__label">سعر المنتج</span>
+                            <p>{formatMoney(parcel.productPrice)}</p>
+                          </div>
+                          <div className="admin-distribution__parcel-grid-wide">
+                            <span className="admin-distribution__label">العنوان</span>
+                            <p>{parcel.receiverAddress}</p>
                           </div>
                         </div>
                       </article>
@@ -301,60 +551,6 @@ function ParcelDistributionPage() {
                 )}
               </article>
             </section>
-
-            <aside className="admin-distribution__side">
-              <article className="admin-distribution__card">
-                <div className="admin-distribution__section-head">
-                  <div>
-                    <h2 className="admin-distribution__section-title">المندوبون المتاحون</h2>
-                    <p className="admin-distribution__section-subtitle">
-                      نعرض الحمل الحالي لكل مندوب مع حالة التوفر وفق قاعدة أقل من 5 طرود نشطة.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="admin-distribution__drivers">
-                  {drivers.map((driver) => (
-                    <div key={driver.id} className="admin-distribution__driver-row">
-                      <div className="admin-distribution__driver-copy">
-                        <h3>{driver.fullName}</h3>
-                        <p>{driver.address}</p>
-                        <p>{driver.activeParcels} طرود نشطة</p>
-                      </div>
-                      <span
-                        className={`admin-distribution__driver-badge ${
-                          DRIVER_STATUS_CLASS[driver.availabilityStatus] ||
-                          "admin-distribution__driver-badge--available"
-                        }`}
-                      >
-                        {driver.availabilityStatus}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </article>
-
-              <article className="admin-distribution__card admin-distribution__insight-card">
-                <div className="admin-distribution__insight-head">
-                  <i className="bi bi-activity"></i>
-                  <div>
-                    <h3>الحمل التشغيلي الحالي</h3>
-                    <p>إجمالي الطرود النشطة يساوي الطرود المعلقة مضافًا إليها الطرود المسندة النشطة.</p>
-                  </div>
-                </div>
-
-                <div className="admin-distribution__insight-metrics">
-                  <div>
-                    <span>إجمالي الطرود النشطة</span>
-                    <strong>{summary.totalActiveParcels}</strong>
-                  </div>
-                  <div>
-                    <span>الطرود المسندة النشطة</span>
-                    <strong>{summary.assignedParcelsCount}</strong>
-                  </div>
-                </div>
-              </article>
-            </aside>
           </div>
 
           {isModalOpen && selectedParcel ? (
@@ -366,7 +562,7 @@ function ParcelDistributionPage() {
                 <div className="admin-distribution__modal-head">
                   <div>
                     <h2>تخصيص الطرد #{selectedParcel.orderId}</h2>
-                    <p>اختر مندوبًا متاحًا أو راجع الحمولة الحالية قبل الإسناد.</p>
+                    <p>راجع تفاصيل الشحنة ثم اختر مندوبًا متاحًا فقط لإتمام الإسناد.</p>
                   </div>
                   <button
                     type="button"
@@ -381,9 +577,37 @@ function ParcelDistributionPage() {
                   <p className="admin-distribution__modal-error">{actionError}</p>
                 ) : null}
 
+                <div className="admin-distribution__modal-summary">
+                  <div>
+                    <span className="admin-distribution__label">التاجر</span>
+                    <p>{selectedParcel.merchant}</p>
+                  </div>
+                  <div>
+                    <span className="admin-distribution__label">المستلم</span>
+                    <p>{selectedParcel.receiverName}</p>
+                  </div>
+                  <div>
+                    <span className="admin-distribution__label">الهاتف</span>
+                    <p>{selectedParcel.receiverPhone}</p>
+                  </div>
+                  <div>
+                    <span className="admin-distribution__label">المنطقة</span>
+                    <p>{selectedParcel.regionName}</p>
+                  </div>
+                  <div>
+                    <span className="admin-distribution__label">رسوم التوصيل</span>
+                    <p>{formatMoney(selectedParcel.deliveryFee)}</p>
+                  </div>
+                  <div>
+                    <span className="admin-distribution__label">سعر المنتج</span>
+                    <p>{formatMoney(selectedParcel.productPrice)}</p>
+                  </div>
+                </div>
+
                 {drivers.length === 0 ? (
                   <div className="admin-distribution__empty">
-                    لا يوجد مندوبون متاحون الآن لاستلام هذا الطلب.
+                    <i className="bi bi-person-x"></i>
+                    <span>لا يوجد مندوبون متاحون الآن لاستلام هذا الطلب.</span>
                   </div>
                 ) : (
                   <div className="admin-distribution__modal-list">
@@ -397,6 +621,7 @@ function ParcelDistributionPage() {
                       >
                         <div className="admin-distribution__modal-driver-copy">
                           <h3>{driver.fullName}</h3>
+                          <p>{driver.phone}</p>
                           <p>{driver.address}</p>
                           <p>{driver.activeParcels} طرود نشطة</p>
                         </div>
@@ -413,7 +638,7 @@ function ParcelDistributionPage() {
                             {submittingDriverId === driver.id
                               ? "جارٍ التخصيص..."
                               : driver.canReceiveOrders
-                                ? "تخصيص"
+                                ? "تأكيد التخصيص"
                                 : "غير متاح"}
                           </span>
                         </div>

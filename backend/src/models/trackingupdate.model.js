@@ -18,14 +18,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       status: {
-        type: DataTypes.ENUM(
-          'accepted',
-          'picked_up',
-          'in_transit',
-          'arrived_to_destination_city',
-          'out_for_delivery',
-          'delivered'
-        ),
+        type: DataTypes.STRING,
         allowNull: false,
       },
       note: DataTypes.TEXT,

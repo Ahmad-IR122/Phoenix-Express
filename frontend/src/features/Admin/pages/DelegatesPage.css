@@ -87,6 +87,11 @@
   color: #ea580c;
 }
 
+.phoenix-delegates__summary-icon--teal {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
 .phoenix-delegates__summary-icon--purple {
   background: #f3e8ff;
   color: #9333ea;
@@ -282,6 +287,15 @@
   background: #fcfdff;
 }
 
+.phoenix-delegates__row--disabled {
+  background: #f8fafc;
+  opacity: 0.72;
+}
+
+.phoenix-delegates__row--disabled:hover {
+  background: #f8fafc;
+}
+
 .phoenix-delegates__identity {
   display: flex;
   align-items: center;
@@ -357,6 +371,11 @@
 
 .phoenix-delegates__badge--offline {
   background: #e2e8f0;
+  color: #475569;
+}
+
+.phoenix-delegates__badge--disabled {
+  background: #e5e7eb;
   color: #475569;
 }
 
@@ -470,6 +489,11 @@
   padding: 14px;
   display: grid;
   gap: 12px;
+}
+
+.phoenix-delegates__mobile-card--disabled {
+  background: #f8fafc;
+  opacity: 0.78;
 }
 
 .phoenix-delegates__mobile-head {
