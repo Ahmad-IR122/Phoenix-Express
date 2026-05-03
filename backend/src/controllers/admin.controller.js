@@ -1,6 +1,5 @@
 "use strict";
 
-const bcrypt = require("bcrypt");
 const moment = require("moment-timezone");
 const { Op } = require("sequelize");
 const {
@@ -55,6 +54,8 @@ const ARABIC_DAY_NAMES = [
   "السبت",
 ];
 const DASHBOARD_TIME_ZONE = process.env.DASHBOARD_TIME_ZONE || "Asia/Hebron";
+const normalizeEmail = (value) => String(value || "").trim().toLowerCase();
+const normalizePhone = (value) => String(value || "").trim();
 
 const getStartOfDay = (date = new Date()) => {
   return moment.tz(date, DASHBOARD_TIME_ZONE).startOf("day").toDate();
@@ -2430,13 +2431,12 @@ const createAdmin = async (req, res) => {
     }
 
     transaction = await sequelize.transaction();
-    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create(
       {
-        email,
-        phone,
-        password: hashedPassword,
+        email: normalizeEmail(email),
+        phone: normalizePhone(phone),
+        password,
         role,
       },
       { transaction },
@@ -2566,11 +2566,11 @@ const updateAdmin = async (req, res) => {
     }
 
     await user.update({
-      email: email !== undefined ? email : user.email,
-      phone: phone !== undefined ? phone : user.phone,
+      email: email !== undefined ? normalizeEmail(email) : user.email,
+      phone: phone !== undefined ? normalizePhone(phone) : user.phone,
       password:
         password !== undefined
-          ? await bcrypt.hash(password, 10)
+          ? password
           : user.password,
       role: role !== undefined ? role : user.role,
     });

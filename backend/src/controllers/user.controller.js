@@ -1,17 +1,17 @@
 'use strict';
 
 const { User, Admin, Customer, Employee } = require('../models');
-const bcrypt = require('bcrypt');
+const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
+const normalizePhone = (value) => String(value || '').trim();
 
 // Create user
 const createUser = async (req, res) => {
   try {
     const { email, phone, password, role } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
-      email,
-      phone,
-      password: hashedPassword,
+      email: normalizeEmail(email),
+      phone: normalizePhone(phone),
+      password,
       role,
     });
 
@@ -121,9 +121,9 @@ const updateUser = async (req, res) => {
     }
 
     await user.update({
-      email: email !== undefined ? email : user.email,
-      phone: phone !== undefined ? phone : user.phone,
-      password: password !== undefined ? await bcrypt.hash(password, 10) : user.password,
+      email: email !== undefined ? normalizeEmail(email) : user.email,
+      phone: phone !== undefined ? normalizePhone(phone) : user.phone,
+      password: password !== undefined ? password : user.password,
       role: role !== undefined ? role : user.role,
     });
 

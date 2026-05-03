@@ -62,9 +62,15 @@ const Footer = () => {
             </ul>
 
             <div className="social-box d-flex justify-content-center justify-content-md-start gap-3">
-              <a href="#" className="social-circle"><AiOutlineTwitter /></a>
-              <a href="#" className="social-circle"><AiOutlineInstagram /></a>
-              <a href="#" className="social-circle"><AiOutlineFacebook /></a>
+              <a href="https://twitter.com" className="social-circle" target="_blank" rel="noreferrer" aria-label="Twitter">
+                <AiOutlineTwitter />
+              </a>
+              <a href="https://instagram.com" className="social-circle" target="_blank" rel="noreferrer" aria-label="Instagram">
+                <AiOutlineInstagram />
+              </a>
+              <a href="https://facebook.com" className="social-circle" target="_blank" rel="noreferrer" aria-label="Facebook">
+                <AiOutlineFacebook />
+              </a>
             </div>
           </div>
         </div>

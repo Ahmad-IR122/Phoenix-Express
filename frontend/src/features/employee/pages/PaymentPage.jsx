@@ -92,9 +92,13 @@ function EmployeeWalletPage() {
     };
   }, []);
 
-  const summary = walletData?.summary || {
-    currentBalance: 0,
-  };
+  const summary = useMemo(
+    () =>
+      walletData?.summary || {
+        currentBalance: 0,
+      },
+    [walletData]
+  );
 
   const transactions = useMemo(() => {
     return (walletData?.transactions || []).map((transaction) => ({
