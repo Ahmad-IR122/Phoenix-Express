@@ -686,7 +686,9 @@ const assignParcelToDriver = async (req, res) => {
       },
     });
   } catch (error) {
-    await transaction.rollback();
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
     return res.status(500).json({
       success: false,
       message: "فشل في تخصيص الطرد للمندوب",
@@ -2242,7 +2244,9 @@ const reassignReturnedShipment = async (req, res) => {
       message: "تمت إعادة تخصيص الشحنة المرتجعة بنجاح",
     });
   } catch (error) {
-    await transaction.rollback();
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
     return res.status(500).json({
       success: false,
       message: "فشل في إعادة تخصيص الشحنة المرتجعة",
@@ -2407,7 +2411,9 @@ const updateAdminHandoverRequestStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("Admin handover status update error:", error);
-    await transaction.rollback();
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
     return res.status(500).json({
       success: false,
       message:
@@ -2468,7 +2474,7 @@ const createAdmin = async (req, res) => {
       data: result,
     });
   } catch (error) {
-    if (transaction) {
+    if (transaction && !transaction.finished) {
       await transaction.rollback();
     }
 

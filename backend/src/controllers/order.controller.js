@@ -197,7 +197,9 @@ const createOrder = async (req, res) => {
       trackingNumber,
     });
   } catch (error) {
-    await transaction.rollback();
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
 
     return res.status(400).json({
       success: false,

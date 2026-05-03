@@ -58,7 +58,9 @@ const register = async (req, res) => {
       data: createdUser,
     });
   } catch (error) {
-    await t.rollback();
+    if (!t.finished) {
+      await t.rollback();
+    }
 
     return res.status(400).json({
       success: false,
