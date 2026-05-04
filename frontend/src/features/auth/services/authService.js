@@ -1,4 +1,5 @@
 import axios from "axios";
+import API from "../../../apis/api";
 
 const API_URL = "http://localhost:5000/api/auth";
 
@@ -15,4 +16,9 @@ export const forgotPassword = (data) => {
 
 export const resetPassword = (data) => {
     return axios.post(`${API_URL}/reset-password`, data);
+};
+
+export const changePassword = (data, token) => {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    return API.patch("/auth/change-password", data, { headers });
 };

@@ -406,7 +406,14 @@ const deleteAuth = async (req, res) => {
 const changePassword = async (req, res) => {
   try {
     const userId = req.user?.id;
-    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const body = req.body || {};
+    const currentPassword = String(
+      body.currentPassword || body.oldPassword || body.password || ''
+    ).trim();
+    const newPassword = String(body.newPassword || body.new_password || '').trim();
+    const confirmPassword = String(
+      body.confirmPassword || body.confirm_password || body.passwordConfirmation || ''
+    ).trim();
 
     if (!userId) {
       return res.status(401).json({

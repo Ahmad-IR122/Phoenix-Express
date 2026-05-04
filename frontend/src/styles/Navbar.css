@@ -141,6 +141,16 @@
   background-color: #222222;
 }
 
+.mobix-btn-icon {
+  flex: 0 0 auto;
+  font-size: 1.15rem;
+  margin-inline-start: 0.45rem;
+}
+
+.mobix-btn-profile {
+  gap: 0.1rem;
+}
+
 @media (max-width: 1199.98px) {
   .mobix-navbar-collapse {
     gap: 1rem;
