@@ -1054,6 +1054,7 @@ module.exports = {
         }),
       ];
 
+
       await queryInterface.bulkInsert('regions', regions, { transaction });
       await queryInterface.bulkInsert('users', users, { transaction });
       await queryInterface.bulkInsert('admins', admins, { transaction });
@@ -1068,8 +1069,17 @@ module.exports = {
       // await queryInterface.bulkInsert('merchant_settlements', merchantSettlements, { transaction });
       await queryInterface.bulkInsert('wallet_transactions', walletTransactions, { transaction });
       await queryInterface.bulkInsert('withdrawal_requests', withdrawalRequests, { transaction });
-      await queryInterface.bulkInsert('tracking_updates', trackingUpdates, { transaction });
 
+      const fixedTrackingUpdates = trackingUpdates.map((update) => {
+        const { created_at, updated_at, ...rest } = update;
+
+        return {
+          ...rest,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      });
+      await queryInterface.bulkInsert('tracking_updates', fixedTrackingUpdates, { transaction });
       await syncSequenceToTableMax(queryInterface, 'users', transaction);
       await syncSequenceToTableMax(queryInterface, 'customers', transaction);
       await syncSequenceToTableMax(queryInterface, 'company_customer_profiles', transaction);
@@ -1079,7 +1089,7 @@ module.exports = {
       await syncSequenceToTableMax(queryInterface, 'employee_wallets', transaction);
       await syncSequenceToTableMax(queryInterface, 'orders', transaction);
       await syncSequenceToTableMax(queryInterface, 'shipments', transaction);
-      await syncSequenceToTableMax(queryInterface, 'merchant_settlements', transaction);
+      // await syncSequenceToTableMax(queryInterface, 'merchant_settlements', transaction);
       await syncSequenceToTableMax(queryInterface, 'wallet_transactions', transaction);
       await syncSequenceToTableMax(queryInterface, 'withdrawal_requests', transaction);
       await syncSequenceToTableMax(queryInterface, 'tracking_updates', transaction);

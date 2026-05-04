@@ -11,12 +11,46 @@
 }
 
 .topbar-link {
+  color: #ffffff;
+  text-decoration: none !important;
+  -webkit-text-decoration: none !important;
+  text-decoration-line: none !important;
+  text-decoration-color: transparent !important;
+  text-decoration-thickness: 0 !important;
+  text-underline-offset: 0 !important;
+  background-image: none !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
   transition: opacity 0.2s ease;
+}
+
+.topbar-link:link,
+.topbar-link:visited,
+.topbar-link:hover,
+.topbar-link:focus,
+.topbar-link:active {
+  color: #ffffff;
+  text-decoration: none !important;
+  -webkit-text-decoration: none !important;
+  text-decoration-line: none !important;
+  background-image: none !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
 }
 
 .topbar-link:hover,
 .topbar-link:focus {
   opacity: 0.82;
+}
+
+.topbar-action {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
 }
 
 .topbar-icon {

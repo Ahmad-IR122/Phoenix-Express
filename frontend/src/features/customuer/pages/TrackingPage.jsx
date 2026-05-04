@@ -340,13 +340,13 @@ const TrackingPage = () => {
                   </p>
                   <div className="d-flex flex-column flex-sm-row justify-content-center gap-3">
                     <a
-                      href="tel:+970123456789"
+                      href="tel:+972592520083"
                       className="btn tracking-support-btn tracking-call-btn"
                     >
                       اتصل بنا
                     </a>
                     <a
-                      href="https://wa.me/970123456789"
+                      href="https://wa.me/972592520083"
                       target="_blank"
                       rel="noreferrer"
                       className="btn tracking-support-btn tracking-whatsapp-btn"

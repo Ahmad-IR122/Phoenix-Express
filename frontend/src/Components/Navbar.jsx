@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/Navbar.css";
 import logo from "../Images/Phonex_logo.jpeg";
 
@@ -13,6 +13,20 @@ const navItems = [
 ];
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = React.useState(
+    Boolean(localStorage.getItem("token") || sessionStorage.getItem("token"))
+  );
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    setIsLoggedIn(false);
+    navigate("/");
+  };
+
   return (
     <nav className="mobix-navbar" dir="rtl" aria-label="شريط التنقل الرئيسي">
       <div className="container mobix-navbar-container">
@@ -20,7 +34,7 @@ const Navbar = () => {
           <img
             src={logo}
             className="mobix-navbar-logo"
-            alt="فينكس لوجو"
+            alt="فينوكس لوجو"
             width="90"
             height="90"
           />
@@ -53,9 +67,15 @@ const Navbar = () => {
             <Link className="mobix-btn mobix-btn-primary" to="/request-delivery">
               اطلب خدمة التوصيل
             </Link>
-            <Link className="mobix-btn mobix-btn-dark" to="/login">
-              تسجيل الدخول
-            </Link>
+            {isLoggedIn ? (
+              <button type="button" className="mobix-btn mobix-btn-dark" onClick={handleLogout}>
+                تسجيل الخروج
+              </button>
+            ) : (
+              <Link className="mobix-btn mobix-btn-dark" to="/login">
+                تسجيل الدخول
+              </Link>
+            )}
           </div>
         </div>
       </div>

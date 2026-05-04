@@ -223,6 +223,16 @@
     margin: 0 auto;
 }
 
+.newsletter-badge {
+    background-color: #e5f4ff !important;
+    color: var(--primary-blue) !important;
+    border-radius: 999px;
+    padding: 9px 18px;
+    font-size: 14px;
+    font-weight: 900;
+    margin-bottom: 18px;
+}
+
 .newsletter-box h3 {
     color: var(--primary-blue);
     font-size: 38px;
@@ -260,6 +270,14 @@
     font-weight: 900;
 }
 
+.newsletter-note {
+    display: block;
+    margin-top: 16px;
+    color: #94a3b8;
+    font-size: 14px;
+    font-weight: 600;
+}
+
 .category-section {
     padding-bottom: 40px;
 }
@@ -293,6 +311,82 @@
     background-color: var(--primary-blue) !important;
     color: white !important;
     transform: translateY(-3px);
+}
+
+.category-pill.active {
+    background-color: var(--primary-blue) !important;
+    color: white !important;
+    box-shadow: 0 10px 24px rgba(56, 182, 255, 0.22);
+}
+
+.blog-article-modal {
+    border: none;
+    border-radius: 18px;
+    overflow: hidden;
+    direction: rtl;
+    font-family: 'Cairo', sans-serif;
+}
+
+.blog-article-modal__header {
+    background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+    color: white;
+    border-bottom: none;
+    padding: 28px 32px;
+    position: relative;
+}
+
+.blog-article-modal__header .btn-close {
+    position: absolute;
+    top: 22px;
+    left: 24px;
+    margin: 0;
+    filter: invert(1);
+    opacity: 0.9;
+}
+
+.blog-article-modal__badge {
+    margin-bottom: 14px;
+}
+
+.blog-article-modal__title {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1.5;
+    margin-bottom: 14px;
+}
+
+.blog-article-modal__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 14px;
+    font-weight: 700;
+    opacity: 0.94;
+}
+
+.blog-article-modal__meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.blog-article-modal__body {
+    padding: 30px 34px 36px;
+    color: var(--text-dark);
+}
+
+.blog-article-modal__body p {
+    color: #4b5563;
+    font-size: 17px;
+    line-height: 2;
+    margin-bottom: 18px;
+}
+
+.blog-article-modal__body h4 {
+    color: var(--text-dark);
+    font-size: 20px;
+    font-weight: 900;
+    margin: 26px 0 10px;
 }
 
 @media (max-width: 992px) {
