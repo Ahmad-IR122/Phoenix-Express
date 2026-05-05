@@ -28,6 +28,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'employee_id',
         as: 'withdrawal_requests',
       });
+
+      Employee.hasMany(models.SupportConversation, {
+        foreignKey: 'assigned_employee_id',
+        as: 'support_conversations',
+      });
     }
   }
 

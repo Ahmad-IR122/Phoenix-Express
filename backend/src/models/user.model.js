@@ -8,6 +8,14 @@ module.exports = (sequelize, DataTypes) => {
       User.hasOne(models.Admin, { foreignKey: 'user_id', as: 'admin' });
       User.hasOne(models.Customer, { foreignKey: 'user_id', as: 'customer' });
       User.hasOne(models.Employee, { foreignKey: 'user_id', as: 'employee' });
+      User.hasMany(models.SupportConversation, {
+        foreignKey: 'customer_user_id',
+        as: 'support_conversations',
+      });
+      User.hasMany(models.SupportMessage, {
+        foreignKey: 'sender_user_id',
+        as: 'support_messages',
+      });
     }
 
     toJSON() {

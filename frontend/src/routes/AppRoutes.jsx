@@ -31,6 +31,7 @@ import AdminProfilePage from "../features/Admin/pages/AdminProfilePage";
 
 import EmployeeHomePage from "../features/employee/pages/HomePage";
 import OrdersPage from "../features/employee/pages/OrdersPage";
+import SupportChatsPage from "../features/employee/pages/SupportChatsPage";
 import PaymentPage from "../features/employee/pages/PaymentPage";
 import ProfilePage from "../features/employee/pages/ProfilePage";
 import PageNotFound from "../pages/pageNotFound";
@@ -113,6 +114,7 @@ export default function AppRoutes() {
           <Route path="/employee" element={<Navigate to="/employee/home" replace />} />
           <Route path="/employee/home" element={<EmployeeHomePage />} />
           <Route path="/employee/orders" element={<OrdersPage />} />
+          <Route path="/employee/support-chats" element={<SupportChatsPage />} />
           <Route path="/employee/payment" element={<PaymentPage />} />
           <Route path="/employee/profile" element={<ProfilePage />} />
         </Route>

@@ -1,7 +1,8 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import DashboardLayout from "../Components/layout/DashboardLayout";
 import employeeNav from "../data/employeeNav";
+import { getEmployeeSupportConversations } from "../services/supportChatService";
 
 const notifications = [
   {
@@ -27,9 +28,39 @@ const notifications = [
   },
 ];
 
+const EMPLOYEE_CHAT_STORAGE_KEY = "phoenix_employee_chat_threads";
+
+const getLocalSupportChatNotifications = () => {
+  try {
+    const stored = localStorage.getItem(EMPLOYEE_CHAT_STORAGE_KEY);
+    const threads = stored ? JSON.parse(stored) : [];
+    if (!Array.isArray(threads)) return [];
+
+    return threads
+      .filter(
+        (thread) =>
+          thread.status !== "answered" &&
+          !thread.employeeHiddenAt &&
+          !thread.employeeHidden &&
+          Array.isArray(thread.messages) &&
+          thread.messages.some((message) => message.role === "customer" && message.text?.trim())
+      )
+      .map((thread) => ({
+        id: `support-${thread.id}`,
+        title: `رسالة جديدة من ${thread.customerName || "عميل"}`,
+        time: "بانتظار الرد",
+        type: "warning",
+        icon: "bi-chat-dots",
+      }));
+  } catch {
+    return [];
+  }
+};
+
 const routeByKey = {
   dashboard: "/employee/home",
   orders: "/employee/orders",
+  supportChats: "/employee/support-chats",
   wallet: "/employee/payment",
   profile: "/employee/profile",
 };
@@ -37,6 +68,7 @@ const routeByKey = {
 const keyByPath = {
   "/employee/home": "dashboard",
   "/employee/orders": "orders",
+  "/employee/support-chats": "supportChats",
   "/employee/payment": "wallet",
   "/employee/profile": "profile",
 };
@@ -60,6 +92,43 @@ const getTodayLabel = () =>
 const EmployeeLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [supportNotifications, setSupportNotifications] = useState(() =>
+    getLocalSupportChatNotifications()
+  );
+
+  useEffect(() => {
+    const loadNotifications = async () => {
+      try {
+        const response = await getEmployeeSupportConversations();
+        const threads = response.data || [];
+        setSupportNotifications(
+          threads
+            .filter(
+              (thread) =>
+                thread.status !== "answered" &&
+                !thread.employeeHiddenAt &&
+                !thread.employeeHidden &&
+                Array.isArray(thread.messages) &&
+                thread.messages.some((message) => message.role === "customer" && message.text?.trim())
+            )
+            .map((thread) => ({
+              id: `support-${thread.id}`,
+              title: `رسالة جديدة من ${thread.customerName || "عميل"}`,
+              time: "بانتظار الرد",
+              type: "warning",
+              icon: "bi-chat-dots",
+            }))
+        );
+      } catch {
+        setSupportNotifications(getLocalSupportChatNotifications());
+      }
+    };
+
+    const intervalId = window.setInterval(loadNotifications, 1800);
+    loadNotifications();
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   const storedUser = useMemo(() => {
     try {
@@ -87,6 +156,8 @@ const EmployeeLayout = () => {
     navigate("/login", { replace: true });
   };
 
+  const combinedNotifications = [...supportNotifications, ...notifications];
+
   return (
     <DashboardLayout
       layoutType="employee"
@@ -95,8 +166,8 @@ const EmployeeLayout = () => {
       activeKey={activeKey}
       onNavigate={(key) => navigate(routeByKey[key] || "/employee/home")}
       pageDate={getTodayLabel()}
-      notificationCount={notifications.length}
-      notifications={notifications}
+      notificationCount={combinedNotifications.length}
+      notifications={combinedNotifications}
       user={user}
       employeeName={user.name}
       onLogout={handleLogout}
