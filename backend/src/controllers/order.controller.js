@@ -91,6 +91,17 @@ const resolveCustomerId = async (req, payload, transaction) => {
     return payload.customer_id;
   }
 
+  if (req.user?.id) {
+    const customer = await Customer.findOne({
+      where: { user_id: req.user.id },
+      transaction,
+    });
+
+    if (customer) {
+      return customer.id;
+    }
+  }
+
   const requestedUserId = Number(req.headers['x-user-id']);
 
   if (Number.isInteger(requestedUserId) && requestedUserId > 0) {
@@ -110,6 +121,39 @@ const resolveCustomerId = async (req, payload, transaction) => {
   });
 
   return fallbackCustomer?.id || null;
+};
+
+const getAuthenticatedCustomerOrders = async (req, res) => {
+  try {
+    const customer = await Customer.findOne({
+      where: { user_id: req.user.id },
+    });
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: 'Customer profile not found',
+      });
+    }
+
+    const orders = await Order.findAll({
+      where: { customer_id: customer.id },
+      include: orderIncludes,
+      order: [['created_at', 'DESC']],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Customer orders fetched successfully',
+      data: orders,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch customer orders',
+      errors: [error.message],
+    });
+  }
 };
 
 const normalizeCreatePayload = async (req, transaction) => {
@@ -379,6 +423,7 @@ const deleteOrder = async (req, res) => {
 module.exports = {
   createOrder,
   getAllOrders,
+  getAuthenticatedCustomerOrders,
   findOrderById,
   updateOrder,
   deleteOrder,

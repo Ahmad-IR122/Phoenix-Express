@@ -43,6 +43,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'customer_id',
         as: 'feedbacks',
       });
+
+      Customer.hasMany(models.SupportConversation, {
+        foreignKey: 'customer_id',
+        as: 'support_conversations',
+      });
     }
   }
 

@@ -1,8 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./style/HeroSection.css";
 import logo from "../../../Images/Phonex_logo.jpeg";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+  const [trackingNumber, setTrackingNumber] = useState("");
+
+  const handleTrackingSubmit = (event) => {
+    event.preventDefault();
+
+    const normalizedTrackingNumber = trackingNumber.trim();
+    if (!normalizedTrackingNumber) {
+      return;
+    }
+
+    navigate("/tracking", {
+      state: {
+        trackingNumber: normalizedTrackingNumber,
+      },
+    });
+  };
   return (
     <section className="hero-section py-5 py-lg-6" dir="rtl">
       <div className="container hero-container">
@@ -52,11 +70,17 @@ const HeroSection = () => {
               <div className="home-hero-tracking-card bg-white text-dark text-lg-end text-center ms-lg-auto">
                 <h2 className="home-hero-tracking-card-title fw-bold">تتبع شحنتك الآن</h2>
 
-                <form className="row g-3 align-items-center home-hero-tracking-form">
+                <form
+                  className="row g-3 align-items-center home-hero-tracking-form"
+                  onSubmit={handleTrackingSubmit}
+                >
                   <div className="col-12 col-md-8">
                     <input
                       type="text"
                       className="form-control form-control-lg home-hero-tracking-input"
+                      value={trackingNumber}
+                      onChange={(event) => setTrackingNumber(event.target.value)}
+                      dir="ltr"
                       placeholder="أدخل رقم التتبع"
                       aria-label="أدخل رقم التتبع"
                     />
@@ -64,7 +88,7 @@ const HeroSection = () => {
 
                   <div className="col-12 col-md-4">
                     <button
-                      type="button"
+                      type="submit"
                       className="btn btn-primary btn-lg w-100 home-hero-tracking-button d-inline-flex align-items-center justify-content-center gap-2"
                     >
                       <span>تتبع الآن</span>

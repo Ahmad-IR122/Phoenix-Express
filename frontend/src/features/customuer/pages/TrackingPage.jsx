@@ -5,7 +5,8 @@ import {
   BsClockHistory,
   BsTruck,
 } from "react-icons/bs";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import { getTrackingByNumber } from "../services/customerService";
 import "../../../styles/TrackingPage.css";
 
@@ -88,8 +89,12 @@ const formatArabicDate = (value) => {
 
 const fallbackValue = (value) => value || "غير متوفر";
 
+const isAuthenticated = () =>
+  Boolean(localStorage.getItem("token") || sessionStorage.getItem("token"));
+
 const TrackingPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const trackingNumberFromState = location.state?.trackingNumber || "";
   const [trackingNumber, setTrackingNumber] = useState(trackingNumberFromState);
   const [shipment, setShipment] = useState(null);
@@ -110,7 +115,7 @@ const TrackingPage = () => {
       ? statusToProgressIndex[shipment.status]
       : 0;
 
-  const performSearch = async (requestedTrackingNumber) => {
+  const performSearch = React.useCallback(async (requestedTrackingNumber) => {
     const normalizedTrackingNumber = requestedTrackingNumber.trim();
 
     setHasSearched(true);
@@ -121,6 +126,26 @@ const TrackingPage = () => {
       return;
     }
 
+    if (!isAuthenticated()) {
+      setErrorMessage("يرجى تسجيل الدخول قبل تتبع الشحنة.");
+      Swal.fire({
+        icon: "info",
+        title: "تسجيل الدخول مطلوب",
+        text: "يرجى تسجيل الدخول أولاً حتى تتمكن من تتبع الشحنات المرتبطة بحسابك.",
+        confirmButtonText: "تسجيل الدخول",
+        confirmButtonColor: "#38b6ff",
+        showCancelButton: true,
+        cancelButtonText: "لاحقاً",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login", {
+            state: { from: "/tracking", trackingNumber: normalizedTrackingNumber },
+          });
+        }
+      });
+      return;
+    }
+
     setIsLoading(true);
     setErrorMessage("");
 
@@ -128,21 +153,23 @@ const TrackingPage = () => {
       const response = await getTrackingByNumber(normalizedTrackingNumber);
       setShipment(response?.data || null);
     } catch (error) {
-      if (error.response?.status === 404) {
-        setErrorMessage("لم يتم العثور على شحنة بهذا الرقم.");
+      if (error.response?.status === 401) {
+        setErrorMessage("يرجى تسجيل الدخول قبل تتبع الشحنة.");
+      } else if (error.response?.status === 404) {
+        setErrorMessage("رقم الشحنة غير صحيح أو غير مرتبط بحسابك.");
       } else {
         setErrorMessage("حدث خطأ أثناء جلب بيانات الشحنة. حاول مرة أخرى.");
       }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     if (trackingNumberFromState) {
       performSearch(trackingNumberFromState);
     }
-  }, [trackingNumberFromState]);
+  }, [performSearch, trackingNumberFromState]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -221,7 +248,7 @@ const TrackingPage = () => {
               <div className="card border-0 tracking-result-card tracking-progress-card mb-4">
                 <div className="card-body p-4 p-md-5">
                   <div className="row g-4 align-items-start">
-                    <div className="col-lg-4 text-center text-lg-end">
+                    <div className="col-lg-6 text-center text-lg-end">
                       <p className="tracking-meta-label mb-2">رقم التتبع</p>
                       <h2 className="tracking-meta-value tracking-number-text mb-4" dir="ltr">
                         {fallbackValue(shipment.tracking_number)}
@@ -233,7 +260,7 @@ const TrackingPage = () => {
                       </h3>
                     </div>
 
-                    <div className="col-lg-4 text-center">
+                    <div className="col-lg-6 text-center">
                       <p className="tracking-meta-label mb-2">الموقع الحالي</p>
                       <h2 className="tracking-location-value mb-4">
                         {fallbackValue(shipment.current_location)}
@@ -247,12 +274,13 @@ const TrackingPage = () => {
                       </h3>
                     </div>
 
-                    <div className="col-lg-4 d-flex align-items-start justify-content-center justify-content-lg-end">
+                    <div className="col-12 text-center mt-4 mt-md-5">
                       <h2 className="tracking-section-title mb-0">مراحل الشحنة</h2>
                     </div>
                   </div>
 
                   <div className="tracking-progress-line position-relative mt-4 mt-md-5">
+                    
                     <div className="tracking-progress-track" />
                     <div
                       className="tracking-progress-fill"

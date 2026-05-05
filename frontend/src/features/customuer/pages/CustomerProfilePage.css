@@ -143,6 +143,23 @@
   background: #dbeaff;
 }
 
+.customer-order-status.cancelled {
+  color: #c0182a;
+  background: #fff1f2;
+}
+
+.customer-orders-message {
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid #e5edf4;
+  border-radius: 9px;
+  color: #64748b;
+  background: #f8fbff;
+  font-weight: 800;
+  line-height: 1.7;
+  text-align: center;
+}
+
 .customer-order-details {
   display: grid;
   gap: 0.32rem;

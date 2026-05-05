@@ -15,6 +15,7 @@ const shipmentRoutes = require("./routes/shipment.routes");
 const trackingRoutes = require("./routes/tracking.routes");
 const vehicleRoutes = require("./routes/vehicle.routes");
 const walletRoutes = require("./routes/wallet.routes");
+const supportChatRoutes = require("./routes/supportChat.routes");
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -36,6 +37,7 @@ app.use('/api/shipments', shipmentRoutes);
 app.use('/api/tracking', trackingRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/wallets', walletRoutes);
+app.use('/api/support-chat', supportChatRoutes);
 /*   <!-- END of AHMAD code  --> */
 
 /*   <!-- RAGHAD  code  --> */

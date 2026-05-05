@@ -11,7 +11,6 @@ import HomePage from "../features/customuer/pages/HomePage";
 import AboutPage from "../features/customuer/pages/AboutPage";
 import TrackingPage from "../features/customuer/pages/TrackingPage";
 import PhotoGalleryPage from "../features/customuer/pages/PhotoGalleryPage";
-import FeedbackPage from "../features/customuer/pages/FeedbackPage";
 import BlogPage from "../features/customuer/pages/BlogPage";
 import CustomerProfilePage from "../features/customuer/pages/CustomerProfilePage";
 import RequestDeliveryServicePage from "../features/customuer/pages/RequestDeliveryServicePage";
@@ -31,6 +30,7 @@ import AdminProfilePage from "../features/Admin/pages/AdminProfilePage";
 
 import EmployeeHomePage from "../features/employee/pages/HomePage";
 import OrdersPage from "../features/employee/pages/OrdersPage";
+import SupportChatsPage from "../features/employee/pages/SupportChatsPage";
 import PaymentPage from "../features/employee/pages/PaymentPage";
 import ProfilePage from "../features/employee/pages/ProfilePage";
 import PageNotFound from "../pages/pageNotFound";
@@ -45,7 +45,6 @@ export default function AppRoutes() {
           <Route path="/tracking" element={<TrackingPage />} />
           <Route path="/gallery" element={<PhotoGalleryPage />} />
           <Route path="/reviews" element={<ReviewsPage />} />
-          <Route path="/feedback" element={<FeedbackPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route
             path="/profile"
@@ -66,7 +65,16 @@ export default function AppRoutes() {
             path="/request-service"
             element={<Navigate to="/request-delivery" replace />}
           />
-          <Route path="/order-confirmation" element={<OrderConfirmation />} />  
+          <Route
+            path="/order-confirmation"
+            element={
+              <ProtectedRoute>
+                <RoleRoute allowedRoles={["customer", "company"]}>
+                  <OrderConfirmation />
+                </RoleRoute>
+              </ProtectedRoute>
+            }
+          />  
         </Route>
 
         {/* Auth routes */}
@@ -113,6 +121,7 @@ export default function AppRoutes() {
           <Route path="/employee" element={<Navigate to="/employee/home" replace />} />
           <Route path="/employee/home" element={<EmployeeHomePage />} />
           <Route path="/employee/orders" element={<OrdersPage />} />
+          <Route path="/employee/support-chats" element={<SupportChatsPage />} />
           <Route path="/employee/payment" element={<PaymentPage />} />
           <Route path="/employee/profile" element={<ProfilePage />} />
         </Route>

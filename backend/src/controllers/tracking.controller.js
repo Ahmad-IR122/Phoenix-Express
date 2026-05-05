@@ -1,6 +1,6 @@
 'use strict';
 
-const { TrackingUpdate, Shipment, Order } = require('../models');
+const { TrackingUpdate, Shipment, Order, Customer } = require('../models');
 
 const trackingIncludes = [
   {
@@ -100,12 +100,24 @@ const lookupTrackingByNumber = async (req, res) => {
       });
     }
 
+    const customer = await Customer.findOne({
+      where: { user_id: req.user.id },
+    });
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: 'Customer profile not found',
+      });
+    }
+
     const shipment = await Shipment.findOne({
       where: { tracking_number: trackingNumber },
       include: [
         {
           model: Order,
           as: 'order',
+          where: { customer_id: customer.id },
         },
         {
           model: TrackingUpdate,
@@ -117,7 +129,7 @@ const lookupTrackingByNumber = async (req, res) => {
     if (!shipment) {
       return res.status(404).json({
         success: false,
-        message: 'Shipment not found',
+        message: 'Tracking number is invalid or does not belong to this account',
       });
     }
 
