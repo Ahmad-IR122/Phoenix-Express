@@ -13,6 +13,7 @@ import TrackingPage from "../features/customuer/pages/TrackingPage";
 import PhotoGalleryPage from "../features/customuer/pages/PhotoGalleryPage";
 import FeedbackPage from "../features/customuer/pages/FeedbackPage";
 import BlogPage from "../features/customuer/pages/BlogPage";
+import CustomerProfilePage from "../features/customuer/pages/CustomerProfilePage";
 import RequestDeliveryServicePage from "../features/customuer/pages/RequestDeliveryServicePage";
 import ReviewsPage from "../features/customuer/pages/ReviewsPage";
 import SignInPage from "../features/auth/pages/SignInPage";
@@ -46,6 +47,16 @@ export default function AppRoutes() {
           <Route path="/reviews" element={<ReviewsPage />} />
           <Route path="/feedback" element={<FeedbackPage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <RoleRoute allowedRoles={["customer", "company"]}>
+                  <CustomerProfilePage />
+                </RoleRoute>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/request-delivery"
             element={<RequestDeliveryServicePage />}
@@ -105,18 +116,6 @@ export default function AppRoutes() {
           <Route path="/employee/payment" element={<PaymentPage />} />
           <Route path="/employee/profile" element={<ProfilePage />} />
         </Route>
-
-        {/* Example protected route for both admin and employee */}
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <RoleRoute allowedRoles={["admin", "employee", "customer"]}>
-                <ProfilePage />
-              </RoleRoute>
-            </ProtectedRoute>
-          }
-        />
 
         {/* Not found */}
         <Route path="*" element={<PageNotFound />} />

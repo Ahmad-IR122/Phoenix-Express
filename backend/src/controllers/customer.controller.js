@@ -8,6 +8,38 @@ const {
   sequelize,
 } = require("../models");
 
+const normalizeEmail = (value) => String(value || "").trim().toLowerCase();
+const normalizePhone = (value) => String(value || "").trim();
+const normalizeName = (value) => String(value || "").trim();
+
+const validateAuthenticatedProfilePayload = ({ name, email, phone }) => {
+  if (!name) {
+    return "الاسم مطلوب";
+  }
+
+  if (name.length < 2) {
+    return "الاسم يجب أن يكون حرفين على الأقل";
+  }
+
+  if (!email) {
+    return "البريد الإلكتروني مطلوب";
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return "يرجى إدخال بريد إلكتروني صحيح";
+  }
+
+  if (!phone) {
+    return "رقم الهاتف مطلوب";
+  }
+
+  if (!/^[0-9]{7,15}$/.test(phone)) {
+    return "رقم الهاتف يجب أن يحتوي على أرقام فقط من 7 إلى 15 رقم";
+  }
+
+  return null;
+};
+
 const customerIncludes = [
   {
     model: User,
@@ -215,6 +247,140 @@ const findCustomerById = async (req, res) => {
   }
 };
 
+const getAuthenticatedCustomerProfile = async (req, res) => {
+  try {
+    const customer = await Customer.findOne({
+      where: { user_id: req.user.id },
+      include: customerIncludes,
+    });
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: "Customer profile not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Customer profile fetched successfully",
+      data: customer,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch customer profile",
+      errors: [error.message],
+    });
+  }
+};
+
+const updateAuthenticatedCustomerProfile = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const customer = await Customer.findOne({
+      where: { user_id: req.user.id },
+      include: customerIncludes,
+      transaction,
+    });
+
+    if (!customer) {
+      await transaction.rollback();
+
+      return res.status(404).json({
+        success: false,
+        message: "Customer profile not found",
+      });
+    }
+
+    const name = normalizeName(req.body.name);
+    const email = normalizeEmail(req.body.email);
+    const phone = normalizePhone(req.body.phone);
+    const validationError = validateAuthenticatedProfilePayload({
+      name,
+      email,
+      phone,
+    });
+
+    if (validationError) {
+      await transaction.rollback();
+
+      return res.status(400).json({
+        success: false,
+        message: validationError,
+      });
+    }
+
+    const emailOwner = await User.findOne({ where: { email }, transaction });
+    if (emailOwner && emailOwner.id !== req.user.id) {
+      await transaction.rollback();
+
+      return res.status(409).json({
+        success: false,
+        message: "هذا البريد الإلكتروني مستخدم من حساب آخر",
+      });
+    }
+
+    const phoneOwner = await User.findOne({ where: { phone }, transaction });
+    if (phoneOwner && phoneOwner.id !== req.user.id) {
+      await transaction.rollback();
+
+      return res.status(409).json({
+        success: false,
+        message: "رقم الهاتف مستخدم من حساب آخر",
+      });
+    }
+
+    await customer.user.update({ email, phone }, { transaction });
+
+    if (customer.customer_type === "company") {
+      await CompanyCustomerProfile.upsert(
+        {
+          customer_id: customer.id,
+          company_name: name,
+          company_phone: phone,
+          company_location: customer.company_profile?.company_location || "",
+        },
+        { transaction }
+      );
+    } else {
+      await IndividualCustomerProfile.upsert(
+        {
+          customer_id: customer.id,
+          full_name: name,
+        },
+        { transaction }
+      );
+    }
+
+    await transaction.commit();
+
+    const updatedCustomer = await Customer.findOne({
+      where: { user_id: req.user.id },
+      include: customerIncludes,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Customer profile updated successfully",
+      data: updatedCustomer,
+    });
+  } catch (error) {
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: "Failed to update customer profile",
+      errors: error.errors
+        ? error.errors.map((err) => err.message)
+        : [error.message],
+    });
+  }
+};
+
 const updateCustomer = async (req, res) => {
   const transaction = await sequelize.transaction();
 
@@ -382,6 +548,8 @@ module.exports = {
   createCustomer,
   getAllCustomers,
   findCustomerById,
+  getAuthenticatedCustomerProfile,
+  updateAuthenticatedCustomerProfile,
   updateCustomer,
   deleteCustomer,
 };

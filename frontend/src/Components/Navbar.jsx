@@ -1,5 +1,6 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { FiUser } from "react-icons/fi";
 import "../styles/Navbar.css";
 import logo from "../Images/Phonex_logo.jpeg";
 
@@ -13,6 +14,15 @@ const navItems = [
 ];
 
 const Navbar = () => {
+  const location = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = React.useState(
+    Boolean(localStorage.getItem("token") || sessionStorage.getItem("token"))
+  );
+
+  React.useEffect(() => {
+    setIsLoggedIn(Boolean(localStorage.getItem("token") || sessionStorage.getItem("token")));
+  }, [location.pathname]);
+
   return (
     <nav className="mobix-navbar" dir="rtl" aria-label="شريط التنقل الرئيسي">
       <div className="container mobix-navbar-container">
@@ -20,7 +30,7 @@ const Navbar = () => {
           <img
             src={logo}
             className="mobix-navbar-logo"
-            alt="فينكس لوجو"
+            alt="فينوكس لوجو"
             width="90"
             height="90"
           />
@@ -53,9 +63,16 @@ const Navbar = () => {
             <Link className="mobix-btn mobix-btn-primary" to="/request-delivery">
               اطلب خدمة التوصيل
             </Link>
-            <Link className="mobix-btn mobix-btn-dark" to="/login">
-              تسجيل الدخول
-            </Link>
+            {isLoggedIn ? (
+              <Link className="mobix-btn mobix-btn-dark mobix-btn-profile" to="/profile">
+                الملف الشخصي
+                <FiUser className="mobix-btn-icon" aria-hidden="true" />
+              </Link>
+            ) : (
+              <Link className="mobix-btn mobix-btn-dark" to="/login">
+                تسجيل الدخول
+              </Link>
+            )}
           </div>
         </div>
       </div>

@@ -3,36 +3,63 @@ import { FaFacebookF, FaInstagram, FaTwitter, FaEnvelope, FaMapMarkerAlt, FaPhon
 import "../styles/TopBar.css";
 
 const TopBar = () => {
+  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("فونيكس للخدمات اللوجستية والنقل")}`;
+  const whatsappMessage = "مرحباً فينوكس، أود الاستفسار عن خدمات التوصيل لديكم.";
+  const whatsappUrl = `https://web.whatsapp.com/send?phone=972592520083&text=${encodeURIComponent(whatsappMessage)}`;
+  const emailAddress = "info@phoenix-delivery.ps";
+  const mailToAddress = "nora.aqad@gmail.com";
+
+  const openMap = () => {
+    window.open(mapUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const openWhatsapp = () => {
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const openEmail = () => {
+    window.location.href = `mailto:${mailToAddress}`;
+  };
+
   return (
     <div className="topbar-header" dir="rtl">
       <div className="container">
         <div className="d-flex align-items-center justify-content-between gap-3 flex-wrap topbar-header-inner">
           <div className="d-flex align-items-center gap-2 gap-md-4 flex-wrap text-white topbar-contact">
-            <a
-              href="tel:+970123456789"
-              className="topbar-link d-inline-flex align-items-center gap-2 text-decoration-none text-white"
+            <button
+              type="button"
+              className="topbar-link topbar-action d-inline-flex align-items-center gap-2 text-white"
+              onClick={openWhatsapp}
+              aria-label="تواصل معنا عبر واتساب"
             >
               <FaPhoneAlt className="topbar-icon" aria-hidden="true" />
-              <span dir="ltr">+970 123 456 789</span>
-            </a>
+              <span dir="ltr">+972 59-252-0083</span>
+            </button>
 
-            <a
-              href="mailto:info@phoenix-delivery.ps"
-              className="topbar-link d-inline-flex align-items-center gap-2 text-decoration-none text-white"
+            <button
+              type="button"
+              className="topbar-link topbar-action d-inline-flex align-items-center gap-2 text-white"
+              onClick={openEmail}
+              aria-label="راسلنا عبر البريد الإلكتروني"
             >
               <FaEnvelope className="topbar-icon" aria-hidden="true" />
-              <span dir="ltr">info@phoenix-delivery.ps</span>
-            </a>
+              <span dir="ltr">{emailAddress}</span>
+            </button>
 
-            <div className="d-inline-flex align-items-center gap-2 text-white">
+            <button
+              type="button"
+              className="topbar-link topbar-action d-inline-flex align-items-center gap-2 text-white"
+              onClick={openMap}
+              aria-label="افتح الموقع على الخريطة"
+            >
               <FaMapMarkerAlt className="topbar-icon" aria-hidden="true" />
               <span>نابلس، المخفية، شارع جامعة النجاح</span>
-            </div>
+            </button>
           </div>
 
           <div className="d-flex align-items-center gap-3 flex-row-reverse topbar-social">
             <a
-              href="https://facebook.com"
+              href="https://www.facebook.com/Phoenix.Deliver/?locale=ar_AR"
               target="_blank"
               rel="noreferrer"
               aria-label="Facebook"
@@ -41,7 +68,7 @@ const TopBar = () => {
               <FaFacebookF className="topbar-icon" aria-hidden="true" />
             </a>
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/phoenix_express1/"
               target="_blank"
               rel="noreferrer"
               aria-label="Instagram"

@@ -3,10 +3,72 @@
 const { User, Customer, Employee, sequelize } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+const path = require("path");
 
 const resetCodes = {};
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
 const normalizePhone = (value) => String(value || '').trim();
+
+const createMailTransport = () => {
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT || 587);
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (!host || !user || !pass) {
+    throw new Error('Email service is not configured');
+  }
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass },
+  });
+};
+
+const sendPasswordResetEmail = async (email, code) => {
+  const transporter = createMailTransport();
+  const fromEmail = process.env.MAIL_FROM || process.env.SMTP_USER;
+  const fromName = process.env.MAIL_FROM_NAME || "فينوكس إكسبرس";
+  const logoPath = path.resolve(__dirname, "../../../frontend/src/Images/Phonex_logo.jpeg");
+
+  await transporter.sendMail({
+    from: `"${fromName}" <${fromEmail}>`,
+    to: email,
+    subject: 'رمز استعادة كلمة المرور - فينوكس إكسبرس',
+    text: `رمز استعادة كلمة المرور في فينوكس إكسبرس هو: ${code}. صالح لمدة 5 دقائق.`,
+    html: `
+      <div dir="rtl" style="margin:0; padding:0; background:#f4f7fb; font-family:Arial, sans-serif;">
+        <div style="max-width:560px; margin:0 auto; padding:32px 16px;">
+          <div style="background:#ffffff; border-radius:18px; overflow:hidden; border:1px solid #e8eef6;">
+            <div style="background:#38B6FF; padding:28px 24px; text-align:center;">
+              <img src="cid:phoenix-logo" alt="فينوكس إكسبرس" style="width:92px; height:92px; object-fit:cover; border-radius:18px; background:#ffffff; padding:6px;" />
+              <h1 style="margin:18px 0 0; color:#ffffff; font-size:24px; font-weight:800;">استعادة كلمة المرور</h1>
+            </div>
+            <div style="padding:30px 26px; color:#1f2937; line-height:1.8;">
+              <p style="margin:0 0 14px; font-size:16px;">مرحباً،</p>
+              <p style="margin:0 0 20px; font-size:16px;">استخدم رمز التحقق التالي لإعادة تعيين كلمة المرور الخاصة بحسابك في فينوكس إكسبرس:</p>
+              <div style="direction:ltr; text-align:center; margin:24px 0; padding:18px; border-radius:14px; background:#eef8ff; border:1px dashed #38B6FF; color:#0f172a; font-size:32px; font-weight:800; letter-spacing:8px;">
+                ${code}
+              </div>
+              <p style="margin:0 0 8px; font-size:14px; color:#64748b;">هذا الرمز صالح لمدة 5 دقائق فقط.</p>
+              <p style="margin:0; font-size:14px; color:#64748b;">إذا لم تطلب استعادة كلمة المرور، يمكنك تجاهل هذه الرسالة.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
+    attachments: [
+      {
+        filename: "phoenix-logo.jpeg",
+        path: logoPath,
+        cid: "phoenix-logo",
+      },
+    ],
+  });
+};
 
 const register = async (req, res) => {
   const t = await sequelize.transaction();
@@ -146,10 +208,20 @@ const forgotPassword = async (req, res) => {
       expiresAt: Date.now() + 5 * 60 * 1000,
     };
 
+    try {
+      await sendPasswordResetEmail(user.email, code);
+    } catch (smsError) {
+      delete resetCodes[normalizedPhone];
+
+      return res.status(503).json({
+        success: false,
+        message: "خدمة البريد غير مفعلة حالياً. تواصل مع الدعم لاستعادة كلمة المرور.",
+      });
+    }
+
     return res.status(200).json({
       success: true,
       message: "تم إرسال رمز التحقق",
-      mockCode: code,
     });
   } catch (error) {
     return res.status(500).json({
@@ -334,7 +406,14 @@ const deleteAuth = async (req, res) => {
 const changePassword = async (req, res) => {
   try {
     const userId = req.user?.id;
-    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const body = req.body || {};
+    const currentPassword = String(
+      body.currentPassword || body.oldPassword || body.password || ''
+    ).trim();
+    const newPassword = String(body.newPassword || body.new_password || '').trim();
+    const confirmPassword = String(
+      body.confirmPassword || body.confirm_password || body.passwordConfirmation || ''
+    ).trim();
 
     if (!userId) {
       return res.status(401).json({

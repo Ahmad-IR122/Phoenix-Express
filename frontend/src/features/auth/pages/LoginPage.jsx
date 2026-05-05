@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import "./UnifiedAuth.css";
 import { LuPhone } from "react-icons/lu";
@@ -14,6 +14,13 @@ const LoginPage = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
+  const supportWhatsappMessage = "مرحباً فينوكس، أحتاج مساعدة بخصوص تسجيل الدخول.";
+  const supportWhatsappUrl = `https://web.whatsapp.com/send?phone=972592520083&text=${encodeURIComponent(supportWhatsappMessage)}`;
+
+  const openSupportWhatsapp = () => {
+    window.open(supportWhatsappUrl, "_blank", "noopener,noreferrer");
+  };
+
   const showError = (title, message) => {
     Swal.fire({
       icon: "error",
@@ -47,7 +54,7 @@ const LoginPage = () => {
       await Swal.fire({
         icon: "success",
         title: "تم تسجيل الدخول",
-        text: "مرحبًا بك في فينكس إكسبرس",
+        text: "مرحبًا بك في فينوكس إكسبرس",
         confirmButtonText: "متابعة",
         confirmButtonColor: "#38B6FF",
         timer: 1500,
@@ -92,17 +99,18 @@ const LoginPage = () => {
             <button type="button" className="tab-btn active">
               تسجيل الدخول
             </button>
-            <Link
-              to="/signin"
-              className="tab-btn text-decoration-none d-flex align-items-center justify-content-center"
+            <button
+              type="button"
+              className="tab-btn d-flex align-items-center justify-content-center"
+              onClick={() => navigate("/signin")}
             >
               إنشاء حساب
-            </Link>
+            </button>
           </div>
 
           <div className="header-text text-center">
             <h2 className="main-title-blue">تسجيل الدخول</h2>
-            <p className="sub-title">مرحباً بك في فينكس إكسبرس</p>
+            <p className="sub-title">مرحباً بك في فينوكس إكسبرس</p>
           </div>
 
           <form onSubmit={handleLogin} dir="rtl">
@@ -151,9 +159,13 @@ const LoginPage = () => {
                 </label>
               </div>
 
-              <Link to="/forgot-password" className="forgot-password-link">
+              <button
+                type="button"
+                className="forgot-password-link"
+                onClick={() => navigate("/forgot-password")}
+              >
                 نسيت كلمة المرور؟
-              </Link>
+              </button>
             </div>
 
             <button type="submit" className="btn-primary-blue-action w-100">
@@ -164,21 +176,27 @@ const LoginPage = () => {
               <span>أو</span>
             </div>
 
-            <Link
-              to="/"
-              className="btn-light-gray-home w-100 d-flex align-items-center justify-content-center text-decoration-none"
+            <button
+              type="button"
+              className="btn-light-gray-home w-100 d-flex align-items-center justify-content-center"
+              onClick={() => navigate("/")}
             >
               العودة للصفحة الرئيسية
-            </Link>
+            </button>
           </form>
         </div>
       </div>
 
       <div className="footer-support-info text-center mt-4 text-white">
         <p className="mb-0">هل تحتاج مساعدة؟</p>
-        <p className="phone-number-bold" dir="ltr">
-          +970 123 456 789
-        </p>
+        <button
+          type="button"
+          className="phone-number-bold auth-support-phone"
+          dir="ltr"
+          onClick={openSupportWhatsapp}
+        >
+          +972 59-252-0083
+        </button>
       </div>
     </div>
   );

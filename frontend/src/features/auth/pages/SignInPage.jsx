@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Swal from "sweetalert2";
 import "./UnifiedAuth.css";
@@ -23,6 +23,12 @@ const SignInPage = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const supportWhatsappMessage = "مرحباً فينوكس، أحتاج مساعدة بخصوص إنشاء حساب.";
+  const supportWhatsappUrl = `https://web.whatsapp.com/send?phone=972592520083&text=${encodeURIComponent(supportWhatsappMessage)}`;
+
+  const openSupportWhatsapp = () => {
+    window.open(supportWhatsappUrl, "_blank", "noopener,noreferrer");
+  };
 
   const showError = (title, message) => {
     Swal.fire({
@@ -85,19 +91,20 @@ const SignInPage = () => {
     <div className="auth-screen">
       <div className="logo-top-wrapper">
         <div className="white-logo-box">
-          <img src={logo} alt="فينكس لوجو" className="main-logo-img" />
+          <img src={logo} alt="فينوكس لوجو" className="main-logo-img" />
         </div>
       </div>
 
       <div className="main-card-container">
         <div className="auth-card shadow-sm">
           <div className="tab-switcher">
-            <Link
-              to="/login"
-              className="tab-btn text-decoration-none d-flex align-items-center justify-content-center"
+            <button
+              type="button"
+              className="tab-btn d-flex align-items-center justify-content-center"
+              onClick={() => navigate("/login")}
             >
               تسجيل الدخول
-            </Link>
+            </button>
             <button type="button" className="tab-btn active">
               إنشاء حساب
             </button>
@@ -105,7 +112,7 @@ const SignInPage = () => {
 
           <div className="header-text text-center">
             <h2 className="main-title-blue">إنشاء حساب جديد</h2>
-            <p className="sub-title">انضم إلى عائلة فينكس إكسبرس</p>
+            <p className="sub-title">انضم إلى عائلة فينوكس إكسبرس</p>
           </div>
 
           <div className="account-switcher d-flex mb-4">
@@ -225,21 +232,27 @@ const SignInPage = () => {
               <span>أو</span>
             </div>
 
-            <Link
-              to="/"
-              className="btn-light-gray-home w-100 d-flex align-items-center justify-content-center text-decoration-none"
+            <button
+              type="button"
+              className="btn-light-gray-home w-100 d-flex align-items-center justify-content-center"
+              onClick={() => navigate("/")}
             >
               العودة للصفحة الرئيسية
-            </Link>
+            </button>
           </form>
         </div>
       </div>
 
       <div className="footer-support-info text-center mt-4 text-white">
         <p className="mb-0">هل تحتاج مساعدة؟</p>
-        <p className="phone-number-bold" dir="ltr">
-          +970 123 456 789
-        </p>
+        <button
+          type="button"
+          className="phone-number-bold auth-support-phone"
+          dir="ltr"
+          onClick={openSupportWhatsapp}
+        >
+          +972 59-252-0083
+        </button>
       </div>
     </div>
   );

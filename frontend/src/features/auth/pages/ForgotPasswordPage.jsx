@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import "./ForgotPasswordPage.css";
 import {
@@ -8,10 +8,12 @@ import {
   HiOutlineEnvelope,
   HiOutlineArrowRight,
   HiOutlineKey,
-  HiOutlineLockClosed
+  HiOutlineLockClosed,
 } from "react-icons/hi2";
 import logo from "../../../Images/Phonex_logo.jpeg";
 import { forgotPassword, resetPassword } from "../services/authService";
+
+const SUPPORT_PHONE = "972592520083";
 
 const ForgotPasswordPage = () => {
   const navigate = useNavigate();
@@ -20,17 +22,25 @@ const ForgotPasswordPage = () => {
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
-  const handleSendCode = async (e) => {
-    e.preventDefault();
+  const openSupportWhatsapp = () => {
+    const message = `مرحباً فينوكس، أحتاج مساعدة بخصوص استعادة كلمة المرور لحسابي المرتبط بالرقم: ${phone}`;
+    window.open(
+      `https://web.whatsapp.com/send?phone=${SUPPORT_PHONE}&text=${encodeURIComponent(message)}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
+  const handleSendCode = async (event) => {
+    event.preventDefault();
 
     try {
-      const response = await forgotPassword({ phone });
-      const mockCode = response.data.mockCode;
+      await forgotPassword({ phone });
 
       await Swal.fire({
         icon: "success",
         title: "تم إرسال رمز التحقق",
-        text: `رمز التحقق التجريبي هو: ${mockCode}`,
+        text: "تم إرسال رمز التحقق إلى البريد الإلكتروني المرتبط بهذا الرقم.",
         confirmButtonText: "متابعة",
         confirmButtonColor: "#38B6FF",
         customClass: { popup: "swal-rtl" },
@@ -40,17 +50,19 @@ const ForgotPasswordPage = () => {
     } catch (error) {
       Swal.fire({
         icon: "error",
-        title: "خطأ",
-        text: error.response?.data?.message || "فشل إرسال رمز التحقق",
-        confirmButtonText: "حسنًا",
+        title: "تعذر إرسال الرمز",
+        text:
+          error.response?.data?.message ||
+          "لم نتمكن من إرسال رمز التحقق. تواصل مع الدعم للمساعدة.",
+        confirmButtonText: "حسناً",
         confirmButtonColor: "#38B6FF",
         customClass: { popup: "swal-rtl" },
       });
     }
   };
 
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
+  const handleResetPassword = async (event) => {
+    event.preventDefault();
 
     try {
       await resetPassword({ phone, code, newPassword });
@@ -58,7 +70,7 @@ const ForgotPasswordPage = () => {
       await Swal.fire({
         icon: "success",
         title: "تم تغيير كلمة المرور",
-        text: "يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة",
+        text: "يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة.",
         confirmButtonText: "تسجيل الدخول",
         confirmButtonColor: "#38B6FF",
         customClass: { popup: "swal-rtl" },
@@ -68,12 +80,12 @@ const ForgotPasswordPage = () => {
     } catch (error) {
       Swal.fire({
         icon: "error",
-        title: "خطأ",
+        title: "تعذر تغيير كلمة المرور",
         text:
           error.response?.data?.errors?.join(" - ") ||
           error.response?.data?.message ||
-          "فشل تغيير كلمة المرور",
-        confirmButtonText: "حسنًا",
+          "تأكد من رمز التحقق وحاول مرة أخرى.",
+        confirmButtonText: "حسناً",
         confirmButtonColor: "#38B6FF",
         customClass: { popup: "swal-rtl" },
       });
@@ -84,7 +96,7 @@ const ForgotPasswordPage = () => {
     <div className="forgot-password-wrapper">
       <div className="forgot-content">
         <div className="logo-box-fixed shadow-sm">
-          <img src={logo} alt="فينكس لوجو" className="logo-img-contained" />
+          <img src={logo} alt="فينوكس لوجو" className="logo-img-contained" />
         </div>
 
         <div className="forgot-password-card shadow-sm">
@@ -94,8 +106,8 @@ const ForgotPasswordPage = () => {
             </h2>
             <p className="forgot-password-subtitle text-muted">
               {step === 1
-                ? "أدخل رقم هاتفك وسنرسل لك رمز التحقق"
-                : `أدخل الرمز المرسل إلى ${phone}`}
+                ? "أدخل رقم هاتفك وسنرسل رمز تحقق إلى البريد الإلكتروني المرتبط بالحساب."
+                : `أدخل الرمز المرسل إلى بريد الحساب المرتبط بالرقم ${phone} ثم اختر كلمة مرور جديدة.`}
             </p>
           </div>
 
@@ -113,7 +125,7 @@ const ForgotPasswordPage = () => {
                   placeholder="05xxxxxxxx"
                   dir="ltr"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(event) => setPhone(event.target.value)}
                   required
                 />
               </div>
@@ -128,7 +140,7 @@ const ForgotPasswordPage = () => {
               <div className="mb-4">
                 <label className="form-label d-flex align-items-center">
                   <HiOutlineKey className="icon-blue-outline ms-2" />
-                  <span>رمز التحقق (6 أرقام)</span>
+                  <span>رمز التحقق</span>
                 </label>
 
                 <input
@@ -136,7 +148,7 @@ const ForgotPasswordPage = () => {
                   className="form-control forgot-password-input text-center code-input"
                   placeholder="123456"
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
+                  onChange={(event) => setCode(event.target.value)}
                   maxLength="6"
                   required
                 />
@@ -153,14 +165,14 @@ const ForgotPasswordPage = () => {
                   className="form-control forgot-password-input"
                   placeholder="••••••••"
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  onChange={(event) => setNewPassword(event.target.value)}
                   required
                 />
               </div>
 
               <div className="d-flex gap-3">
                 <button type="submit" className="btn btn-primary-forgot flex-fill">
-                  تحقق
+                  تغيير كلمة المرور
                 </button>
 
                 <button
@@ -186,18 +198,26 @@ const ForgotPasswordPage = () => {
             <span>أو</span>
           </div>
 
-          <Link
-            to="/login"
-            className="btn btn-secondary-login w-100 d-flex align-items-center justify-content-center text-decoration-none"
+          <button
+            type="button"
+            className="btn btn-secondary-login w-100 d-flex align-items-center justify-content-center"
+            onClick={() => navigate("/login")}
           >
             <span>العودة لتسجيل الدخول</span>
             <HiOutlineArrowRight className="me-2 fs-5" />
-          </Link>
+          </button>
         </div>
 
         <div className="support-footer text-center mt-4 text-white">
           <p className="mb-0 forgot-password-help">هل تحتاج مساعدة؟</p>
-          <p className="phone-num-small">+970 123 456 789</p>
+          <button
+            type="button"
+            className="phone-num-small auth-support-phone"
+            dir="ltr"
+            onClick={openSupportWhatsapp}
+          >
+            +972 59-252-0083
+          </button>
         </div>
       </div>
     </div>
