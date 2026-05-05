@@ -14,41 +14,54 @@ import {
 } from "react-icons/fi";
 import { changePassword } from "../../auth/services/authService";
 import {
+  getCustomerOrders,
   getCustomerProfile,
   updateCustomerProfile,
   updateCustomerProfileLegacy,
 } from "../services/customerService";
 import "./CustomerProfilePage.css";
 
-const orders = [
-  {
-    trackingNumber: "PH12345678",
-    status: "تم التسليم",
-    statusType: "delivered",
-    from: "نابلس",
-    to: "رام الله",
-    date: "2026-04-20",
-    price: "20 شيكل",
-  },
-  {
-    trackingNumber: "PH87654321",
-    status: "قيد التوصيل",
-    statusType: "shipping",
-    from: "القدس",
-    to: "نابلس",
-    date: "2026-04-19",
-    price: "30 شيكل",
-  },
-  {
-    trackingNumber: "PH11223344",
-    status: "تم التسليم",
-    statusType: "delivered",
-    from: "نابلس",
-    to: "حيفا",
-    date: "2026-04-18",
-    price: "70 شيكل",
-  },
-];
+const statusTextByValue = {
+  accepted: "تم قبول الطلب",
+  picked_up: "تم استلام الطرد",
+  in_transit: "قيد التوصيل",
+  arrived_to_destination_city: "وصل إلى مدينة الوجهة",
+  out_for_delivery: "خارج للتسليم",
+  delivered: "تم التسليم",
+  returned: "مرتجع",
+  cancelled: "ملغي",
+  pending: "قيد المراجعة",
+};
+
+const getStatusType = (status) => {
+  if (status === "delivered") return "delivered";
+  if (status === "cancelled" || status === "returned") return "cancelled";
+  return "shipping";
+};
+
+const formatOrderDate = (value) => {
+  if (!value) return "-";
+
+  return new Intl.DateTimeFormat("ar-PS", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(value));
+};
+
+const mapCustomerOrder = (order) => {
+  const status = order.shipment?.current_status || order.status || "pending";
+
+  return {
+    trackingNumber: order.shipment?.tracking_number || `ORDER-${order.id}`,
+    status: statusTextByValue[status] || status,
+    statusType: getStatusType(status),
+    from: order.origin_city || "-",
+    to: order.destination_city || "-",
+    date: formatOrderDate(order.created_at || order.createdAt),
+    price: `${order.region?.price || 0} شيكل`,
+  };
+};
 
 const getStoredUser = () => {
   const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
@@ -165,6 +178,8 @@ const CustomerProfilePage = () => {
   const [showPasswordForm, setShowPasswordForm] = React.useState(false);
   const [isSavingProfile, setIsSavingProfile] = React.useState(false);
   const [isSavingPassword, setIsSavingPassword] = React.useState(false);
+  const [customerOrders, setCustomerOrders] = React.useState([]);
+  const [isLoadingOrders, setIsLoadingOrders] = React.useState(true);
   const [profileForm, setProfileForm] = React.useState({
     name: getDisplayName(storedUser),
     email: storedUser.email || "ahmad@example.com",
@@ -205,6 +220,26 @@ const CustomerProfilePage = () => {
     };
 
     loadProfile();
+  }, []);
+
+  React.useEffect(() => {
+    const loadOrders = async () => {
+      setIsLoadingOrders(true);
+
+      try {
+        const response = await getCustomerOrders();
+        const nextOrders = Array.isArray(response.data)
+          ? response.data.map(mapCustomerOrder)
+          : [];
+        setCustomerOrders(nextOrders);
+      } catch {
+        setCustomerOrders([]);
+      } finally {
+        setIsLoadingOrders(false);
+      }
+    };
+
+    loadOrders();
   }, []);
 
   const handleProfileChange = (event) => {
@@ -601,47 +636,53 @@ const CustomerProfilePage = () => {
             </h2>
 
             <div className="customer-orders-list">
-              {orders.map((order) => (
-                <article className="customer-order-item" key={order.trackingNumber}>
-                  <div className="customer-order-top">
-                    <span className={`customer-order-status ${order.statusType}`}>
-                      {order.status}
-                    </span>
-                    <strong>{order.trackingNumber}#</strong>
-                  </div>
+              {isLoadingOrders ? (
+                <p className="customer-orders-message">جاري تحميل طلباتك...</p>
+              ) : customerOrders.length === 0 ? (
+                <p className="customer-orders-message">لا توجد طلبات مسجلة على حسابك حالياً.</p>
+              ) : (
+                customerOrders.map((order) => (
+                  <article className="customer-order-item" key={order.trackingNumber}>
+                    <div className="customer-order-top">
+                      <span className={`customer-order-status ${order.statusType}`}>
+                        {order.status}
+                      </span>
+                      <strong>{order.trackingNumber}#</strong>
+                    </div>
 
-                  <dl className="customer-order-details">
-                    <div>
-                      <dt>من:</dt>
-                      <dd>{order.from}</dd>
-                    </div>
-                    <div>
-                      <dt>إلى:</dt>
-                      <dd>{order.to}</dd>
-                    </div>
-                    <div>
-                      <dt>التاريخ:</dt>
-                      <dd>{order.date}</dd>
-                    </div>
-                    <div>
-                      <dt>السعر:</dt>
-                      <dd className="customer-order-price">{order.price}</dd>
-                    </div>
-                  </dl>
+                    <dl className="customer-order-details">
+                      <div>
+                        <dt>من:</dt>
+                        <dd>{order.from}</dd>
+                      </div>
+                      <div>
+                        <dt>إلى:</dt>
+                        <dd>{order.to}</dd>
+                      </div>
+                      <div>
+                        <dt>التاريخ:</dt>
+                        <dd>{order.date}</dd>
+                      </div>
+                      <div>
+                        <dt>السعر:</dt>
+                        <dd className="customer-order-price">{order.price}</dd>
+                      </div>
+                    </dl>
 
-                  <button
-                    type="button"
-                    className="customer-track-btn"
-                    onClick={() =>
-                      navigate("/tracking", {
-                        state: { trackingNumber: order.trackingNumber },
-                      })
-                    }
-                  >
-                    تتبع الطرد
-                  </button>
-                </article>
-              ))}
+                    <button
+                      type="button"
+                      className="customer-track-btn"
+                      onClick={() =>
+                        navigate("/tracking", {
+                          state: { trackingNumber: order.trackingNumber },
+                        })
+                      }
+                    >
+                      تتبع الطرد
+                    </button>
+                  </article>
+                ))
+              )}
             </div>
 
             <button

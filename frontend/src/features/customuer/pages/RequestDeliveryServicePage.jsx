@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import "./RequestDeliveryServicePage.css";
 
 const deliveryRegionOptions = [
@@ -19,6 +20,9 @@ const parcelStatusOptions = [
   { value: "urgent", label: "عاجل" },
   { value: "immediate", label: "فوري" },
 ];
+
+const isAuthenticated = () =>
+  Boolean(localStorage.getItem("token") || sessionStorage.getItem("token"));
 
 const RequestDeliveryServicePage = () => {
   const navigate = useNavigate();
@@ -56,6 +60,18 @@ const RequestDeliveryServicePage = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    if (!isAuthenticated()) {
+      Swal.fire({
+        icon: "warning",
+        title: "تسجيل الدخول مطلوب",
+        text: "لا يمكن إنشاء طلب توصيل قبل تسجيل الدخول.",
+        confirmButtonText: "تسجيل الدخول",
+        confirmButtonColor: "#38b6ff",
+      }).then(() => navigate("/login", { state: { from: "/request-delivery" } }));
+      return;
+    }
+
     navigate("/order-confirmation", {
       state: {
         ...formData,

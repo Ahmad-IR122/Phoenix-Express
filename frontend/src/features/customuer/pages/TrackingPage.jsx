@@ -5,7 +5,8 @@ import {
   BsClockHistory,
   BsTruck,
 } from "react-icons/bs";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import { getTrackingByNumber } from "../services/customerService";
 import "../../../styles/TrackingPage.css";
 
@@ -88,8 +89,12 @@ const formatArabicDate = (value) => {
 
 const fallbackValue = (value) => value || "غير متوفر";
 
+const isAuthenticated = () =>
+  Boolean(localStorage.getItem("token") || sessionStorage.getItem("token"));
+
 const TrackingPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const trackingNumberFromState = location.state?.trackingNumber || "";
   const [trackingNumber, setTrackingNumber] = useState(trackingNumberFromState);
   const [shipment, setShipment] = useState(null);
@@ -110,7 +115,7 @@ const TrackingPage = () => {
       ? statusToProgressIndex[shipment.status]
       : 0;
 
-  const performSearch = async (requestedTrackingNumber) => {
+  const performSearch = React.useCallback(async (requestedTrackingNumber) => {
     const normalizedTrackingNumber = requestedTrackingNumber.trim();
 
     setHasSearched(true);
@@ -121,6 +126,26 @@ const TrackingPage = () => {
       return;
     }
 
+    if (!isAuthenticated()) {
+      setErrorMessage("يرجى تسجيل الدخول قبل تتبع الشحنة.");
+      Swal.fire({
+        icon: "info",
+        title: "تسجيل الدخول مطلوب",
+        text: "يرجى تسجيل الدخول أولاً حتى تتمكن من تتبع الشحنات المرتبطة بحسابك.",
+        confirmButtonText: "تسجيل الدخول",
+        confirmButtonColor: "#38b6ff",
+        showCancelButton: true,
+        cancelButtonText: "لاحقاً",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login", {
+            state: { from: "/tracking", trackingNumber: normalizedTrackingNumber },
+          });
+        }
+      });
+      return;
+    }
+
     setIsLoading(true);
     setErrorMessage("");
 
@@ -128,21 +153,23 @@ const TrackingPage = () => {
       const response = await getTrackingByNumber(normalizedTrackingNumber);
       setShipment(response?.data || null);
     } catch (error) {
-      if (error.response?.status === 404) {
-        setErrorMessage("لم يتم العثور على شحنة بهذا الرقم.");
+      if (error.response?.status === 401) {
+        setErrorMessage("يرجى تسجيل الدخول قبل تتبع الشحنة.");
+      } else if (error.response?.status === 404) {
+        setErrorMessage("رقم الشحنة غير صحيح أو غير مرتبط بحسابك.");
       } else {
         setErrorMessage("حدث خطأ أثناء جلب بيانات الشحنة. حاول مرة أخرى.");
       }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     if (trackingNumberFromState) {
       performSearch(trackingNumberFromState);
     }
-  }, [trackingNumberFromState]);
+  }, [performSearch, trackingNumberFromState]);
 
   const handleSubmit = (event) => {
     event.preventDefault();

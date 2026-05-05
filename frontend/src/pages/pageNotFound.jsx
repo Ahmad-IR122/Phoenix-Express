@@ -1,79 +1,80 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { BsBoxSeam, BsTruck } from "react-icons/bs";
-import { FiSearch, FiMail } from "react-icons/fi";
+import { FiHome, FiMail, FiSearch } from "react-icons/fi";
 
 const styles = {
   page: {
     minHeight: "100vh",
-    backgroundColor: "#F3F3F3",
-    fontFamily: '"Cairo", "Segoe UI", sans-serif',
+    background:
+      "radial-gradient(circle at top right, rgba(56, 182, 255, 0.16), transparent 34%), #f4f8fc",
+    fontFamily: '"Cairo", "Segoe UI", Tahoma, sans-serif',
   },
   shell: {
-    maxWidth: "960px",
+    maxWidth: "980px",
   },
   code: {
-    color: "#38B6FF",
-    fontSize: "clamp(3.75rem, 9vw, 6.5rem)",
+    color: "#38b6ff",
+    fontSize: "clamp(4rem, 10vw, 7rem)",
     lineHeight: 1,
-    letterSpacing: "0.04em",
+    letterSpacing: "0",
   },
   title: {
-    color: "#0A0A0A",
-    fontSize: "clamp(1.9rem, 4vw, 3rem)",
+    color: "#0f172a",
+    fontSize: "clamp(2rem, 4vw, 3.1rem)",
     lineHeight: 1.3,
   },
   subtitle: {
     maxWidth: "720px",
-    color: "#6F7D90",
-    fontSize: "clamp(1rem, 1.8vw, 1.2rem)",
+    color: "#64748b",
+    fontSize: "clamp(1rem, 1.8vw, 1.16rem)",
     lineHeight: 1.9,
   },
   card: {
-    borderRadius: "2rem",
-    border: "1px solid rgba(56, 182, 255, 0.08)",
-    boxShadow: "0 18px 45px rgba(38, 56, 88, 0.1)",
-    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FBFF 100%)",
+    borderRadius: "24px",
+    border: "1px solid #dbeafe",
+    boxShadow: "0 18px 45px rgba(15, 23, 42, 0.1)",
+    background: "linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)",
   },
   visualWrap: {
-    width: "170px",
-    height: "170px",
-    backgroundColor: "#EEF8FF",
-    color: "#38B6FF",
+    width: "172px",
+    height: "172px",
+    backgroundColor: "#eef8ff",
+    color: "#38b6ff",
   },
   iconBadge: {
     width: "56px",
     height: "56px",
-    backgroundColor: "#FFFFFF",
-    color: "#38B6FF",
-    boxShadow: "0 10px 24px rgba(56, 182, 255, 0.14)",
+    backgroundColor: "#ffffff",
+    color: "#087fc4",
+    boxShadow: "0 10px 24px rgba(56, 182, 255, 0.16)",
   },
   helper: {
-    maxWidth: "620px",
-    color: "#5F6D82",
+    maxWidth: "650px",
+    color: "#475569",
     fontSize: "1rem",
     lineHeight: 1.9,
   },
   primaryButton: {
     minWidth: "190px",
-    minHeight: "56px",
+    minHeight: "54px",
     borderRadius: "999px",
-    backgroundColor: "#38B6FF",
-    borderColor: "#38B6FF",
-    fontWeight: 700,
+    backgroundColor: "#38b6ff",
+    borderColor: "#38b6ff",
+    fontWeight: 800,
   },
   secondaryButton: {
     minWidth: "190px",
-    minHeight: "56px",
+    minHeight: "54px",
     borderRadius: "999px",
-    border: "1px solid #D7DEEA",
-    backgroundColor: "#FFFFFF",
-    color: "#5F6D82",
-    fontWeight: 700,
+    border: "1px solid #d7deea",
+    backgroundColor: "#ffffff",
+    color: "#475569",
+    fontWeight: 800,
   },
   textLink: {
-    color: "#38B6FF",
-    fontWeight: 700,
+    color: "#087fc4",
+    fontWeight: 800,
     textDecoration: "none",
   },
 };
@@ -94,14 +95,11 @@ const PageNotFound = () => {
               الصفحة غير موجودة
             </h1>
             <p className="mb-0 mx-auto" style={styles.subtitle}>
-              عذراً، الصفحة التي تحاول الوصول إليها غير متوفرة أو ربما تم نقلها
+              عذراً، الرابط الذي تحاول الوصول إليه غير متوفر حالياً، أو ربما تم نقله إلى مسار آخر.
             </p>
           </header>
 
-          <div
-            className="card border-0 w-100 mx-auto"
-            style={styles.card}
-          >
+          <div className="card border-0 w-100 mx-auto" style={styles.card}>
             <div className="card-body p-4 p-md-5">
               <div className="d-flex justify-content-center mb-4">
                 <div
@@ -128,15 +126,16 @@ const PageNotFound = () => {
               </div>
 
               <p className="mx-auto mb-4" style={styles.helper}>
-                يمكنك العودة إلى الصفحة الرئيسية أو استخدام تتبع الشحنة للوصول إلى ما تحتاجه
+                يمكنك العودة إلى الصفحة الرئيسية أو استخدام صفحة تتبع الشحنة للوصول إلى الخدمة التي تحتاجها بسرعة.
               </p>
 
               <div className="d-flex flex-column flex-sm-row justify-content-center gap-3">
                 <Link
                   to="/"
-                  className="btn btn-primary d-inline-flex align-items-center justify-content-center"
+                  className="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2"
                   style={styles.primaryButton}
                 >
+                  <FiHome aria-hidden="true" />
                   العودة إلى الرئيسية
                 </Link>
 
@@ -156,7 +155,7 @@ const PageNotFound = () => {
                   style={styles.textLink}
                 >
                   <FiMail aria-hidden="true" />
-                  <span>تواصل معنا</span>
+                  <span>تواصل معنا للمساعدة</span>
                 </a>
               </div>
             </div>

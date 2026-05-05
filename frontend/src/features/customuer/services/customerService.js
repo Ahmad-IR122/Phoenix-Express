@@ -13,6 +13,11 @@ export const getCustomerProfile = async () => {
   return response.data;
 };
 
+export const getCustomerOrders = async () => {
+  const response = await API.get("/orders/me");
+  return response.data;
+};
+
 export const updateCustomerProfile = async (payload) => {
   const response = await API.patch("/customers/profile/me", payload);
   return response.data;

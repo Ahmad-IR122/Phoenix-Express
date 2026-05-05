@@ -65,7 +65,16 @@ export default function AppRoutes() {
             path="/request-service"
             element={<Navigate to="/request-delivery" replace />}
           />
-          <Route path="/order-confirmation" element={<OrderConfirmation />} />  
+          <Route
+            path="/order-confirmation"
+            element={
+              <ProtectedRoute>
+                <RoleRoute allowedRoles={["customer", "company"]}>
+                  <OrderConfirmation />
+                </RoleRoute>
+              </ProtectedRoute>
+            }
+          />  
         </Route>
 
         {/* Auth routes */}
