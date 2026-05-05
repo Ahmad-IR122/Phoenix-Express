@@ -1,6 +1,7 @@
 .tracking-page {
   background-color: #f5f7fa !important;
   font-family: "Cairo", "Segoe UI", sans-serif;
+  font-size: 16px;
 }
 
 .tracking-shell {
@@ -9,13 +10,13 @@
 
 .tracking-title {
   color: #38b6ff;
-  font-size: clamp(2.25rem, 4vw, 3.75rem);
+  font-size: 20px;
   line-height: 1.15;
 }
 
 .tracking-subtitle {
   color: #5c667a;
-  font-size: clamp(1.15rem, 2vw, 1.95rem);
+  font-size: 16px;
   font-weight: 500;
 }
 
@@ -70,7 +71,7 @@
 
 .tracking-feedback-text {
   color: #445068;
-  font-size: 1.2rem;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -85,13 +86,13 @@
 
 .tracking-meta-label {
   color: #6f7b91;
-  font-size: 1.2rem;
+  font-size: 16px;
   font-weight: 500;
 }
 
 .tracking-meta-value {
   color: #081224;
-  font-size: clamp(1.55rem, 2.8vw, 2.25rem);
+  font-size: 20px;
   font-weight: 800;
 }
 
@@ -109,15 +110,15 @@
 }
 
 .tracking-location-value {
-  font-size: clamp(1.7rem, 3vw, 2.55rem);
+  font-size: 20px;
 }
 
 .tracking-route-value {
-  font-size: clamp(1.4rem, 2.5vw, 2.2rem);
+  font-size: 16px;
 }
 
 .tracking-section-title {
-  font-size: clamp(1.85rem, 3vw, 2.7rem);
+  font-size: 20px;
 }
 
 .tracking-progress-line {
@@ -169,7 +170,7 @@
 
 .tracking-step-label {
   color: #97a2b3;
-  font-size: 1.2rem;
+  font-size: 20px;
   font-weight: 800;
 }
 
@@ -180,13 +181,13 @@
 .tracking-current-badge {
   background-color: #38b6ff;
   color: #ffffff;
-  font-size: 0.95rem;
+  font-size: 16px;
   padding: 0.55rem 1rem;
 }
 
 .tracking-details-title {
   color: #38b6ff;
-  font-size: clamp(2rem, 3vw, 2.8rem);
+  font-size: 20px;
 }
 
 .tracking-person-block {
@@ -196,13 +197,13 @@
 
 .tracking-person-title {
   color: #081224;
-  font-size: clamp(1.6rem, 2.5vw, 2.3rem);
+  font-size: 20px;
   font-weight: 800;
 }
 
 .tracking-person-item {
   color: #38445b;
-  font-size: 1.3rem;
+  font-size: 16px;
 }
 
 .tracking-support-card {
@@ -210,12 +211,12 @@
 }
 
 .tracking-support-title {
-  font-size: clamp(1.9rem, 3vw, 2.65rem);
+  font-size: 20px;
 }
 
 .tracking-support-text {
   color: #5d6780;
-  font-size: clamp(1.15rem, 2vw, 1.8rem);
+  font-size: 16px;
 }
 
 .tracking-support-btn {
@@ -223,7 +224,7 @@
   min-height: 3.75rem;
   border-radius: 1rem;
   color: #ffffff !important;
-  font-size: 1.45rem;
+  font-size: 16px;
   font-weight: 700;
 }
 
@@ -241,7 +242,7 @@
 
 .tracking-empty-text {
   color: #5c667a;
-  font-size: clamp(1.4rem, 2vw, 2rem);
+  font-size: 16px;
   font-weight: 500;
 }
 

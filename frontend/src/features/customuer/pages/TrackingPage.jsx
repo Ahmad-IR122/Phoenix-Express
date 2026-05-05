@@ -221,7 +221,7 @@ const TrackingPage = () => {
               <div className="card border-0 tracking-result-card tracking-progress-card mb-4">
                 <div className="card-body p-4 p-md-5">
                   <div className="row g-4 align-items-start">
-                    <div className="col-lg-4 text-center text-lg-end">
+                    <div className="col-lg-6 text-center text-lg-end">
                       <p className="tracking-meta-label mb-2">رقم التتبع</p>
                       <h2 className="tracking-meta-value tracking-number-text mb-4" dir="ltr">
                         {fallbackValue(shipment.tracking_number)}
@@ -233,7 +233,7 @@ const TrackingPage = () => {
                       </h3>
                     </div>
 
-                    <div className="col-lg-4 text-center">
+                    <div className="col-lg-6 text-center">
                       <p className="tracking-meta-label mb-2">الموقع الحالي</p>
                       <h2 className="tracking-location-value mb-4">
                         {fallbackValue(shipment.current_location)}
@@ -247,12 +247,13 @@ const TrackingPage = () => {
                       </h3>
                     </div>
 
-                    <div className="col-lg-4 d-flex align-items-start justify-content-center justify-content-lg-end">
+                    <div className="col-12 text-center mt-4 mt-md-5">
                       <h2 className="tracking-section-title mb-0">مراحل الشحنة</h2>
                     </div>
                   </div>
 
                   <div className="tracking-progress-line position-relative mt-4 mt-md-5">
+                    
                     <div className="tracking-progress-track" />
                     <div
                       className="tracking-progress-fill"

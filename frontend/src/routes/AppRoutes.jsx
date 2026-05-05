@@ -11,7 +11,6 @@ import HomePage from "../features/customuer/pages/HomePage";
 import AboutPage from "../features/customuer/pages/AboutPage";
 import TrackingPage from "../features/customuer/pages/TrackingPage";
 import PhotoGalleryPage from "../features/customuer/pages/PhotoGalleryPage";
-import FeedbackPage from "../features/customuer/pages/FeedbackPage";
 import BlogPage from "../features/customuer/pages/BlogPage";
 import CustomerProfilePage from "../features/customuer/pages/CustomerProfilePage";
 import RequestDeliveryServicePage from "../features/customuer/pages/RequestDeliveryServicePage";
@@ -46,7 +45,6 @@ export default function AppRoutes() {
           <Route path="/tracking" element={<TrackingPage />} />
           <Route path="/gallery" element={<PhotoGalleryPage />} />
           <Route path="/reviews" element={<ReviewsPage />} />
-          <Route path="/feedback" element={<FeedbackPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route
             path="/profile"

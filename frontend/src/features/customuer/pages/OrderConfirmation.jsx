@@ -11,7 +11,7 @@ const DELIVERY_REGION_PRICES = {
 
 const DELIVERY_REGION_LABELS = {
   "west-bank": "الضفة الغربية",
-  jerusalem: "القدس",
+  jerusalem: "القدس", 
   inside: "الداخل",
 };
 
