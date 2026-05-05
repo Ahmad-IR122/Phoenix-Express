@@ -322,19 +322,22 @@ const ChatbotWidget = () => {
   React.useEffect(() => {
     const syncEmployeeReplies = () => {
       const currentActiveThreadId = activeEmployeeThreadIdRef.current;
-      if (!currentActiveThreadId) return;
+      if (!isAuthenticated) return;
 
       const syncFromThread = (thread) => {
-      if (!activeEmployeeThreadIdRef.current) return;
-      if (activeEmployeeThreadIdRef.current === PENDING_EMPLOYEE_THREAD_ID) return;
+      const activeThreadId = activeEmployeeThreadIdRef.current;
 
       if (!thread) {
-        setActiveEmployeeThreadId(null);
-        localStorage.removeItem(getUserActiveThreadKey());
+        if (activeThreadId) {
+          setActiveEmployeeThreadId(null);
+          localStorage.removeItem(getUserActiveThreadKey());
+        }
         return;
       }
 
-      if (thread.id !== activeEmployeeThreadIdRef.current) {
+      if (activeThreadId === PENDING_EMPLOYEE_THREAD_ID) return;
+
+      if (activeThreadId && thread.id !== activeThreadId) {
         return;
       }
 
@@ -374,7 +377,7 @@ const ChatbotWidget = () => {
         ),
       ]);
 
-      if (!isOpen || isMinimized) {
+      if (!isOpen || isMinimized || !activeThreadId) {
         setUnreadCount((current) => Math.min(current + newEmployeeMessages.length, 9));
         playSoftPing();
       }
@@ -395,7 +398,7 @@ const ChatbotWidget = () => {
     syncEmployeeReplies();
 
     return () => window.clearInterval(intervalId);
-  }, [activeEmployeeThreadId, isMinimized, isOpen, messages]);
+  }, [activeEmployeeThreadId, isAuthenticated, isMinimized, isOpen, messages]);
 
   const addBotMessage = React.useCallback((text, options = {}) => {
     const messageOptions = {

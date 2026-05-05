@@ -40,6 +40,7 @@ const SupportChatsPage = () => {
   const [threads, setThreads] = React.useState(() => getThreads());
   const [selectedThreadId, setSelectedThreadId] = React.useState(() => getThreads()[0]?.id || null);
   const [replyText, setReplyText] = React.useState("");
+  const [isSendingReply, setIsSendingReply] = React.useState(false);
 
   React.useEffect(() => {
     const loadThreads = async () => {
@@ -67,6 +68,8 @@ const SupportChatsPage = () => {
   const selectedThread = threads.find((thread) => thread.id === selectedThreadId) || null;
 
   const handleDeleteThread = (threadId) => {
+    if (isSendingReply) return;
+
     deleteEmployeeSupportConversation(threadId).catch(() => {});
     const storedThreads = getThreads();
     const nextStoredThreads = storedThreads.map((thread) =>
@@ -86,7 +89,9 @@ const SupportChatsPage = () => {
   const handleReply = async (event) => {
     event.preventDefault();
     const text = replyText.trim();
-    if (!text || !selectedThread) return;
+    if (!text || !selectedThread || isSendingReply) return;
+
+    setIsSendingReply(true);
 
     try {
       const response = await sendEmployeeSupportMessage(selectedThread.id, text);
@@ -98,6 +103,7 @@ const SupportChatsPage = () => {
       saveThreads(nextThreads);
       setThreads(nextThreads);
       setReplyText("");
+      setIsSendingReply(false);
       return;
     } catch {
       // Fallback for local development before running the new database migrations.
@@ -124,6 +130,7 @@ const SupportChatsPage = () => {
     saveThreads(nextThreads);
     setThreads(nextThreads);
     setReplyText("");
+    setIsSendingReply(false);
   };
 
   return (
@@ -199,7 +206,11 @@ const SupportChatsPage = () => {
                 </div>
                 <div className="employee-support-chats__conversation-actions">
                   <span>{selectedThread.status === "answered" ? "تم الرد" : "بانتظار الرد"}</span>
-                  <button type="button" onClick={() => handleDeleteThread(selectedThread.id)}>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteThread(selectedThread.id)}
+                    disabled={isSendingReply}
+                  >
                     حذف
                   </button>
                 </div>
@@ -224,8 +235,8 @@ const SupportChatsPage = () => {
                   onChange={(event) => setReplyText(event.target.value)}
                   placeholder="اكتب ردك للعميل..."
                 />
-                <button type="submit" disabled={!replyText.trim()}>
-                  إرسال الرد
+                <button type="submit" disabled={!replyText.trim() || isSendingReply}>
+                  {isSendingReply ? "جارٍ الإرسال..." : "إرسال الرد"}
                 </button>
               </form>
             </>
