@@ -9,6 +9,7 @@ const path = require("path");
 const resetCodes = {};
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
 const normalizePhone = (value) => String(value || '').trim();
+const normalizeName = (value) => String(value || '').trim();
 
 const createMailTransport = () => {
   const host = process.env.SMTP_HOST;
@@ -98,13 +99,35 @@ const register = async (req, res) => {
         { transaction: t }
       );
     } else if (role === 'customer' || role === 'company') {
-      await Customer.create(
+      const customer = await Customer.create(
         {
           user_id: user.id,
           customer_type: role === 'company' ? 'company' : 'individual',
         },
         { transaction: t }
       );
+
+      if (role === 'company') {
+        const safeCompanyName = normalizeName(fullName) || normalizedEmail.split('@')[0];
+        await sequelize.models.CompanyCustomerProfile.create(
+          {
+            customer_id: customer.id,
+            company_name: safeCompanyName,
+            company_phone: normalizedPhone,
+            company_location: address || '',
+          },
+          { transaction: t }
+        );
+      } else {
+        const safeFullName = normalizeName(fullName) || normalizedEmail.split('@')[0];
+        await sequelize.models.IndividualCustomerProfile.create(
+          {
+            customer_id: customer.id,
+            full_name: safeFullName,
+          },
+          { transaction: t }
+        );
+      }
     }
 
     await t.commit();

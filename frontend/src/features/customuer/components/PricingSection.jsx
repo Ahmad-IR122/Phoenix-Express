@@ -1,9 +1,18 @@
 import React from "react";
 import "./style/PricingSection.css";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import API from "../../../apis/api";
+
+const REGION_KEY_MAP = {
+  west_bank: "west_bank",
+  "west-bank": "west_bank",
+  jerusalem: "jerusalem",
+  inside: "inside",
+};
 
 const pricingItems = [
   {
+    key: "west_bank",
     title: "الضفة الغربية",
     price: "20 شيكل",
     description: "توصيل سريع لجميع مدن الضفة الغربية",
@@ -21,10 +30,10 @@ const pricingItems = [
     ),
   },
   {
+    key: "jerusalem",
     title: "القدس",
     price: "30 شيكل",
     description: "توصيل لمدينة القدس وضواحيها",
-    badge: "الأكثر طلباً",
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -46,6 +55,7 @@ const pricingItems = [
   },
 
   {
+    key: "inside",
     title: "الداخل",
     price: "70 شيكل",
     description: "توصيل لمناطق الداخل المحتل",
@@ -65,6 +75,55 @@ const pricingItems = [
 ];
 
 const PricingSection = () => {
+  const navigate = useNavigate();
+  const [mostRequestedRegion, setMostRequestedRegion] = React.useState("");
+
+  const displayedPricingItems = React.useMemo(() => {
+    if (!mostRequestedRegion) {
+      return pricingItems;
+    }
+
+    const topItem = pricingItems.find((item) => item.key === mostRequestedRegion);
+
+    if (!topItem) {
+      return pricingItems;
+    }
+
+    const otherItems = pricingItems.filter((item) => item.key !== mostRequestedRegion);
+    return [otherItems[0], topItem, otherItems[1]].filter(Boolean);
+  }, [mostRequestedRegion]);
+
+  const goToRequest = () => {
+    navigate("/request-delivery");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  React.useEffect(() => {
+    let isMounted = true;
+
+    const loadMostRequestedRegion = async () => {
+      try {
+        const response = await API.get("/orders/stats/most-requested-region");
+        const regionName = response.data?.data?.region?.name;
+        const normalizedRegion = REGION_KEY_MAP[regionName] || "";
+
+        if (isMounted) {
+          setMostRequestedRegion(normalizedRegion);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setMostRequestedRegion("");
+        }
+      }
+    };
+
+    loadMostRequestedRegion();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <section className="pricing-section py-5" dir="rtl">
       <div className="container py-lg-4">
@@ -76,20 +135,20 @@ const PricingSection = () => {
         </div>
 
         <div className="row g-4 justify-content-center">
-          {pricingItems.map((item) => (
+          {displayedPricingItems.map((item) => (
             <div className="col-12 col-md-6 col-lg-4" key={item.title}>
               <article className="pricing-card h-100 text-center position-relative">
-                {item.badge ? (
-                  <span className="pricing-badge">{item.badge}</span>
+                {mostRequestedRegion === item.key ? (
+                  <span className="pricing-badge">الأكثر طلباً</span>
                 ) : null}
 
                 <div className="pricing-icon mx-auto mb-4">{item.icon}</div>
                 <h3 className="pricing-card-title mb-2">{item.title}</h3>
                 <div className="pricing-amount mb-3">{item.price}</div>
                 <p className="pricing-description mb-4">{item.description}</p>
-                <Link to="/request-delivery" className="btn pricing-button">
+                <button type="button" className="btn pricing-button" onClick={goToRequest}>
                   طلب الخدمة
-                </Link>
+                </button>
               </article>
             </div>
           ))}

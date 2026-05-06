@@ -367,6 +367,11 @@ const ChatbotWidget = () => {
         syncedEmployeeSourceIdsRef.current.add(getEmployeeMessageSourceId(message));
       });
 
+      if (!activeThreadId && thread.id) {
+        setActiveEmployeeThreadId(thread.id);
+        localStorage.setItem(getUserActiveThreadKey(), thread.id);
+      }
+
       setMessages((current) => [
         ...current,
         ...newEmployeeMessages.map((message) =>
@@ -807,6 +812,44 @@ const saveSupportMessage = (rawText) => {
         : "Welcome to Phoenix Express. How can I help you?";
     }
 
+    if (respondArabic) {
+      if (includesAny(text, ["كيف اطلب", "كيف أطلب", "طلب توصيل", "ابعت طرد", "ارسل طرد", "أرسل طرد"])) {
+        return "يمكنك طلب خدمة التوصيل من زر طلب خدمة التوصيل في الموقع، ثم تعبئة بيانات المرسل والمستلم والطرد والمنطقة. بعد إنشاء الطلب ستحصل على رقم تتبع لمتابعة الشحنة.";
+      }
+
+      if (includesAny(text, ["سعر", "تكلفة", "كم", "الاسعار", "الأسعار"])) {
+        return "أسعار التوصيل تعتمد على المنطقة وحجم الطرد ونوع الخدمة. الأسعار الأساسية المعروضة في الموقع هي مرجع سريع، أما السعر النهائي فيظهر عند تعبئة طلب التوصيل.";
+      }
+
+      if (includesAny(text, ["وقت", "مدة", "متى", "كم يوم", "كم ساعة"])) {
+        return "مدة التوصيل تختلف حسب المنطقة وحالة الطلب، وغالباً تكون خلال 24 إلى 48 ساعة للمناطق المتاحة. يمكنك متابعة الحالة من رقم التتبع.";
+      }
+
+      if (includesAny(text, ["منطقة", "مناطق", "وين بتوصلوا", "بتوصلوا", "القدس", "الضفة", "الداخل"])) {
+        return "تغطي فينوكس عدة مناطق مثل الضفة الغربية والقدس والداخل، ويمكن التأكد من توفر المنطقة أثناء تعبئة طلب خدمة التوصيل.";
+      }
+
+      if (includesAny(text, ["تغليف", "قابل للكسر", "كسر", "طرد حساس"])) {
+        return "يفضل تغليف الطرود الحساسة بمواد حماية مناسبة وكتابة ملاحظة أنها قابلة للكسر عند إنشاء الطلب، حتى يتم التعامل معها بعناية أكبر.";
+      }
+
+      if (includesAny(text, ["تأخير", "تاخير", "متأخر", "ما وصلت", "وينها"])) {
+        return "إذا تأخرت الشحنة، يرجى إدخال رقم التتبع لمعرفة آخر حالة. وقد يحدث التأخير بسبب ضغط الطلبات أو العنوان أو ظروف الطريق.";
+      }
+
+      if (includesAny(text, ["دفع", "كاش", "تحصيل", "الدفع عند الاستلام"])) {
+        return "طرق الدفع والتحصيل تعتمد على نوع الطلب وسياسة الخدمة. يمكنك توضيح تفاصيل الدفع عند إنشاء طلب التوصيل أو التواصل مع الموظف للحالات الخاصة.";
+      }
+
+      if (includesAny(text, ["تعديل", "أعدل", "اغير", "أغير", "العنوان", "رقم الهاتف"])) {
+        return "يمكن مراجعة تعديل بيانات الشحنة إذا لم يتم تسليمها بعد. أرسل رقم التتبع والبيانات الصحيحة، أو تواصل مع الموظف لمتابعة التعديل مباشرة.";
+      }
+
+      if (includesAny(text, ["الغاء", "إلغاء", "ألغي", "الغي"])) {
+        return "يمكن طلب إلغاء الشحنة إذا كانت ما زالت قيد المعالجة ولم تخرج للتوصيل. أرسل رقم التتبع أو تواصل مع الموظف للتأكد من إمكانية الإلغاء.";
+      }
+    }
+
     return buildGeneralAssistantResponse(rawText, text, respondArabic);
   };
 
@@ -888,6 +931,11 @@ const saveSupportMessage = (rawText) => {
     if (!isUserAuthenticated()) {
       addBotMessage(getLoginRequiredMessage());
       return;
+    }
+
+    if (text !== (isArabic ? "طھظˆط§طµظ„ ظ…ط¹ ط§ظ„ظ…ظˆط¸ظپ" : "Contact employee")) {
+      setActiveEmployeeThreadId(null);
+      localStorage.removeItem(getUserActiveThreadKey());
     }
 
     setInputValue(text);

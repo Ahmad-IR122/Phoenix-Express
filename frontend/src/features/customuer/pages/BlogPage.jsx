@@ -3,6 +3,7 @@ import { Container, Row, Col, Badge, Button, Form, Modal } from "react-bootstrap
 import { useNavigate } from "react-router-dom";
 import { FiCalendar, FiUser, FiClock } from "react-icons/fi";
 import Swal from "sweetalert2";
+import { subscribeToNewsletter } from "../../../services/newsletterService";
 import "./BlogPage.css";
 
 const articles = [
@@ -176,7 +177,7 @@ const BlogPage = () => {
     ? articles
     : articles.filter((article) => article.category === activeCategory);
 
-  const handleNewsletterSubmit = (event) => {
+  const handleNewsletterSubmit = async (event) => {
     event.preventDefault();
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
@@ -198,6 +199,22 @@ const BlogPage = () => {
         }
       });
 
+      return;
+    }
+
+    try {
+      await subscribeToNewsletter(newsletterEmail);
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "تعذر الاشتراك",
+        text: "راجعي البريد الإلكتروني وحاولي مرة أخرى.",
+        confirmButtonText: "حسناً",
+        confirmButtonColor: "#38B6FF",
+        customClass: {
+          popup: "swal-rtl",
+        },
+      });
       return;
     }
 

@@ -101,6 +101,13 @@ const TrackingPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [hasSearched, setHasSearched] = useState(Boolean(trackingNumberFromState));
+  const [showSupportOptions, setShowSupportOptions] = useState(false);
+  const supportPhoneDisplay = "+972 59-252-0083";
+  const supportWhatsappUrl = `https://web.whatsapp.com/send?phone=972592520083&text=${encodeURIComponent(
+    `مرحباً فينوكس، أحتاج مساعدة بخصوص تتبع الشحنة${
+      trackingNumber ? ` رقم ${trackingNumber}` : ""
+    }.`
+  )}`;
 
   const confirmationMessage = useMemo(() => {
     if (!location.state?.orderConfirmed || !trackingNumberFromState) {
@@ -367,20 +374,39 @@ const TrackingPage = () => {
                     يمكنك التواصل مع فريق الدعم للحصول على مزيد من المعلومات
                   </p>
                   <div className="d-flex flex-column flex-sm-row justify-content-center gap-3">
-                    <a
-                      href="tel:+972592520083"
-                      className="btn tracking-support-btn tracking-call-btn"
-                    >
-                      اتصل بنا
-                    </a>
-                    <a
-                      href="https://wa.me/972592520083"
-                      target="_blank"
-                      rel="noreferrer"
+                    <div className="tracking-support-dropdown">
+                      <button
+                        type="button"
+                        className="btn tracking-support-btn tracking-call-btn"
+                        onClick={() => setShowSupportOptions((current) => !current)}
+                        aria-expanded={showSupportOptions}
+                      >
+                        اتصل بنا
+                      </button>
+
+                      {showSupportOptions ? (
+                        <div className="tracking-support-menu">
+                          <p className="tracking-support-menu-label mb-2">
+                            رقم الشركة
+                          </p>
+                          <a
+                            href={supportWhatsappUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="tracking-support-phone"
+                          >
+                            {supportPhoneDisplay}
+                          </a>
+                        </div>
+                      ) : null}
+                    </div>
+                    <button
+                      type="button"
                       className="btn tracking-support-btn tracking-whatsapp-btn"
+                      onClick={() => window.open(supportWhatsappUrl, "_blank", "noopener,noreferrer")}
                     >
                       واتساب
-                    </a>
+                    </button>
                   </div>
                 </div>
               </div>

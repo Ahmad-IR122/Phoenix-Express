@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import DashboardLayout from "../Components/layout/DashboardLayout";
 import employeeNav from "../data/employeeNav";
 import { getEmployeeSupportConversations } from "../services/supportChatService";
+import { getEmployeeNewsletterStatus } from "../services/newsletterService";
 
 const notifications = [
   {
@@ -61,6 +62,7 @@ const routeByKey = {
   dashboard: "/employee/home",
   orders: "/employee/orders",
   supportChats: "/employee/support-chats",
+  newsletter: "/employee/newsletter",
   wallet: "/employee/payment",
   profile: "/employee/profile",
 };
@@ -69,6 +71,7 @@ const keyByPath = {
   "/employee/home": "dashboard",
   "/employee/orders": "orders",
   "/employee/support-chats": "supportChats",
+  "/employee/newsletter": "newsletter",
   "/employee/payment": "wallet",
   "/employee/profile": "profile",
 };
@@ -95,6 +98,7 @@ const EmployeeLayout = () => {
   const [supportNotifications, setSupportNotifications] = useState(() =>
     getLocalSupportChatNotifications()
   );
+  const [newsletterNotification, setNewsletterNotification] = useState(null);
 
   useEffect(() => {
     const loadNotifications = async () => {
@@ -130,6 +134,34 @@ const EmployeeLayout = () => {
     return () => window.clearInterval(intervalId);
   }, []);
 
+  useEffect(() => {
+    const loadNewsletterStatus = async () => {
+      try {
+        const response = await getEmployeeNewsletterStatus();
+        const data = response.data || {};
+
+        if (data.isSendDue) {
+          setNewsletterNotification({
+            id: "newsletter-monthly-reminder",
+            title: "تذكير إرسال النشرة الشهرية",
+            time: "مستحقة الآن",
+            type: "warning",
+            icon: "bi-envelope-paper",
+          });
+        } else {
+          setNewsletterNotification(null);
+        }
+      } catch {
+        setNewsletterNotification(null);
+      }
+    };
+
+    const intervalId = window.setInterval(loadNewsletterStatus, 60000);
+    loadNewsletterStatus();
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
   const storedUser = useMemo(() => {
     try {
       const rawUser = localStorage.getItem("user") || sessionStorage.getItem("user");
@@ -156,7 +188,11 @@ const EmployeeLayout = () => {
     navigate("/login", { replace: true });
   };
 
-  const combinedNotifications = [...supportNotifications, ...notifications];
+  const combinedNotifications = [
+    ...(newsletterNotification ? [newsletterNotification] : []),
+    ...supportNotifications,
+    ...notifications,
+  ];
 
   return (
     <DashboardLayout

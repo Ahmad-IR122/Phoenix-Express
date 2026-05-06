@@ -22,6 +22,8 @@
 }
 
 .cta-section__button {
+  appearance: none;
+  -webkit-appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -33,6 +35,14 @@
   border: none;
   box-shadow: 0 1rem 2.5rem rgba(56, 182, 255, 0.22);
   text-align: center;
+  text-decoration: none !important;
+  -webkit-text-decoration: none !important;
+  text-decoration-line: none !important;
+  text-decoration-color: transparent !important;
+  text-decoration-thickness: 0 !important;
+  text-underline-offset: 0 !important;
+  background-image: none !important;
+  border-bottom: 0 !important;
 }
 
 .cta-section__button:hover,
@@ -40,6 +50,11 @@
 .cta-section__button:active {
   background-color: #25a9f3;
   color: #ffffff;
+  text-decoration: none !important;
+  -webkit-text-decoration: none !important;
+  text-decoration-line: none !important;
+  background-image: none !important;
+  border-bottom: 0 !important;
 }
 
 @media (max-width: 575.98px) {
