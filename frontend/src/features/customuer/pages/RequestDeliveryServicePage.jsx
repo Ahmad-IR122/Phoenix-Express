@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { updateCustomerOrder } from "../services/customerService";
 import "./RequestDeliveryServicePage.css";
 
 const deliveryRegionOptions = [
@@ -24,24 +25,42 @@ const parcelStatusOptions = [
 const isAuthenticated = () =>
   Boolean(localStorage.getItem("token") || sessionStorage.getItem("token"));
 
+const initialFormData = {
+  selectedRegion: "",
+  originalCity: "",
+  destinationCity: "",
+  senderName: "",
+  senderPhone: "",
+  senderAddress: "",
+  receiverName: "",
+  receiverPhone: "",
+  receiverAddress: "",
+  orderStatus: "normal",
+  orderSize: "",
+  isFragile: false,
+  orderPrice: "",
+  orderDescription: "",
+};
+
 const RequestDeliveryServicePage = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    selectedRegion: "",
-    originalCity: "",
-    destinationCity: "",
-    senderName: "",
-    senderPhone: "",
-    senderAddress: "",
-    receiverName: "",
-    receiverPhone: "",
-    receiverAddress: "",
-    orderStatus: "normal",
-    orderSize: "",
-    isFragile: false,
-    orderPrice: "",
-    orderDescription: "",
-  });
+  const location = useLocation();
+  const editOrderId = location.state?.editOrderId || null;
+  const isEditMode = Boolean(editOrderId);
+  const [formData, setFormData] = useState(initialFormData);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  useEffect(() => {
+    if (!isEditMode) {
+      setFormData(initialFormData);
+      return;
+    }
+
+    setFormData({
+      ...initialFormData,
+      ...location.state,
+    });
+  }, [isEditMode, location.state]);
 
   const handleChange = (field, value) => {
     setFormData((prevData) => ({
@@ -58,7 +77,7 @@ const RequestDeliveryServicePage = () => {
     [formData.selectedRegion],
   );
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!isAuthenticated()) {
@@ -69,6 +88,40 @@ const RequestDeliveryServicePage = () => {
         confirmButtonText: "تسجيل الدخول",
         confirmButtonColor: "#38b6ff",
       }).then(() => navigate("/login", { state: { from: "/request-delivery" } }));
+      return;
+    }
+
+    if (isEditMode) {
+      setIsSavingEdit(true);
+
+      try {
+        await updateCustomerOrder(editOrderId, formData);
+        await Swal.fire({
+          icon: "success",
+          title: "\u062a\u0645 \u062a\u062d\u062f\u064a\u062b \u0627\u0644\u0637\u0631\u062f",
+          text: "\u062a\u0645 \u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a \u0628\u0646\u062c\u0627\u062d \u0637\u0627\u0644\u0645\u0627 \u0623\u0646 \u0627\u0644\u0637\u0631\u062f \u0645\u0627 \u0632\u0627\u0644 \u062f\u0627\u062e\u0644 \u0627\u0644\u0634\u0631\u0643\u0629.",
+          confirmButtonText: "\u062a\u0645\u0627\u0645",
+          confirmButtonColor: "#38b6ff",
+        });
+        navigate("/profile");
+      } catch (error) {
+        const editErrorMessage =
+          error.response?.status === 403
+            ? "\u064a\u0645\u0643\u0646 \u062a\u0639\u062f\u064a\u0644 \u0627\u0644\u0637\u0631\u062f \u0641\u0642\u0637 \u0625\u0630\u0627 \u0643\u0627\u0646 \u0645\u0627 \u0632\u0627\u0644 \u062f\u0627\u062e\u0644 \u0627\u0644\u0634\u0631\u0643\u0629."
+            : error.response?.data?.message ||
+              "\u062a\u0639\u0630\u0631 \u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a\u060c \u064a\u0631\u062c\u0649 \u0627\u0644\u0645\u062d\u0627\u0648\u0644\u0629 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.";
+
+        Swal.fire({
+          icon: "error",
+          title: "\u062a\u0639\u0630\u0631 \u062a\u0639\u062f\u064a\u0644 \u0627\u0644\u0637\u0631\u062f",
+          text: editErrorMessage,
+          confirmButtonText: "\u062d\u0633\u0646\u0627\u064b",
+          confirmButtonColor: "#38b6ff",
+        });
+      } finally {
+        setIsSavingEdit(false);
+      }
+
       return;
     }
 
@@ -89,6 +142,11 @@ const RequestDeliveryServicePage = () => {
             <h1 className="request-delivery-service-page__title fw-bold mb-3">
               طلب خدمة توصيل
             </h1>
+            {isEditMode ? (
+              <div className="request-delivery-service-page__edit-note">
+                {"\u0623\u0646\u062a\u0650 \u0627\u0644\u0622\u0646 \u0628\u0648\u0636\u0639 \u062a\u0639\u062f\u064a\u0644 \u0627\u0644\u0637\u0631\u062f\u060c \u0648\u0633\u064a\u062a\u0645 \u062d\u0641\u0638 \u0627\u0644\u062a\u063a\u064a\u064a\u0631\u0627\u062a \u0645\u0628\u0627\u0634\u0631\u0629."}
+              </div>
+            ) : null}
             <p className="request-delivery-service-page__subtitle mb-0">
               املأ النموذج وسنتواصل معك فوراً
             </p>
@@ -430,8 +488,16 @@ const RequestDeliveryServicePage = () => {
                       </button>
                       <button
                         type="submit"
-                        className="btn request-delivery-service-page__button request-delivery-service-page__button--primary"
+                        className={`btn request-delivery-service-page__button request-delivery-service-page__button--primary${isEditMode ? " request-delivery-service-page__button--editing" : ""}`}
+                        disabled={isSavingEdit}
                       >
+                        {isEditMode ? (
+                          <span className="request-delivery-service-page__edit-submit-text">
+                            {isSavingEdit
+                              ? "\u062c\u0627\u0631\u064a \u0627\u0644\u062d\u0641\u0638..."
+                              : "\u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644"}
+                          </span>
+                        ) : null}
                         متابعة الدفع
                       </button>
                     </div>

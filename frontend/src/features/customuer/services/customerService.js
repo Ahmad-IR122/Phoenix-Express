@@ -18,6 +18,16 @@ export const getCustomerOrders = async () => {
   return response.data;
 };
 
+export const updateCustomerOrder = async (orderId, payload) => {
+  const response = await API.put(`/orders/me/${orderId}`, payload);
+  return response.data;
+};
+
+export const deleteCustomerOrder = async (orderId) => {
+  const response = await API.delete(`/orders/me/${orderId}`);
+  return response.data;
+};
+
 export const updateCustomerProfile = async (payload) => {
   const response = await API.patch("/customers/profile/me", payload);
   return response.data;
