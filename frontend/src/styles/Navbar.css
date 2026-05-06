@@ -3,6 +3,8 @@
   padding: 1rem 0;
   position: relative;
   z-index: 10;
+  border-bottom: 2px solid rgba(56, 182, 255, 0.28);
+  box-shadow: 0 0.35rem 1rem rgba(56, 182, 255, 0.06);
 }
 
 .mobix-navbar-container {
@@ -17,7 +19,16 @@
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  text-decoration: none;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
 }
 
 .mobix-navbar-logo {
@@ -71,10 +82,13 @@
 
 .mobix-nav-link,
 .mobix-btn {
+  appearance: none;
+  border: 0;
   font-family: inherit;
   font-weight: 700;
   transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease,
     box-shadow 0.2s ease;
+  cursor: pointer;
 }
 
 .mobix-nav-link {
@@ -82,14 +96,30 @@
   align-items: center;
   justify-content: center;
   padding: 0.5rem 0.75rem;
+  margin: 0;
+  background: transparent;
   color: #000000;
-  text-decoration: none;
+  text-decoration: none !important;
+  -webkit-text-decoration: none !important;
+  text-decoration-line: none !important;
+  text-decoration-color: transparent !important;
+  text-decoration-thickness: 0 !important;
+  text-underline-offset: 0 !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
   white-space: nowrap;
 }
 
 .mobix-nav-link:hover,
-.mobix-nav-link:focus {
+.mobix-nav-link:focus,
+.mobix-nav-link:active,
+.mobix-nav-link:visited {
   color: #38b6ff;
+  text-decoration: none !important;
+  -webkit-text-decoration: none !important;
+  text-decoration-line: none !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
 }
 
 .mobix-nav-actions {
@@ -106,19 +136,59 @@
   align-items: center;
   justify-content: center;
   padding: 0.75rem 1.5rem;
-  border: 0;
   border-radius: 999px;
-  text-decoration: none;
+  text-decoration: none !important;
+  -webkit-text-decoration: none !important;
+  text-decoration-line: none !important;
+  text-decoration-color: transparent !important;
+  text-decoration-thickness: 0 !important;
+  text-underline-offset: 0 !important;
+  border-bottom: 0 !important;
   color: #ffffff;
   white-space: nowrap;
   line-height: 1.2;
 }
 
 .mobix-btn:hover,
-.mobix-btn:focus {
+.mobix-btn:focus,
+.mobix-btn:active,
+.mobix-btn:visited {
   transform: translateY(-1px);
   box-shadow: 0 0.5rem 1rem rgba(10, 10, 10, 0.12);
   color: #ffffff;
+  text-decoration: none !important;
+  -webkit-text-decoration: none !important;
+  text-decoration-line: none !important;
+  border-bottom: 0 !important;
+}
+
+.mobix-navbar a,
+.mobix-navbar a *,
+.mobix-navbar a:hover,
+.mobix-navbar a:hover *,
+.mobix-navbar a:focus,
+.mobix-navbar a:focus *,
+.mobix-navbar a:active,
+.mobix-navbar a:active *,
+.mobix-navbar a:visited,
+.mobix-navbar a:visited * {
+  text-decoration: none !important;
+  -webkit-text-decoration: none !important;
+  text-decoration-line: none !important;
+  text-decoration-color: transparent !important;
+  text-decoration-thickness: 0 !important;
+  text-underline-offset: 0 !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+.mobix-navbar a::before,
+.mobix-navbar a::after,
+.mobix-navbar a *::before,
+.mobix-navbar a *::after {
+  content: none !important;
+  display: none !important;
 }
 
 .mobix-btn-primary {

@@ -249,7 +249,7 @@ const findCustomerById = async (req, res) => {
 
 const getAuthenticatedCustomerProfile = async (req, res) => {
   try {
-    const customer = await Customer.findOne({
+    let customer = await Customer.findOne({
       where: { user_id: req.user.id },
       include: customerIncludes,
     });
@@ -258,6 +258,42 @@ const getAuthenticatedCustomerProfile = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Customer profile not found",
+      });
+    }
+
+    if (customer.customer_type === "individual" && !customer.individual_profile) {
+      await IndividualCustomerProfile.create({
+        customer_id: customer.id,
+        full_name:
+          req.user.fullName ||
+          req.user.name ||
+          customer.user?.fullName ||
+          customer.user?.name ||
+          "عميل فينوكس",
+      });
+
+      customer = await Customer.findOne({
+        where: { user_id: req.user.id },
+        include: customerIncludes,
+      });
+    }
+
+    if (customer.customer_type === "company" && !customer.company_profile) {
+      await CompanyCustomerProfile.create({
+        customer_id: customer.id,
+        company_name:
+          req.user.fullName ||
+          req.user.name ||
+          customer.user?.fullName ||
+          customer.user?.name ||
+          "شركة فينوكس",
+        company_phone: customer.user?.phone || "",
+        company_location: "",
+      });
+
+      customer = await Customer.findOne({
+        where: { user_id: req.user.id },
+        include: customerIncludes,
       });
     }
 

@@ -8,6 +8,7 @@ const {
   TrackingUpdate,
   sequelize,
 } = require('../models');
+const { fn, col, literal, Op } = require('sequelize');
 
 const REGION_NAME_MAP = {
   'west-bank': 'west_bank',
@@ -276,6 +277,48 @@ const getAllOrders = async (req, res) => {
   }
 };
 
+const getMostRequestedRegion = async (req, res) => {
+  try {
+    const regionOrders = await Order.findAll({
+      attributes: [
+        'region_id',
+        [fn('COUNT', col('region_id')), 'orders_count'],
+      ],
+      where: {
+        region_id: {
+          [Op.ne]: null,
+        },
+      },
+      group: ['region_id'],
+      order: [[literal('orders_count'), 'DESC']],
+      limit: 1,
+      raw: true,
+    });
+
+    const topRegionOrder = regionOrders[0];
+    const region = topRegionOrder
+      ? await Region.findByPk(topRegionOrder.region_id)
+      : null;
+
+    return res.status(200).json({
+      success: true,
+      message: 'Most requested region fetched successfully',
+      data: region
+        ? {
+            region,
+            orders_count: Number(topRegionOrder.orders_count || 0),
+          }
+        : null,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch most requested region',
+      errors: [error.message],
+    });
+  }
+};
+
 const findOrderById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -423,6 +466,7 @@ const deleteOrder = async (req, res) => {
 module.exports = {
   createOrder,
   getAllOrders,
+  getMostRequestedRegion,
   getAuthenticatedCustomerOrders,
   findOrderById,
   updateOrder,

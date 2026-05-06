@@ -1,8 +1,15 @@
 import React from "react";
 import "./style/CTASection.css";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const CTASection = () => {
+  const navigate = useNavigate();
+
+  const goToRequest = () => {
+    navigate("/request-delivery");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <section className="home-cta-section" dir="rtl">
       <div className="container-fluid px-0">
@@ -17,11 +24,13 @@ const CTASection = () => {
                   <p className="cta-section__subtitle mb-4 mb-md-5 mx-auto">
                     انضم إلى آلاف الزبائن الراضين عن خدماتنا
                   </p>
-                  <Link to="/request-delivery"
+                  <button
+                    type="button"
+                    onClick={goToRequest}
                     className="btn cta-section__button rounded-pill fw-bold px-4 px-md-5"
                   >
                     اطلب خدمة التوصيل الآن
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>

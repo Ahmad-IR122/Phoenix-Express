@@ -5,11 +5,16 @@
 }
 
 .home-feature-card {
+  position: relative;
   padding: 0.75rem 1rem;
   background-color: transparent;
+  animation: featureFadeUp 0.65s ease both;
+  transition: transform 0.28s ease;
 }
 
 .home-feature-icon {
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -19,6 +24,58 @@
   background: #38b6ff;
   color: #ffffff;
   box-shadow: 0 1rem 2rem rgba(56, 182, 255, 0.22);
+  transition: transform 0.28s ease, box-shadow 0.28s ease, background-color 0.28s ease;
+}
+
+.home-feature-icon::before {
+  content: "";
+  position: absolute;
+  inset: -0.7rem;
+  z-index: -1;
+  border-radius: inherit;
+  background: rgba(56, 182, 255, 0.12);
+  transform: scale(0.78);
+  opacity: 0;
+  transition: transform 0.28s ease, opacity 0.28s ease;
+}
+
+.home-feature-icon svg {
+  transition: transform 0.28s ease;
+}
+
+.home-feature-card:hover {
+  transform: translateY(-0.45rem);
+}
+
+.home-feature-card:hover .home-feature-icon {
+  background: #29aef8;
+  transform: translateY(-0.2rem) scale(1.04);
+  box-shadow: 0 1.4rem 2.8rem rgba(56, 182, 255, 0.3);
+}
+
+.home-feature-card:hover .home-feature-icon::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.home-feature-card:hover .home-feature-icon svg {
+  transform: scale(1.08);
+}
+
+.home-features-section .col-12:nth-child(1) .home-feature-card {
+  animation-delay: 0.05s;
+}
+
+.home-features-section .col-12:nth-child(2) .home-feature-card {
+  animation-delay: 0.14s;
+}
+
+.home-features-section .col-12:nth-child(3) .home-feature-card {
+  animation-delay: 0.23s;
+}
+
+.home-features-section .col-12:nth-child(4) .home-feature-card {
+  animation-delay: 0.32s;
 }
 
 .home-feature-title {
@@ -34,6 +91,28 @@
   line-height: 1.7;
   max-width: 18rem;
   margin-inline: auto;
+}
+
+@keyframes featureFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-feature-card,
+  .home-feature-icon,
+  .home-feature-icon::before,
+  .home-feature-icon svg {
+    animation: none;
+    transition: none;
+  }
 }
 
 @media (max-width: 991.98px) {

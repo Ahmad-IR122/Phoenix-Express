@@ -1,0 +1,217 @@
+import React, { useEffect, useMemo, useState } from "react";
+import Swal from "sweetalert2";
+import {
+  getEmployeeNewsletter,
+  sendEmployeeNewsletter,
+} from "../../../services/newsletterService";
+import "./NewsletterPage.css";
+
+const formatDate = (value) => {
+  if (!value) return "لم يتم الإرسال بعد";
+
+  return new Intl.DateTimeFormat("ar-PS", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(new Date(value));
+};
+
+const defaultBody =
+  "مرحباً،\n\nنشارككم في نشرة فينوكس لهذا الشهر مجموعة نصائح عملية لتحسين تجربة التوصيل، تقليل المرتجعات، وتجهيز الطرود بطريقة أكثر احترافية.\n\nفريق فينوكس إكسبرس";
+
+const NewsletterPage = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
+  const [subscribers, setSubscribers] = useState([]);
+  const [status, setStatus] = useState(null);
+  const [form, setForm] = useState({
+    subject: "نشرة فينوكس الشهرية",
+    body: defaultBody,
+  });
+
+  const loadNewsletter = async () => {
+    setIsLoading(true);
+
+    try {
+      const response = await getEmployeeNewsletter();
+      const data = response.data || {};
+      setSubscribers(data.subscribers || []);
+      setStatus(data);
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "تعذر تحميل النشرة",
+        text: "حاولي تحديث الصفحة أو التأكد من تشغيل الخادم.",
+        confirmButtonText: "حسناً",
+        confirmButtonColor: "#38B6FF",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadNewsletter();
+  }, []);
+
+  const reminderText = useMemo(() => {
+    if (!status?.lastSentAt) {
+      return "لم يتم إرسال أي نشرة بعد. يفضل إرسال أول نشرة للمشتركين.";
+    }
+
+    if (status.isSendDue) {
+      return `مر أكثر من شهر على آخر إرسال. آخر نشرة كانت بتاريخ ${formatDate(status.lastSentAt)}.`;
+    }
+
+    return `آخر إرسال كان بتاريخ ${formatDate(status.lastSentAt)}. موعد التذكير القادم: ${formatDate(status.nextDueAt)}.`;
+  }, [status]);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleSend = async (event) => {
+    event.preventDefault();
+
+    if (!form.subject.trim() || !form.body.trim()) {
+      Swal.fire({
+        icon: "warning",
+        title: "بيانات النشرة غير مكتملة",
+        text: "يرجى تعبئة عنوان النشرة ومحتواها قبل الإرسال.",
+        confirmButtonText: "حسناً",
+        confirmButtonColor: "#38B6FF",
+      });
+      return;
+    }
+
+    const result = await Swal.fire({
+      icon: "question",
+      title: "إرسال النشرة",
+      text: `سيتم إرسال النشرة إلى ${subscribers.length} مشترك. هل تريد المتابعة؟`,
+      confirmButtonText: "إرسال",
+      cancelButtonText: "إلغاء",
+      showCancelButton: true,
+      confirmButtonColor: "#38B6FF",
+    });
+
+    if (!result.isConfirmed) return;
+
+    setIsSending(true);
+
+    try {
+      const response = await sendEmployeeNewsletter(form);
+      await loadNewsletter();
+
+      Swal.fire({
+        icon: "success",
+        title: "تم إرسال النشرة",
+        text: `تم إرسالها إلى ${response.data?.recipientsCount || subscribers.length} مشترك.`,
+        confirmButtonText: "تمام",
+        confirmButtonColor: "#38B6FF",
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "تعذر إرسال النشرة",
+        text: error.response?.data?.message || "تأكدي من إعدادات البريد والمحاولة مرة أخرى.",
+        confirmButtonText: "حسناً",
+        confirmButtonColor: "#38B6FF",
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  return (
+    <main className="employee-newsletter-page" dir="rtl">
+      <section className="employee-newsletter-page__hero">
+        <div>
+          <span className="employee-newsletter-page__eyebrow">النشرة البريدية</span>
+          <h1>إدارة نشرة فينوكس الشهرية</h1>
+          <p>تابعي المشتركين، اكتبي محتوى النشرة، وأرسليها لجميع العناوين المسجلة من المدونة.</p>
+        </div>
+        <div className="employee-newsletter-page__hero-stat">
+          <strong>{subscribers.length}</strong>
+          <span>مشترك نشط</span>
+        </div>
+      </section>
+
+      <section
+        className={`employee-newsletter-page__reminder ${
+          status?.isSendDue ? "employee-newsletter-page__reminder--due" : ""
+        }`}
+      >
+        <i className="bi bi-bell" aria-hidden="true" />
+        <div>
+          <h2>تذكير الإرسال الشهري</h2>
+          <p>{isLoading ? "جاري تحميل حالة النشرة..." : reminderText}</p>
+        </div>
+      </section>
+
+      <div className="employee-newsletter-page__grid">
+        <section className="employee-newsletter-page__card">
+          <div className="employee-newsletter-page__card-header">
+            <h2>إرسال نشرة جديدة</h2>
+            <span>{formatDate(new Date())}</span>
+          </div>
+
+          <form className="employee-newsletter-page__form" onSubmit={handleSend}>
+            <label>
+              عنوان النشرة
+              <input
+                type="text"
+                name="subject"
+                value={form.subject}
+                onChange={handleChange}
+                placeholder="مثال: نشرة فينوكس الشهرية"
+              />
+            </label>
+
+            <label>
+              محتوى الرسالة
+              <textarea
+                name="body"
+                value={form.body}
+                onChange={handleChange}
+                rows={10}
+                placeholder="اكتبي محتوى النشرة هنا..."
+              />
+            </label>
+
+            <button type="submit" disabled={isSending || isLoading || subscribers.length === 0}>
+              {isSending ? "جاري الإرسال..." : "إرسال لجميع المشتركين"}
+            </button>
+          </form>
+        </section>
+
+        <section className="employee-newsletter-page__card">
+          <div className="employee-newsletter-page__card-header">
+            <h2>قائمة المشتركين</h2>
+            <span>{subscribers.length} بريد</span>
+          </div>
+
+          <div className="employee-newsletter-page__subscribers">
+            {isLoading ? (
+              <p className="employee-newsletter-page__empty">جاري تحميل المشتركين...</p>
+            ) : subscribers.length ? (
+              subscribers.map((subscriber) => (
+                <article key={subscriber.id} className="employee-newsletter-page__subscriber">
+                  <div>
+                    <strong>{subscriber.email}</strong>
+                    <span>اشترك بتاريخ {formatDate(subscriber.subscribed_at || subscriber.subscribedAt)}</span>
+                  </div>
+                  <i className="bi bi-envelope-check" aria-hidden="true" />
+                </article>
+              ))
+            ) : (
+              <p className="employee-newsletter-page__empty">لا يوجد مشتركون حتى الآن.</p>
+            )}
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+};
+
+export default NewsletterPage;

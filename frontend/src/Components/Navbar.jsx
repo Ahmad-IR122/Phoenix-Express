@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FiUser } from "react-icons/fi";
 import "../styles/Navbar.css";
 import logo from "../Images/Phonex_logo.jpeg";
@@ -15,18 +15,44 @@ const navItems = [
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = React.useState(
     Boolean(localStorage.getItem("token") || sessionStorage.getItem("token"))
   );
+  const [userRole, setUserRole] = React.useState("");
 
   React.useEffect(() => {
     setIsLoggedIn(Boolean(localStorage.getItem("token") || sessionStorage.getItem("token")));
+
+    try {
+      const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
+      const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+      setUserRole(parsedUser?.role || "");
+    } catch {
+      setUserRole("");
+    }
   }, [location.pathname]);
+
+  const goTo = (path) => {
+    navigate(path);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const getProfilePath = () => {
+    if (userRole === "employee") return "/employee/profile";
+    if (userRole === "admin") return "/admin/profile";
+    return "/profile";
+  };
 
   return (
     <nav className="mobix-navbar" dir="rtl" aria-label="شريط التنقل الرئيسي">
       <div className="container mobix-navbar-container">
-        <Link className="mobix-navbar-brand" to="/">
+        <button
+          type="button"
+          className="mobix-navbar-brand"
+          onClick={() => goTo("/")}
+          aria-label="العودة إلى الصفحة الرئيسية"
+        >
           <img
             src={logo}
             className="mobix-navbar-logo"
@@ -34,7 +60,7 @@ const Navbar = () => {
             width="90"
             height="90"
           />
-        </Link>
+        </button>
 
         <button
           className="navbar-toggler mobix-navbar-toggler border-0 shadow-none p-2"
@@ -52,26 +78,42 @@ const Navbar = () => {
           <ul className="mobix-navbar-nav">
             {navItems.map((item) => (
               <li className="mobix-navbar-item" key={item.href}>
-                <Link className="mobix-nav-link" to={item.href}>
+                <button
+                  type="button"
+                  className="mobix-nav-link"
+                  onClick={() => goTo(item.href)}
+                >
                   {item.label}
-                </Link>
+                </button>
               </li>
             ))}
           </ul>
 
           <div className="mobix-nav-actions">
-            <Link className="mobix-btn mobix-btn-primary" to="/request-delivery">
+            <button
+              type="button"
+              className="mobix-btn mobix-btn-primary"
+              onClick={() => goTo("/request-delivery")}
+            >
               اطلب خدمة التوصيل
-            </Link>
+            </button>
             {isLoggedIn ? (
-              <Link className="mobix-btn mobix-btn-dark mobix-btn-profile" to="/profile">
+              <button
+                type="button"
+                className="mobix-btn mobix-btn-dark mobix-btn-profile"
+                onClick={() => goTo(getProfilePath())}
+              >
                 الملف الشخصي
                 <FiUser className="mobix-btn-icon" aria-hidden="true" />
-              </Link>
+              </button>
             ) : (
-              <Link className="mobix-btn mobix-btn-dark" to="/login">
+              <button
+                type="button"
+                className="mobix-btn mobix-btn-dark"
+                onClick={() => goTo("/login")}
+              >
                 تسجيل الدخول
-              </Link>
+              </button>
             )}
           </div>
         </div>
