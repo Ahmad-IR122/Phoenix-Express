@@ -27,12 +27,14 @@
     font-weight: 900;
     font-size: 46px;
     margin-bottom: 14px;
+    animation: blogFadeUp 0.65s ease both;
 }
 
 .blog-subtitle {
     color: var(--text-muted);
     font-size: 22px;
     margin: 0;
+    animation: blogFadeUp 0.65s ease 0.08s both;
 }
 
 .featured-section {
@@ -45,6 +47,7 @@
     padding: 65px 70px;
     box-shadow: 0 18px 38px rgba(56, 182, 255, 0.28);
     transition: var(--transition);
+    animation: blogFadeUp 0.72s ease 0.12s both;
 }
 
 .featured-card:hover {
@@ -124,6 +127,27 @@
     border: none;
     box-shadow: var(--card-shadow);
     transition: var(--transition);
+    animation: blogFadeUp 0.72s ease both;
+}
+
+.articles-grid .row > [class*="col"]:nth-child(1) .blog-card {
+    animation-delay: 0.08s;
+}
+
+.articles-grid .row > [class*="col"]:nth-child(2) .blog-card {
+    animation-delay: 0.16s;
+}
+
+.articles-grid .row > [class*="col"]:nth-child(3) .blog-card {
+    animation-delay: 0.24s;
+}
+
+.articles-grid .row > [class*="col"]:nth-child(4) .blog-card {
+    animation-delay: 0.32s;
+}
+
+.articles-grid .row > [class*="col"]:nth-child(5) .blog-card {
+    animation-delay: 0.4s;
 }
 
 .blog-card:hover {
@@ -221,6 +245,7 @@
     padding: 58px 40px;
     max-width: 980px;
     margin: 0 auto;
+    animation: blogFadeUp 0.72s ease both;
 }
 
 .newsletter-badge {
@@ -287,6 +312,7 @@
     font-size: 30px;
     font-weight: 900;
     margin-bottom: 30px;
+    animation: blogFadeUp 0.65s ease both;
 }
 
 .category-list {
@@ -305,6 +331,7 @@
     font-size: 19px;
     font-weight: 800;
     transition: var(--transition);
+    animation: blogFadeUp 0.65s ease both;
 }
 
 .category-pill:hover {
@@ -387,6 +414,30 @@
     font-size: 20px;
     font-weight: 900;
     margin: 26px 0 10px;
+}
+
+@keyframes blogFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(26px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .blog-main-title,
+    .blog-subtitle,
+    .featured-card,
+    .blog-card,
+    .newsletter-box,
+    .category-section h4,
+    .category-pill {
+        animation: none;
+    }
 }
 
 @media (max-width: 992px) {

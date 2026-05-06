@@ -71,7 +71,7 @@ const authenticateEmployee = async (req, res, next) => {
     }
 
     const user = await User.findByPk(userId, {
-      attributes: ['id', 'role', 'email', 'phone'],
+      attributes: ['id', 'role', 'email', 'phone', 'full_name'],
     });
 
     if (!user) {
@@ -93,6 +93,7 @@ const authenticateEmployee = async (req, res, next) => {
       role: user.role,
       email: user.email,
       phone: user.phone,
+      full_name: user.full_name,
       isMockAuth: false,
     };
 
@@ -120,7 +121,7 @@ const authenticateUser = async (req, res, next) => {
     }
 
     const user = await User.findByPk(userId, {
-      attributes: ['id', 'role', 'email', 'phone'],
+      attributes: ['id', 'role', 'email', 'phone', 'full_name'],
       include: [
         { model: Admin, as: 'admin', attributes: ['id', 'is_active'], required: false },
         { model: Employee, as: 'employee', attributes: ['id', 'is_active'], required: false },
@@ -139,6 +140,7 @@ const authenticateUser = async (req, res, next) => {
       role: user.role,
       email: user.email,
       phone: user.phone,
+      full_name: user.full_name,
       adminId: user.admin?.id || null,
       employeeId: user.employee?.id || null,
       isAdminActive: user.admin?.is_active,

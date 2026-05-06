@@ -22,6 +22,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      customer_location: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       comment: DataTypes.TEXT,
     },
     {

@@ -10,10 +10,12 @@ import {
   FiMail,
   FiPackage,
   FiPhone,
+  FiTrash2,
   FiUser,
 } from "react-icons/fi";
 import { changePassword } from "../../auth/services/authService";
 import {
+  deleteCustomerOrder,
   getCustomerOrders,
   getCustomerProfile,
   updateCustomerProfile,
@@ -51,17 +53,60 @@ const formatOrderDate = (value) => {
 
 const mapCustomerOrder = (order) => {
   const status = order.shipment?.current_status || order.status || "pending";
+  const isEditable =
+    order.shipment?.current_status === "accepted" && !order.shipment?.driver_id;
 
   return {
+    id: order.id,
+    raw: order,
     trackingNumber: order.shipment?.tracking_number || `ORDER-${order.id}`,
     status: statusTextByValue[status] || status,
+    rawStatus: status,
     statusType: getStatusType(status),
     from: order.origin_city || "-",
     to: order.destination_city || "-",
     date: formatOrderDate(order.created_at || order.createdAt),
+    canEdit: isEditable,
     price: `${order.region?.price || 0} شيكل`,
   };
 };
+
+const regionValueByName = {
+  west_bank: "west-bank",
+  "west-bank": "west-bank",
+  jerusalem: "jerusalem",
+  inside: "inside",
+};
+
+const deliverySpeedToFormValue = {
+  normal: "normal",
+  urgent: "urgent",
+  express: "immediate",
+};
+
+const mapOrderToDeliveryFormState = (order) => ({
+  editOrderId: order.id,
+  selectedRegion:
+    regionValueByName[order.region?.name] ||
+    regionValueByName[order.selectedRegion] ||
+    "",
+  originalCity: order.origin_city || "",
+  destinationCity: order.destination_city || "",
+  senderName: order.sender_name || "",
+  senderPhone: order.sender_phone || "",
+  senderAddress: order.sender_address || "",
+  receiverName: order.receiver_name || "",
+  receiverPhone: order.receiver_phone || "",
+  receiverAddress: order.receiver_address || "",
+  orderStatus: deliverySpeedToFormValue[order.delivery_speed] || "normal",
+  orderSize: order.package_size || "",
+  isFragile: Boolean(order.is_fragile),
+  orderPrice:
+    order.declared_value !== null && order.declared_value !== undefined
+      ? String(order.declared_value)
+      : "",
+  orderDescription: order.package_description || "",
+});
 
 const getStoredUser = () => {
   const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
@@ -76,18 +121,18 @@ const getStoredUser = () => {
 
 const getDisplayName = (user) =>
   user.fullName ||
+  user.full_name ||
   user.name ||
   user.customer?.individual_profile?.full_name ||
   user.customer?.company_profile?.company_name ||
   user.customer?.full_name ||
   user.employee?.full_name ||
-  user.email?.split("@")[0] ||
   "عميل فينوكس";
 
 const getProfileName = (customer) =>
   customer?.individual_profile?.full_name ||
   customer?.company_profile?.company_name ||
-  customer?.user?.email?.split("@")[0] ||
+  customer?.user?.full_name ||
   "عميل فينوكس";
 
 const getProfileValidationMessage = ({ name, email, phone }) => {
@@ -321,6 +366,7 @@ const CustomerProfilePage = () => {
           }
         : {
             ...getStoredUser(),
+            full_name: payload.name,
             email: payload.email,
             phone: payload.phone,
             customer,
@@ -452,6 +498,59 @@ const CustomerProfilePage = () => {
       confirmPassword: false,
     });
     setShowPasswordForm(false);
+  };
+
+  const handleEditOrder = (order) => {
+    if (!order.canEdit) return;
+
+    navigate("/request-delivery", {
+      state: mapOrderToDeliveryFormState(order.raw),
+    });
+  };
+
+  const handleDeleteOrder = async (order) => {
+    if (!order.canEdit) return;
+
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "\u062d\u0630\u0641 \u0627\u0644\u0637\u0631\u062f",
+      text: "\u0647\u0644 \u062a\u0631\u064a\u062f\u064a\u0646 \u062d\u0630\u0641 \u0647\u0630\u0627 \u0627\u0644\u0637\u0631\u062f\u061f \u064a\u0645\u0643\u0646 \u0627\u0644\u062d\u0630\u0641 \u0641\u0642\u0637 \u0637\u0627\u0644\u0645\u0627 \u0623\u0646\u0647 \u0645\u0627 \u0632\u0627\u0644 \u062f\u0627\u062e\u0644 \u0627\u0644\u0634\u0631\u0643\u0629.",
+      showCancelButton: true,
+      confirmButtonText: "\u0646\u0639\u0645\u060c \u0627\u062d\u0630\u0641",
+      cancelButtonText: "\u0625\u0644\u063a\u0627\u0621",
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#94a3b8",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await deleteCustomerOrder(order.id);
+      setCustomerOrders((current) =>
+        current.filter((item) => item.id !== order.id)
+      );
+      Swal.fire({
+        icon: "success",
+        title: "\u062a\u0645 \u062d\u0630\u0641 \u0627\u0644\u0637\u0631\u062f",
+        text: "\u062a\u0645 \u062d\u0630\u0641 \u0627\u0644\u0637\u0631\u062f \u0645\u0646 \u0642\u0627\u0639\u062f\u0629 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0628\u0646\u062c\u0627\u062d.",
+        confirmButtonText: "\u062a\u0645\u0627\u0645",
+        confirmButtonColor: "#38b6ff",
+      });
+    } catch (error) {
+      const deleteErrorMessage =
+        error.response?.status === 403
+          ? "\u064a\u0645\u0643\u0646 \u062d\u0630\u0641 \u0627\u0644\u0637\u0631\u062f \u0641\u0642\u0637 \u0625\u0630\u0627 \u0643\u0627\u0646 \u0645\u0627 \u0632\u0627\u0644 \u062f\u0627\u062e\u0644 \u0627\u0644\u0634\u0631\u0643\u0629."
+          : error.response?.data?.message ||
+            "\u062a\u0639\u0630\u0631 \u062d\u0630\u0641 \u0627\u0644\u0637\u0631\u062f\u060c \u064a\u0631\u062c\u0649 \u0627\u0644\u0645\u062d\u0627\u0648\u0644\u0629 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.";
+
+      Swal.fire({
+        icon: "error",
+        title: "\u062a\u0639\u0630\u0631 \u062d\u0630\u0641 \u0627\u0644\u0637\u0631\u062f",
+        text: deleteErrorMessage,
+        confirmButtonText: "\u062d\u0633\u0646\u0627\u064b",
+        confirmButtonColor: "#38b6ff",
+      });
+    }
   };
 
   return (
@@ -680,6 +779,26 @@ const CustomerProfilePage = () => {
                     >
                       تتبع الطرد
                     </button>
+                    {order.canEdit ? (
+                      <div className="customer-order-actions">
+                        <button
+                          type="button"
+                          className="customer-order-edit-btn"
+                          onClick={() => handleEditOrder(order)}
+                        >
+                          <FiEdit2 aria-hidden="true" />
+                          {"\u062a\u0639\u062f\u064a\u0644"}
+                        </button>
+                        <button
+                          type="button"
+                          className="customer-order-delete-btn"
+                          onClick={() => handleDeleteOrder(order)}
+                        >
+                          <FiTrash2 aria-hidden="true" />
+                          {"\u062d\u0630\u0641"}
+                        </button>
+                      </div>
+                    ) : null}
                   </article>
                 ))
               )}

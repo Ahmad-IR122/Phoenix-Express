@@ -157,6 +157,58 @@ const getAuthenticatedCustomerOrders = async (req, res) => {
   }
 };
 
+const getAuthenticatedCustomer = async (req, transaction = null) => {
+  const customer = await Customer.findOne({
+    where: { user_id: req.user.id },
+    transaction,
+  });
+
+  return customer;
+};
+
+const isOrderEditableInCompany = (order) => {
+  const shipment = order?.shipment;
+
+  return Boolean(
+    shipment &&
+      shipment.current_status === 'accepted' &&
+      !shipment.driver_id
+  );
+};
+
+const findEditableCustomerOrder = async ({ req, orderId, transaction = null }) => {
+  const customer = await getAuthenticatedCustomer(req, transaction);
+
+  if (!customer) {
+    const error = new Error('Customer profile not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const order = await Order.findOne({
+    where: {
+      id: orderId,
+      customer_id: customer.id,
+    },
+    include: orderIncludes,
+    transaction,
+  });
+
+  if (!order) {
+    const error = new Error('Order not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (!isOrderEditableInCompany(order)) {
+    const error = new Error('Order can only be modified while it is still at the company');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  return order;
+};
+
 const normalizeCreatePayload = async (req, transaction) => {
   const payload = req.body || {};
   const regionId = await resolveRegionId(payload, transaction);
@@ -436,6 +488,49 @@ const updateOrder = async (req, res) => {
   }
 };
 
+const updateAuthenticatedCustomerOrder = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const { id } = req.params;
+    const order = await findEditableCustomerOrder({
+      req,
+      orderId: id,
+      transaction,
+    });
+    const updatePayload = await normalizeCreatePayload(req, transaction);
+
+    delete updatePayload.customer_id;
+    delete updatePayload.status;
+    delete updatePayload.delivered_at;
+
+    await order.update(updatePayload, { transaction });
+    await transaction.commit();
+
+    const updatedOrder = await Order.findByPk(id, {
+      include: orderIncludes,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Order updated successfully',
+      data: updatedOrder,
+    });
+  } catch (error) {
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
+
+    return res.status(error.statusCode || 400).json({
+      success: false,
+      message: error.message || 'Failed to update order',
+      errors: error.errors
+        ? error.errors.map((err) => err.message)
+        : [error.message],
+    });
+  }
+};
+
 const deleteOrder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -463,11 +558,54 @@ const deleteOrder = async (req, res) => {
   }
 };
 
+const deleteAuthenticatedCustomerOrder = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const { id } = req.params;
+    const order = await findEditableCustomerOrder({
+      req,
+      orderId: id,
+      transaction,
+    });
+
+    const shipment = order.shipment;
+
+    if (shipment) {
+      await TrackingUpdate.destroy({
+        where: { shipment_id: shipment.id },
+        transaction,
+      });
+      await shipment.destroy({ transaction });
+    }
+
+    await order.destroy({ transaction });
+    await transaction.commit();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Order deleted successfully',
+    });
+  } catch (error) {
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
+
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to delete order',
+      errors: [error.message],
+    });
+  }
+};
+
 module.exports = {
   createOrder,
   getAllOrders,
   getMostRequestedRegion,
   getAuthenticatedCustomerOrders,
+  updateAuthenticatedCustomerOrder,
+  deleteAuthenticatedCustomerOrder,
   findOrderById,
   updateOrder,
   deleteOrder,

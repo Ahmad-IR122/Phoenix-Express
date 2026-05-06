@@ -11,6 +11,38 @@ const {
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase();
 const normalizePhone = (value) => String(value || "").trim();
 const normalizeName = (value) => String(value || "").trim();
+const DEFAULT_CUSTOMER_NAME = "\u0639\u0645\u064A\u0644 \u0641\u064A\u0646\u0648\u0643\u0633";
+const DEFAULT_COMPANY_NAME = "\u0634\u0631\u0643\u0629 \u0641\u064A\u0646\u0648\u0643\u0633";
+
+const getEmailLocalPart = (email) => normalizeEmail(email).split("@")[0];
+
+const isEmailDerivedName = (name, email) => {
+  const normalizedName = normalizeName(name).toLowerCase();
+  return Boolean(normalizedName && normalizedName === getEmailLocalPart(email));
+};
+
+const sanitizeAuthenticatedCustomerProfile = (customer) => {
+  if (!customer) return customer;
+
+  const customerJson = typeof customer.toJSON === "function" ? customer.toJSON() : customer;
+  const email = customerJson.user?.email;
+
+  if (
+    customerJson.individual_profile &&
+    isEmailDerivedName(customerJson.individual_profile.full_name, email)
+  ) {
+    customerJson.individual_profile.full_name = DEFAULT_CUSTOMER_NAME;
+  }
+
+  if (
+    customerJson.company_profile &&
+    isEmailDerivedName(customerJson.company_profile.company_name, email)
+  ) {
+    customerJson.company_profile.company_name = DEFAULT_COMPANY_NAME;
+  }
+
+  return customerJson;
+};
 
 const validateAuthenticatedProfilePayload = ({ name, email, phone }) => {
   if (!name) {
@@ -266,10 +298,12 @@ const getAuthenticatedCustomerProfile = async (req, res) => {
         customer_id: customer.id,
         full_name:
           req.user.fullName ||
+          req.user.full_name ||
           req.user.name ||
+          customer.user?.full_name ||
           customer.user?.fullName ||
           customer.user?.name ||
-          "عميل فينوكس",
+          DEFAULT_CUSTOMER_NAME,
       });
 
       customer = await Customer.findOne({
@@ -283,10 +317,12 @@ const getAuthenticatedCustomerProfile = async (req, res) => {
         customer_id: customer.id,
         company_name:
           req.user.fullName ||
+          req.user.full_name ||
           req.user.name ||
+          customer.user?.full_name ||
           customer.user?.fullName ||
           customer.user?.name ||
-          "شركة فينوكس",
+          DEFAULT_COMPANY_NAME,
         company_phone: customer.user?.phone || "",
         company_location: "",
       });
@@ -300,7 +336,7 @@ const getAuthenticatedCustomerProfile = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Customer profile fetched successfully",
-      data: customer,
+      data: sanitizeAuthenticatedCustomerProfile(customer),
     });
   } catch (error) {
     return res.status(500).json({
@@ -368,7 +404,7 @@ const updateAuthenticatedCustomerProfile = async (req, res) => {
       });
     }
 
-    await customer.user.update({ email, phone }, { transaction });
+    await customer.user.update({ email, phone, full_name: name }, { transaction });
 
     if (customer.customer_type === "company") {
       await CompanyCustomerProfile.upsert(
@@ -400,7 +436,7 @@ const updateAuthenticatedCustomerProfile = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Customer profile updated successfully",
-      data: updatedCustomer,
+      data: sanitizeAuthenticatedCustomerProfile(updatedCustomer),
     });
   } catch (error) {
     if (!transaction.finished) {

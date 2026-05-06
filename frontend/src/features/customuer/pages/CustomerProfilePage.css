@@ -199,6 +199,42 @@
   font-size: 0.98rem;
 }
 
+.customer-order-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-top: 0.65rem;
+}
+
+.customer-order-edit-btn,
+.customer-order-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 38px;
+  border: 0;
+  border-radius: 9px;
+  color: #ffffff;
+  font-family: inherit;
+  font-weight: 900;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.customer-order-edit-btn {
+  background: #38b6ff;
+}
+
+.customer-order-delete-btn {
+  background: #ef4444;
+}
+
+.customer-order-edit-btn:hover,
+.customer-order-delete-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.7rem 1.1rem rgba(15, 23, 42, 0.12);
+}
+
 .customer-new-order-btn {
   margin-top: 1.35rem;
   background: #08c854;

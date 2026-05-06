@@ -98,6 +98,54 @@ const saveEmployeeThreads = (threads) => {
   localStorage.setItem(EMPLOYEE_CHAT_STORAGE_KEY, JSON.stringify(threads));
 };
 
+const getQuickQuestionResponse = (rawText, respondArabic) => {
+  const question = rawText.trim();
+
+  const arabicAnswers = {
+    "\u0648\u064a\u0646 \u0634\u062d\u0646\u062a\u064a\u061f":
+      "\u0623\u0631\u0633\u0644 \u0631\u0642\u0645 \u0627\u0644\u062a\u062a\u0628\u0639 \u0643\u0645\u0627 \u064a\u0638\u0647\u0631 \u0641\u064a \u0637\u0644\u0628\u0643\u060c \u0645\u062b\u0644: VGCJAWZH3P\u060c \u0648\u0633\u0623\u0639\u0631\u0636 \u0627\u0644\u062d\u0627\u0644\u0629 \u0625\u0630\u0627 \u0643\u0627\u0646\u062a \u0627\u0644\u0634\u062d\u0646\u0629 \u0645\u0631\u062a\u0628\u0637\u0629 \u0628\u062d\u0633\u0627\u0628\u0643.",
+    "\u0643\u0645 \u0633\u0639\u0631 \u0627\u0644\u062a\u0648\u0635\u064a\u0644\u061f":
+      "\u0627\u0644\u0633\u0639\u0631 \u064a\u0639\u062a\u0645\u062f \u0639\u0644\u0649 \u0645\u0646\u0637\u0642\u0629 \u0627\u0644\u062a\u0648\u0635\u064a\u0644. \u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0646\u0647\u0627\u0626\u064a \u064a\u0638\u0647\u0631 \u0644\u0643 \u062f\u0627\u062e\u0644 \u0646\u0645\u0648\u0630\u062c \u0637\u0644\u0628 \u062e\u062f\u0645\u0629 \u0627\u0644\u062a\u0648\u0635\u064a\u0644 \u0642\u0628\u0644 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0637\u0644\u0628.",
+    "\u0643\u0645 \u0645\u062f\u0629 \u0627\u0644\u062a\u0648\u0635\u064a\u0644\u061f":
+      "\u0645\u062f\u0629 \u0627\u0644\u062a\u0648\u0635\u064a\u0644 \u062a\u062e\u062a\u0644\u0641 \u062d\u0633\u0628 \u0627\u0644\u0645\u0646\u0637\u0642\u0629 \u0648\u062d\u0627\u0644\u0629 \u0627\u0644\u0637\u0644\u0628. \u0628\u0639\u062f \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0637\u0644\u0628\u060c \u064a\u0645\u0643\u0646\u0643 \u0645\u062a\u0627\u0628\u0639\u0629 \u0627\u0644\u062a\u062d\u062f\u064a\u062b\u0627\u062a \u0645\u0646 \u0631\u0642\u0645 \u0627\u0644\u062a\u062a\u0628\u0639.",
+    "\u0634\u0648 \u0627\u0644\u0645\u0646\u0627\u0637\u0642 \u0627\u0644\u0645\u062a\u0627\u062d\u0629\u061f":
+      "\u0627\u0644\u0645\u0646\u0627\u0637\u0642 \u0627\u0644\u0645\u062a\u0627\u062d\u0629 \u062a\u0638\u0647\u0631 \u0636\u0645\u0646 \u0646\u0645\u0648\u0630\u062c \u0637\u0644\u0628 \u0627\u0644\u062a\u0648\u0635\u064a\u0644. \u0628\u0634\u0643\u0644 \u0639\u0627\u0645\u060c \u0627\u0644\u062e\u062f\u0645\u0629 \u062a\u0634\u0645\u0644 \u0645\u0646\u0627\u0637\u0642 \u0645\u062b\u0644 \u0627\u0644\u0636\u0641\u0629\u060c \u0627\u0644\u0642\u062f\u0633\u060c \u0648\u0627\u0644\u062f\u0627\u062e\u0644 \u062d\u0633\u0628 \u0627\u0644\u062a\u0648\u0641\u0631.",
+    "\u0643\u064a\u0641 \u0623\u0637\u0644\u0628 \u062e\u062f\u0645\u0629 \u062a\u0648\u0635\u064a\u0644\u061f":
+      "\u0645\u0646 \u0632\u0631 \u0637\u0644\u0628 \u062e\u062f\u0645\u0629 \u0627\u0644\u062a\u0648\u0635\u064a\u0644\u060c \u0639\u0628\u0626 \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0645\u0631\u0633\u0644 \u0648\u0627\u0644\u0645\u0633\u062a\u0644\u0645 \u0648\u0627\u0644\u0637\u0631\u062f\u060c \u062b\u0645 \u0623\u0631\u0633\u0644 \u0627\u0644\u0637\u0644\u0628. \u0628\u0639\u062f\u0647\u0627 \u0633\u064a\u062a\u0645 \u0625\u0646\u0634\u0627\u0621 \u0631\u0642\u0645 \u062a\u062a\u0628\u0639 \u0644\u0645\u062a\u0627\u0628\u0639\u0629 \u0627\u0644\u0634\u062d\u0646\u0629.",
+    "\u0647\u0644 \u0641\u064a \u062a\u0648\u0635\u064a\u0644 \u0644\u0644\u0642\u062f\u0633\u061f":
+      "\u0646\u0639\u0645\u060c \u0627\u0644\u062a\u0648\u0635\u064a\u0644 \u0644\u0644\u0642\u062f\u0633 \u0645\u062f\u0639\u0648\u0645 \u062d\u0633\u0628 \u0627\u0644\u0645\u0646\u0637\u0642\u0629 \u0648\u062a\u0648\u0641\u0631 \u0627\u0644\u062e\u062f\u0645\u0629. \u0627\u062e\u062a\u0631 \u0627\u0644\u0642\u062f\u0633 \u0641\u064a \u0646\u0645\u0648\u0630\u062c \u0627\u0644\u0637\u0644\u0628 \u0644\u0645\u0639\u0631\u0641\u0629 \u0627\u0644\u0633\u0639\u0631 \u0648\u0627\u0644\u062a\u0641\u0627\u0635\u064a\u0644.",
+    "\u0647\u0644 \u0641\u064a \u062a\u0648\u0635\u064a\u0644 \u0644\u0644\u062f\u0627\u062e\u0644\u061f":
+      "\u0646\u0639\u0645\u060c \u064a\u0648\u062c\u062f \u062a\u0648\u0635\u064a\u0644 \u0644\u0644\u062f\u0627\u062e\u0644 \u062d\u0633\u0628 \u0627\u0644\u0645\u0646\u0627\u0637\u0642 \u0627\u0644\u0645\u062a\u0627\u062d\u0629. \u0627\u062e\u062a\u0631 \u0627\u0644\u062f\u0627\u062e\u0644 \u0641\u064a \u0646\u0645\u0648\u0630\u062c \u0637\u0644\u0628 \u0627\u0644\u062a\u0648\u0635\u064a\u0644 \u0644\u062a\u0638\u0647\u0631 \u0627\u0644\u062a\u0643\u0644\u0641\u0629 \u0648\u0627\u0644\u062a\u0641\u0627\u0635\u064a\u0644.",
+    "\u0643\u064a\u0641 \u0623\u063a\u0644\u0641 \u0637\u0631\u062f \u0642\u0627\u0628\u0644 \u0644\u0644\u0643\u0633\u0631\u061f":
+      "\u0627\u0633\u062a\u062e\u062f\u0645 \u0635\u0646\u062f\u0648\u0642\u0627\u064b \u0645\u062a\u064a\u0646\u0627\u064b\u060c \u0648\u0627\u0645\u0644\u0623 \u0627\u0644\u0641\u0631\u0627\u063a\u0627\u062a \u0628\u0645\u0627\u062f\u0629 \u062d\u0645\u0627\u064a\u0629\u060c \u0648\u0627\u0643\u062a\u0628 \u0645\u0644\u0627\u062d\u0638\u0629 \u0648\u0627\u0636\u062d\u0629 \u0623\u0646 \u0627\u0644\u0637\u0631\u062f \u0642\u0627\u0628\u0644 \u0644\u0644\u0643\u0633\u0631 \u0639\u0646\u062f \u062a\u0639\u0628\u0626\u0629 \u0627\u0644\u0637\u0644\u0628.",
+    "\u0648\u064a\u0646 \u0623\u0634\u0648\u0641 \u0637\u0644\u0628\u0627\u062a\u064a\u061f":
+      "\u064a\u0645\u0643\u0646\u0643 \u0645\u0631\u0627\u062c\u0639\u0629 \u0637\u0644\u0628\u0627\u062a\u0643 \u0645\u0646 \u0635\u0641\u062d\u0629 \u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u0634\u062e\u0635\u064a\u060c \u0648\u064a\u0638\u0647\u0631 \u0647\u0646\u0627\u0643 \u0622\u062e\u0631 \u0627\u0644\u0637\u0644\u0628\u0627\u062a \u0627\u0644\u0645\u0631\u062a\u0628\u0637\u0629 \u0628\u062d\u0633\u0627\u0628\u0643.",
+  };
+
+  const englishAnswers = {
+    "Where is my shipment?":
+      "Send the tracking number exactly as shown in your order, for example: VGCJAWZH3P. I will show the status only if the shipment is linked to your account.",
+    "What is the delivery price?":
+      "The price depends on the delivery region. The exact cost appears in the delivery request form before submitting the order.",
+    "How long does delivery take?":
+      "Delivery time depends on the region and order status. After creating the order, follow updates using the tracking number.",
+    "Which regions are covered?":
+      "Available regions appear in the delivery request form. In general, service covers areas such as the West Bank, Jerusalem, and inside the Green Line depending on availability.",
+    "How do I request delivery?":
+      "Open the delivery service page, fill in sender, receiver, and parcel details, then submit the order. A tracking number will be generated for follow-up.",
+    "Do you deliver to Jerusalem?":
+      "Yes, Jerusalem delivery is supported depending on the exact area and service availability. Select Jerusalem in the request form to see price and details.",
+    "Do you deliver inside the Green Line?":
+      "Yes, delivery inside the Green Line is available depending on the listed areas. Select it in the delivery request form to see cost and details.",
+    "How should I pack fragile items?":
+      "Use a strong box, fill empty spaces with protective material, and add a clear fragile note when creating the order.",
+    "Where can I see my orders?":
+      "You can review your orders from the profile page. It shows the latest orders linked to your account.",
+  };
+
+  return respondArabic ? arabicAnswers[question] || "" : englishAnswers[question] || "";
+};
+
 const findCustomerThread = (preferredThreadId) => {
   const threads = getEmployeeThreads();
   const user = getStoredUser();
@@ -147,11 +195,18 @@ const getStatusText = (status, language) => {
 };
 
 const extractTrackingNumber = (text) => {
-  const match = text.match(/\b(PH)?\d{6,12}\b/i);
-  if (!match) return "";
+  const compactText = text.replace(/[^a-zA-Z0-9]/g, " ").toUpperCase();
+  const candidates = compactText.match(/\b[A-Z0-9]{8,16}\b/g) || [];
+  const ignoredWords = new Set([
+    "PHOENIX",
+    "EXPRESS",
+    "DELIVERY",
+    "TRACKING",
+    "SHIPMENT",
+    "PASSWORD",
+  ]);
 
-  const value = match[0].toUpperCase();
-  return value.startsWith("PH") ? value : `PH${value}`;
+  return candidates.find((candidate) => !ignoredWords.has(candidate)) || "";
 };
 
 const isBackToAssistantRequest = (text) => {
@@ -205,6 +260,7 @@ const ChatbotWidget = () => {
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [inputValue, setInputValue] = React.useState("");
   const [isTyping, setIsTyping] = React.useState(false);
+  const [isQuickQuestionsOpen, setIsQuickQuestionsOpen] = React.useState(false);
   const [activeEmployeeThreadId, setActiveEmployeeThreadId] = React.useState(
     () => localStorage.getItem(getUserActiveThreadKey()) || null
   );
@@ -225,6 +281,61 @@ const ChatbotWidget = () => {
 
   const isArabic = language === "ar";
   const isAuthenticated = isUserAuthenticated();
+  const quickQuestions = React.useMemo(
+    () =>
+      isArabic
+        ? [
+            "وين شحنتي؟",
+            "كم سعر التوصيل؟",
+            "كم مدة التوصيل؟",
+            "شو المناطق المتاحة؟",
+            "كيف أطلب خدمة توصيل؟",
+            "هل في توصيل للقدس؟",
+            "هل في توصيل للداخل؟",
+            "كيف أغلف طرد قابل للكسر؟",
+            "وين أشوف طلباتي؟",
+          ]
+        : [
+            "Where is my shipment?",
+            "What is the delivery price?",
+            "How long does delivery take?",
+            "Which regions are covered?",
+            "How do I request delivery?",
+            "Do you deliver to Jerusalem?",
+            "Do you deliver inside the Green Line?",
+            "How should I pack fragile items?",
+            "Where can I see my orders?",
+          ],
+    [isArabic]
+  );
+  const quickQuestionItems = React.useMemo(
+    () =>
+      isArabic
+        ? [
+            "\u0648\u064a\u0646 \u0634\u062d\u0646\u062a\u064a\u061f",
+            "\u0643\u0645 \u0633\u0639\u0631 \u0627\u0644\u062a\u0648\u0635\u064a\u0644\u061f",
+            "\u0643\u0645 \u0645\u062f\u0629 \u0627\u0644\u062a\u0648\u0635\u064a\u0644\u061f",
+            "\u0634\u0648 \u0627\u0644\u0645\u0646\u0627\u0637\u0642 \u0627\u0644\u0645\u062a\u0627\u062d\u0629\u061f",
+            "\u0643\u064a\u0641 \u0623\u0637\u0644\u0628 \u062e\u062f\u0645\u0629 \u062a\u0648\u0635\u064a\u0644\u061f",
+            "\u0647\u0644 \u0641\u064a \u062a\u0648\u0635\u064a\u0644 \u0644\u0644\u0642\u062f\u0633\u061f",
+            "\u0647\u0644 \u0641\u064a \u062a\u0648\u0635\u064a\u0644 \u0644\u0644\u062f\u0627\u062e\u0644\u061f",
+            "\u0643\u064a\u0641 \u0623\u063a\u0644\u0641 \u0637\u0631\u062f \u0642\u0627\u0628\u0644 \u0644\u0644\u0643\u0633\u0631\u061f",
+            "\u0648\u064a\u0646 \u0623\u0634\u0648\u0641 \u0637\u0644\u0628\u0627\u062a\u064a\u061f",
+          ]
+        : [
+            "Where is my shipment?",
+            "What is the delivery price?",
+            "How long does delivery take?",
+            "Which regions are covered?",
+            "How do I request delivery?",
+            "Do you deliver to Jerusalem?",
+            "Do you deliver inside the Green Line?",
+            "How should I pack fragile items?",
+            "Where can I see my orders?",
+          ],
+    [isArabic]
+  );
+  void quickQuestions;
   const visibleMessages = React.useMemo(
     () =>
       isEmployeeChatActive
@@ -446,31 +557,44 @@ const ChatbotWidget = () => {
 
   const fetchShipment = async (trackingNumber) => {
     try {
-      const response = await API.get(`/shipments/${encodeURIComponent(trackingNumber)}`);
+      const response = await API.get(`/tracking/number/${encodeURIComponent(trackingNumber)}`);
       const shipment = response.data?.data || response.data;
 
       return {
-        trackingNumber: shipment.tracking_number || shipment.trackingNumber || trackingNumber,
-        status: shipment.status || "pending",
-        origin: shipment.origin_city || shipment.origin || (isArabic ? "غير متوفر" : "Unavailable"),
+        trackingNumber:
+          shipment.tracking_number ||
+          shipment.trackingNumber ||
+          shipment.shipment?.tracking_number ||
+          trackingNumber,
+        status:
+          shipment.current_status ||
+          shipment.status ||
+          shipment.shipment?.current_status ||
+          "pending",
+        origin:
+          shipment.origin_city ||
+          shipment.origin ||
+          shipment.order?.origin_city ||
+          (isArabic ? "غير متوفر" : "Unavailable"),
         destination:
-          shipment.destination_city || shipment.destination || (isArabic ? "غير متوفر" : "Unavailable"),
-        eta: shipment.expected_delivery_date || shipment.eta || (isArabic ? "غير متوفر" : "Unavailable"),
+          shipment.destination_city ||
+          shipment.destination ||
+          shipment.order?.destination_city ||
+          (isArabic ? "غير متوفر" : "Unavailable"),
+        eta:
+          shipment.expected_delivery_date ||
+          shipment.eta ||
+          shipment.order?.expected_delivery_date ||
+          (isArabic ? "غير متوفر" : "Unavailable"),
       };
     } catch {
-      return mockShipments[trackingNumber] || {
-        trackingNumber,
-        status: "pending",
-        origin: isArabic ? "غير متوفر" : "Unavailable",
-        destination: isArabic ? "غير متوفر" : "Unavailable",
-        eta: isArabic ? "غير متوفر حالياً" : "Currently unavailable",
-      };
+      return mockShipments[trackingNumber] || null;
     }
   };
 
   const fetchOrders = async () => {
     try {
-      const response = await API.get("/orders");
+      const response = await API.get("/orders/me");
       const data = response.data?.data || response.data;
       return Array.isArray(data) ? data.slice(0, 3) : mockOrders;
     } catch {
@@ -568,12 +692,12 @@ const saveSupportMessage = (rawText) => {
 
     if (looksLikeQuestion) {
       return respondArabic
-        ? "سؤالك واضح. إذا كان متعلقاً بالشحن أو الطلبات، أقدر أساعدك مباشرة: ارسل رقم التتبع للحالة، أو اسأل عن السعر، مدة التوصيل، المناطق، تعديل الطلب، أو الإلغاء. وإذا كان السؤال يحتاج مراجعة خاصة، استخدم زر تواصل مع الموظف."
+        ? "أقدر أساعدك في أسئلة الشحن، الأسعار، مدة التوصيل، المناطق، تعديل الطلبات، أو الإلغاء. لو سؤالك خاص بشحنة معيّنة اكتب رقم التتبع، ولو يحتاج متابعة بشرية اختَر تواصل مع الموظف."
         : "Good question. If it is related to delivery or orders, I can help with tracking, pricing, delivery time, supported regions, edits, or cancellations. For account-specific cases, use Contact employee.";
     }
 
     return respondArabic
-      ? "فهمت عليك. أقدر أساعدك بمعلومات عامة عن فينوكس إكسبرس، التوصيل، الطلبات، التتبع، الأسعار، والمناطق. اكتب سؤالك بتفصيل أكثر أو اختر تواصل مع الموظف إذا احتجت متابعة مباشرة."
+      ? "لم أفهم المطلوب بدقة. يمكنك كتابة سؤالك بطريقة أوضح، أو اختيار تواصل مع الموظف لمتابعة مباشرة."
       : "I understand. I can help with Phoenix Express, deliveries, orders, tracking, pricing, and supported regions. Please add more detail or contact an employee for direct support.";
   };
 
@@ -681,6 +805,11 @@ const saveSupportMessage = (rawText) => {
     const inputLooksArabic = isArabicText(rawText);
     const responseLanguage = inputLooksArabic ? "ar" : language;
     const respondArabic = responseLanguage === "ar";
+    const quickQuestionResponse = getQuickQuestionResponse(rawText, respondArabic);
+
+    if (quickQuestionResponse) {
+      return quickQuestionResponse;
+    }
 
     const wantsEmployee =
       text.includes("employee") ||
@@ -726,6 +855,13 @@ const saveSupportMessage = (rawText) => {
       }
 
       const shipment = await fetchShipment(trackingNumber);
+
+      if (!shipment) {
+        return respondArabic
+          ? `لا يمكن عرض تفاصيل الشحنة ${trackingNumber}. الرقم غير صحيح أو أن الشحنة غير مرتبطة بحسابك. إذا كنت تعتقد أن هناك خطأ، اختَر "تواصل مع الموظف" للتحقق.`
+          : `Shipment ${trackingNumber} cannot be displayed. The number is invalid or it is not linked to your account. Please contact an employee if you think this is a mistake.`;
+      }
+
       const status = getStatusText(shipment.status, responseLanguage);
 
       return respondArabic
@@ -939,6 +1075,7 @@ const saveSupportMessage = (rawText) => {
     }
 
     setInputValue(text);
+    setIsQuickQuestionsOpen(false);
     window.setTimeout(() => inputRef.current?.focus(), 40);
   };
 
@@ -1034,6 +1171,28 @@ const saveSupportMessage = (rawText) => {
                   </div>
                 )}
                 <div ref={messagesEndRef} />
+              </div>
+
+              <div className="phoenix-chatbot-quick-menu">
+                <button
+                  type="button"
+                  className="phoenix-chatbot-quick-toggle"
+                  onClick={() => setIsQuickQuestionsOpen((current) => !current)}
+                  aria-expanded={isQuickQuestionsOpen}
+                >
+                  <span>{isArabic ? "أسئلة سريعة" : "Quick questions"}</span>
+                  <FiChevronDown aria-hidden="true" />
+                </button>
+
+                {isQuickQuestionsOpen && (
+                  <div className="phoenix-chatbot-quick-list">
+                    {quickQuestionItems.map((question) => (
+                      <button type="button" key={question} onClick={() => handleQuickPrompt(question)}>
+                        {question}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="phoenix-chatbot-prompts">
