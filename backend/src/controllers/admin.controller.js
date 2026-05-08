@@ -980,6 +980,8 @@ const buildMerchantSummaryRow = ({
   pendingSettlementAmount,
 }) => {
   const companyProfile = merchant.companyProfile || merchant.company_profile || null;
+  const individualProfile =
+    merchant.individualProfile || merchant.individual_profile || null;
   const totalParcels = toNumber(orderStats.total_parcels);
   const deliveredCount = toNumber(orderStats.delivered_count);
   const pendingCount = toNumber(orderStats.pending_count);
@@ -1001,7 +1003,12 @@ const buildMerchantSummaryRow = ({
 
   return {
     id: merchant.id,
-    merchant_name: companyProfile?.company_name || merchant.user?.email || `Merchant #${merchant.id}`,
+    merchant_name:
+      companyProfile?.company_name ||
+      individualProfile?.full_name ||
+      merchant.user?.full_name ||
+      merchant.user?.email ||
+      `Merchant #${merchant.id}`,
     phone: companyProfile?.company_phone || merchant.user?.phone || "-",
     email: merchant.user?.email || "-",
     location: companyProfile?.company_location || "-",
@@ -1024,10 +1031,7 @@ const buildMerchantSummaryRow = ({
 };
 
 const getMerchantAggregationData = async ({ customerId = null } = {}) => {
-  const merchantWhere = {
-    customer_type: "company",
-    ...(customerId ? { id: customerId } : {}),
-  };
+  const merchantWhere = customerId ? { id: customerId } : {};
   const orderWhere = customerId ? { customer_id: customerId } : {};
 
   const [merchants, orderStatsRows, deliveredFinancialRows, settlementRows] =
@@ -1043,9 +1047,15 @@ const getMerchantAggregationData = async ({ customerId = null } = {}) => {
             required: false,
           },
           {
+            model: IndividualCustomerProfile,
+            as: "individual_profile",
+            attributes: ["full_name"],
+            required: false,
+          },
+          {
             model: User,
             as: "user",
-            attributes: ["email", "phone"],
+            attributes: ["email", "phone", "full_name"],
             required: false,
           },
         ],
@@ -1212,7 +1222,21 @@ const getAdminMerchantById = async (req, res) => {
 
     const settlements = await MerchantSettlement.findAll({
       where: { customer_id: customerId },
-      attributes: ["id", "amount", "status", "payment_method", "settled_at", "notes", "createdAt"],
+      attributes: [
+        "id",
+        "amount",
+        "status",
+        "payment_method",
+        "settled_at",
+        "requested_at",
+        "customer_confirmed_at",
+        "bank_name",
+        "bank_account_holder",
+        "bank_account_number",
+        "bank_iban",
+        "notes",
+        "createdAt",
+      ],
       order: [["createdAt", "DESC"]],
     });
 
@@ -1227,6 +1251,12 @@ const getAdminMerchantById = async (req, res) => {
           status: item.status,
           payment_method: item.payment_method || "cash",
           settled_at: item.settled_at,
+          requested_at: item.requested_at,
+          customer_confirmed_at: item.customer_confirmed_at,
+          bank_name: item.bank_name || "",
+          bank_account_holder: item.bank_account_holder || "",
+          bank_account_number: item.bank_account_number || "",
+          bank_iban: item.bank_iban || "",
           notes: item.notes || "",
           created_at: item.createdAt,
         })),
@@ -1301,6 +1331,7 @@ const settleAdminMerchant = async (req, res) => {
       status,
       payment_method: paymentMethod,
       settled_at: null,
+      requested_at: new Date(),
       notes,
     });
 
@@ -1317,6 +1348,8 @@ const settleAdminMerchant = async (req, res) => {
           status: settlement.status,
           payment_method: settlement.payment_method,
           settled_at: settlement.settled_at,
+          requested_at: settlement.requested_at,
+          customer_confirmed_at: settlement.customer_confirmed_at,
           notes: settlement.notes || "",
         },
         merchant: refreshedMerchant,
@@ -1327,6 +1360,75 @@ const settleAdminMerchant = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to settle merchant",
+      error: error.message,
+    });
+  }
+};
+
+const markMerchantSettlementAsSent = async (req, res) => {
+  try {
+    const settlementId = toNumber(req.params.id);
+    const notes = String(req.body?.notes || "").trim();
+
+    if (!settlementId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid settlement id",
+      });
+    }
+
+    const settlement = await MerchantSettlement.findByPk(settlementId);
+
+    if (!settlement) {
+      return res.status(404).json({
+        success: false,
+        message: "Settlement request not found",
+      });
+    }
+
+    if (settlement.status === "settled") {
+      return res.status(400).json({
+        success: false,
+        message: "Settlement is already marked as sent",
+      });
+    }
+
+    await settlement.update({
+      status: "settled",
+      settled_at: new Date(),
+      notes: notes || settlement.notes,
+    });
+
+    const refreshedMerchants = await getMerchantAggregationData({
+      customerId: settlement.customer_id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Settlement marked as sent successfully",
+      data: {
+        settlement: {
+          id: settlement.id,
+          amount: toNumber(settlement.amount),
+          status: settlement.status,
+          payment_method: settlement.payment_method || "cash",
+          settled_at: settlement.settled_at,
+          requested_at: settlement.requested_at,
+          customer_confirmed_at: settlement.customer_confirmed_at,
+          bank_name: settlement.bank_name || "",
+          bank_account_holder: settlement.bank_account_holder || "",
+          bank_account_number: settlement.bank_account_number || "",
+          bank_iban: settlement.bank_iban || "",
+          notes: settlement.notes || "",
+        },
+        merchant: refreshedMerchants[0],
+      },
+    });
+  } catch (error) {
+    console.error("MARK MERCHANT SETTLEMENT SENT ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to mark settlement as sent",
       error: error.message,
     });
   }
@@ -2641,6 +2743,7 @@ module.exports = {
   getAdminMerchants,
   getAdminMerchantById,
   settleAdminMerchant,
+  markMerchantSettlementAsSent,
   getAuthenticatedAdminProfile,
   updateAuthenticatedAdminProfile,
   getAdminReports,
