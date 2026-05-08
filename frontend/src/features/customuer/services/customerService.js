@@ -8,6 +8,14 @@ export const getTrackingByNumber = async (trackingNumber) => {
   return response.data;
 };
 
+export const getTrackingQrCode = async (trackingNumber) => {
+  const response = await API.get(
+    `/generate-qr/${encodeURIComponent(trackingNumber)}`
+  );
+
+  return response.data;
+};
+
 export const getCustomerProfile = async () => {
   const response = await API.get("/customers/profile/me");
   return response.data;
