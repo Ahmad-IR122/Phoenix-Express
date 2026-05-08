@@ -15,11 +15,23 @@ module.exports = (sequelize, DataTypes) => {
   }
   PhotoGallery.init({
     name: DataTypes.STRING,
-    image_url: DataTypes.STRING,
-    description: DataTypes.TEXT
+    image_url: DataTypes.TEXT,
+    description: DataTypes.TEXT,
+    display_order: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    is_visible: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
   }, {
     sequelize,
     modelName: 'PhotoGallery',
+    tableName: 'photo_galleries',
+    underscored: true,
   });
   return PhotoGallery;
 };
