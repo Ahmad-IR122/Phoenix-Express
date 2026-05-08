@@ -1,0 +1,139 @@
+.page-not-found {
+  overflow: hidden;
+}
+
+.page-not-found__hero {
+  animation: pageNotFoundFadeUp 0.72s ease both;
+}
+
+.page-not-found__card {
+  position: relative;
+  overflow: hidden;
+  animation: pageNotFoundFadeUp 0.78s ease 0.08s both;
+}
+
+.page-not-found__card::before {
+  content: "";
+  position: absolute;
+  inset: 0 28px auto;
+  height: 3px;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(90deg, transparent, rgba(56, 182, 255, 0.85), transparent);
+}
+
+.page-not-found__visual {
+  animation: pageNotFoundFloat 3.6s ease-in-out infinite;
+}
+
+.page-not-found__floating-badge--search {
+  animation: pageNotFoundBadgeSearch 3.2s ease-in-out infinite;
+}
+
+.page-not-found__floating-badge--truck {
+  animation: pageNotFoundBadgeTruck 3.2s ease-in-out infinite;
+}
+
+.page-not-found__link,
+.page-not-found__support-link,
+.page-not-found__link *,
+.page-not-found__support-link *,
+.page-not-found__link:hover,
+.page-not-found__support-link:hover,
+.page-not-found__link:hover *,
+.page-not-found__support-link:hover *,
+.page-not-found__link:focus,
+.page-not-found__support-link:focus,
+.page-not-found__link:focus *,
+.page-not-found__support-link:focus * {
+  text-decoration: none !important;
+  border-bottom: 0 !important;
+  box-shadow: none;
+}
+
+.page-not-found a,
+.page-not-found a:hover,
+.page-not-found a:focus,
+.page-not-found a:visited,
+.page-not-found a *,
+.page-not-found a:hover *,
+.page-not-found a:focus * {
+  text-decoration-line: none !important;
+  text-decoration: none !important;
+  border-bottom: 0 !important;
+}
+
+.page-not-found__link {
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
+}
+
+.page-not-found__link:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px rgba(56, 182, 255, 0.18);
+}
+
+.page-not-found__support-link {
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  background: rgba(56, 182, 255, 0.08);
+  transition: transform 0.22s ease, background-color 0.22s ease;
+}
+
+.page-not-found__support-link:hover {
+  transform: translateY(-2px);
+  background: rgba(56, 182, 255, 0.14);
+}
+
+@keyframes pageNotFoundFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pageNotFoundFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pageNotFoundBadgeSearch {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  50% {
+    transform: translate(-58%, -62%) rotate(-6deg);
+  }
+}
+
+@keyframes pageNotFoundBadgeTruck {
+  0%,
+  100% {
+    transform: translate(50%, 50%) rotate(0deg);
+  }
+
+  50% {
+    transform: translate(58%, 62%) rotate(5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-not-found__hero,
+  .page-not-found__card,
+  .page-not-found__visual,
+  .page-not-found__floating-badge--search,
+  .page-not-found__floating-badge--truck {
+    animation: none;
+  }
+}

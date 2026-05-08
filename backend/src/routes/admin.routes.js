@@ -19,6 +19,7 @@ router.get('/merchants', adminController.getAdminMerchants);
 router.get('/merchants/:id', adminController.getAdminMerchantById);
 router.post('/merchants/:id/settlements', authenticateAdmin, adminController.settleAdminMerchant);
 router.post('/delegates', adminController.createAdminDelegate);
+router.patch('/merchant-settlements/:id/sent', authenticateAdmin, adminController.markMerchantSettlementAsSent);
 router.get('/delegates', adminController.getAdminDelegates);
 router.get('/delegates/:id', adminController.getAdminDelegateDetails);
 router.put('/delegates/:id', adminController.updateAdminDelegate);

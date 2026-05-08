@@ -5,6 +5,8 @@ import {
   FiEdit2,
   FiEye,
   FiEyeOff,
+  FiCreditCard,
+  FiCheckCircle,
   FiLock,
   FiLogOut,
   FiMail,
@@ -15,9 +17,12 @@ import {
 } from "react-icons/fi";
 import { changePassword } from "../../auth/services/authService";
 import {
+  confirmCustomerSettlement,
   deleteCustomerOrder,
   getCustomerOrders,
   getCustomerProfile,
+  getCustomerSettlements,
+  requestCustomerSettlement,
   updateCustomerProfile,
   updateCustomerProfileLegacy,
 } from "../services/customerService";
@@ -107,6 +112,69 @@ const mapOrderToDeliveryFormState = (order) => ({
       : "",
   orderDescription: order.package_description || "",
 });
+
+const orderFilterOptions = [
+  {
+    value: "all",
+    label: "\u0627\u0644\u0643\u0644",
+  },
+  {
+    value: "company",
+    label: "\u062f\u0627\u062e\u0644 \u0627\u0644\u0634\u0631\u0643\u0629",
+  },
+  {
+    value: "shipping",
+    label: "\u0642\u064a\u062f \u0627\u0644\u062a\u0648\u0635\u064a\u0644",
+  },
+  {
+    value: "delivered",
+    label: "\u062a\u0645 \u0627\u0644\u062a\u0633\u0644\u064a\u0645",
+  },
+];
+
+const orderFilterStatusMap = {
+  company: ["pending", "accepted"],
+  shipping: [
+    "picked_up",
+    "in_transit",
+    "arrived_to_destination_city",
+    "out_for_delivery",
+  ],
+  delivered: ["delivered"],
+};
+
+const matchesOrderFilter = (order, filter) => {
+  if (filter === "all") return true;
+
+  return (orderFilterStatusMap[filter] || []).includes(order.rawStatus);
+};
+
+const settlementStatusLabels = {
+  requested: "\u0628\u0627\u0646\u062a\u0638\u0627\u0631 \u0645\u0639\u0627\u0644\u062c\u0629 \u0627\u0644\u0625\u062f\u0627\u0631\u0629",
+  pending: "\u0642\u064a\u062f \u0627\u0644\u0645\u0631\u0627\u062c\u0639\u0629",
+  settled: "\u062a\u0645 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u062a\u0633\u0648\u064a\u0629",
+};
+
+const settlementMethodLabels = {
+  cash: "\u0646\u0642\u062f\u0627\u064b",
+  bank_transfer: "\u062a\u062d\u0648\u064a\u0644 \u0628\u0646\u0643\u064a",
+  ewallet: "\u0645\u062d\u0641\u0638\u0629 \u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a\u0629",
+};
+
+const formatCurrency = (value) =>
+  `${new Intl.NumberFormat("ar-PS").format(Number(value) || 0)} \u0634\u064a\u0643\u0644`;
+
+const formatSettlementDate = (value) => {
+  if (!value) return "-";
+
+  return new Intl.DateTimeFormat("ar-PS", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+};
 
 const getStoredUser = () => {
   const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
@@ -225,6 +293,19 @@ const CustomerProfilePage = () => {
   const [isSavingPassword, setIsSavingPassword] = React.useState(false);
   const [customerOrders, setCustomerOrders] = React.useState([]);
   const [isLoadingOrders, setIsLoadingOrders] = React.useState(true);
+  const [ordersFilter, setOrdersFilter] = React.useState("all");
+  const [settlementData, setSettlementData] = React.useState(null);
+  const [isLoadingSettlements, setIsLoadingSettlements] = React.useState(true);
+  const [isSubmittingSettlement, setIsSubmittingSettlement] = React.useState(false);
+  const [settlementForm, setSettlementForm] = React.useState({
+    amount: "",
+    payment_method: "cash",
+    bank_name: "",
+    bank_account_holder: "",
+    bank_account_number: "",
+    bank_iban: "",
+    notes: "",
+  });
   const [profileForm, setProfileForm] = React.useState({
     name: getDisplayName(storedUser),
     email: storedUser.email || "ahmad@example.com",
@@ -267,6 +348,11 @@ const CustomerProfilePage = () => {
     loadProfile();
   }, []);
 
+  const filteredCustomerOrders = React.useMemo(
+    () => customerOrders.filter((order) => matchesOrderFilter(order, ordersFilter)),
+    [customerOrders, ordersFilter]
+  );
+
   React.useEffect(() => {
     const loadOrders = async () => {
       setIsLoadingOrders(true);
@@ -286,6 +372,31 @@ const CustomerProfilePage = () => {
 
     loadOrders();
   }, []);
+
+  const loadSettlements = React.useCallback(async () => {
+    setIsLoadingSettlements(true);
+
+    try {
+      const response = await getCustomerSettlements();
+      const data = response.data || null;
+      setSettlementData(data);
+      setSettlementForm((current) => ({
+        ...current,
+        amount:
+          Number(data?.available_settlement_request_amount) > 0
+            ? String(data.available_settlement_request_amount)
+            : "",
+      }));
+    } catch {
+      setSettlementData(null);
+    } finally {
+      setIsLoadingSettlements(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadSettlements();
+  }, [loadSettlements]);
 
   const handleProfileChange = (event) => {
     const { name, value } = event.target;
@@ -553,6 +664,129 @@ const CustomerProfilePage = () => {
     }
   };
 
+  const handleSettlementFormChange = (event) => {
+    const { name, value } = event.target;
+    setSettlementForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleSettlementRequest = async (event) => {
+    event.preventDefault();
+
+    const amount = Number(settlementForm.amount);
+    const availableAmount = Number(settlementData?.available_settlement_request_amount) || 0;
+
+    if (!amount || amount <= 0 || amount > availableAmount) {
+      Swal.fire({
+        icon: "warning",
+        title: "\u0631\u0627\u062c\u0639\u064a \u0642\u064a\u0645\u0629 \u0627\u0644\u062a\u0633\u0648\u064a\u0629",
+        text: "\u064a\u062c\u0628 \u0623\u0646 \u062a\u0643\u0648\u0646 \u0642\u064a\u0645\u0629 \u0627\u0644\u062a\u0633\u0648\u064a\u0629 \u0636\u0645\u0646 \u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u062a\u0627\u062d.",
+        confirmButtonText: "\u062a\u0645\u0627\u0645",
+        confirmButtonColor: "#38b6ff",
+      });
+      return;
+    }
+
+    if (
+      settlementForm.payment_method === "bank_transfer" &&
+      (!settlementForm.bank_name.trim() ||
+        !settlementForm.bank_account_holder.trim() ||
+        !settlementForm.bank_account_number.trim())
+    ) {
+      Swal.fire({
+        icon: "warning",
+        title: "\u0628\u064a\u0627\u0646\u0627\u062a \u0628\u0646\u0643\u064a\u0629 \u0646\u0627\u0642\u0635\u0629",
+        text: "\u064a\u0631\u062c\u0649 \u0625\u062f\u062e\u0627\u0644 \u0627\u0633\u0645 \u0627\u0644\u0628\u0646\u0643 \u0648\u0627\u0633\u0645 \u0635\u0627\u062d\u0628 \u0627\u0644\u062d\u0633\u0627\u0628 \u0648\u0631\u0642\u0645 \u0627\u0644\u062d\u0633\u0627\u0628.",
+        confirmButtonText: "\u062d\u0633\u0646\u0627\u064b",
+        confirmButtonColor: "#38b6ff",
+      });
+      return;
+    }
+
+    setIsSubmittingSettlement(true);
+
+    try {
+      const response = await requestCustomerSettlement({
+        amount,
+        payment_method: settlementForm.payment_method,
+        bank_name: settlementForm.bank_name.trim(),
+        bank_account_holder: settlementForm.bank_account_holder.trim(),
+        bank_account_number: settlementForm.bank_account_number.trim(),
+        bank_iban: settlementForm.bank_iban.trim(),
+        notes: settlementForm.notes.trim(),
+      });
+
+      setSettlementData(response.data?.summary || settlementData);
+      setSettlementForm({
+        amount: "",
+        payment_method: "cash",
+        bank_name: "",
+        bank_account_holder: "",
+        bank_account_number: "",
+        bank_iban: "",
+        notes: "",
+      });
+      await loadSettlements();
+
+      Swal.fire({
+        icon: "success",
+        title: "\u062a\u0645 \u0625\u0631\u0633\u0627\u0644 \u0637\u0644\u0628 \u0627\u0644\u062a\u0633\u0648\u064a\u0629",
+        text: "\u0633\u064a\u0638\u0647\u0631 \u0627\u0644\u0637\u0644\u0628 \u0644\u062f\u0649 \u0627\u0644\u0625\u062f\u0627\u0631\u0629 \u0644\u0645\u0631\u0627\u062c\u0639\u062a\u0647 \u0648\u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0645\u0628\u0644\u063a.",
+        confirmButtonText: "\u062a\u0645\u0627\u0645",
+        confirmButtonColor: "#38b6ff",
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "\u062a\u0639\u0630\u0631 \u0625\u0631\u0633\u0627\u0644 \u0637\u0644\u0628 \u0627\u0644\u062a\u0633\u0648\u064a\u0629",
+        text:
+          error.response?.data?.message ||
+          "\u0631\u0627\u062c\u0639\u064a \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0648\u062d\u0627\u0648\u0644\u064a \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.",
+        confirmButtonText: "\u062d\u0633\u0646\u0627\u064b",
+        confirmButtonColor: "#38b6ff",
+      });
+    } finally {
+      setIsSubmittingSettlement(false);
+    }
+  };
+
+  const handleConfirmSettlementReceipt = async (settlementId) => {
+    const result = await Swal.fire({
+      icon: "question",
+      title: "\u062a\u0623\u0643\u064a\u062f \u0627\u0633\u062a\u0644\u0627\u0645 \u0627\u0644\u062a\u0633\u0648\u064a\u0629",
+      text: "\u0647\u0644 \u062a\u0624\u0643\u062f\u064a\u0646 \u0623\u0646 \u0645\u0628\u0644\u063a \u0627\u0644\u062a\u0633\u0648\u064a\u0629 \u0648\u0635\u0644\u0643 \u0628\u0627\u0644\u0641\u0639\u0644\u061f",
+      showCancelButton: true,
+      confirmButtonText: "\u0646\u0639\u0645\u060c \u062a\u0645 \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645",
+      cancelButtonText: "\u0625\u0644\u063a\u0627\u0621",
+      confirmButtonColor: "#08c854",
+      cancelButtonColor: "#94a3b8",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const response = await confirmCustomerSettlement(settlementId);
+      setSettlementData(response.data?.summary || settlementData);
+      await loadSettlements();
+      Swal.fire({
+        icon: "success",
+        title: "\u062a\u0645 \u062a\u0623\u0643\u064a\u062f \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645",
+        text: "\u062a\u0645 \u062a\u062d\u062f\u064a\u062b \u062d\u0627\u0644\u0629 \u0627\u0644\u062a\u0633\u0648\u064a\u0629 \u0628\u0646\u062c\u0627\u062d.",
+        confirmButtonText: "\u062a\u0645\u0627\u0645",
+        confirmButtonColor: "#38b6ff",
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "\u062a\u0639\u0630\u0631 \u062a\u0623\u0643\u064a\u062f \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645",
+        text:
+          error.response?.data?.message ||
+          "\u064a\u0631\u062c\u0649 \u0627\u0644\u0645\u062d\u0627\u0648\u0644\u0629 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.",
+        confirmButtonText: "\u062d\u0633\u0646\u0627\u064b",
+        confirmButtonColor: "#38b6ff",
+      });
+    }
+  };
+
   return (
     <main className="customer-profile-page" dir="rtl">
       <section className="customer-profile-shell">
@@ -623,6 +857,191 @@ const CustomerProfilePage = () => {
                   />
                 </label>
               </div>
+            </section>
+
+            <section className="customer-settlements-card">
+              <div className="customer-card-heading">
+                <h2>
+                  {"\u062a\u0633\u0648\u064a\u0627\u062a \u0627\u0644\u062a\u0627\u062c\u0631"}
+                  <FiCreditCard aria-hidden="true" />
+                </h2>
+              </div>
+
+              {isLoadingSettlements ? (
+                <p className="customer-settlement-message">
+                  {"\u062c\u0627\u0631\u064a \u062a\u062d\u0645\u064a\u0644 \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062a\u0633\u0648\u064a\u0627\u062a..."}
+                </p>
+              ) : settlementData ? (
+                <>
+                  <div className="customer-settlement-summary">
+                    <div>
+                      <span>{"\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0645\u0628\u0627\u0644\u063a \u0627\u0644\u0645\u062d\u0635\u0644\u0629"}</span>
+                      <strong>{formatCurrency(settlementData.total_collected)}</strong>
+                    </div>
+                    <div>
+                      <span>{"\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u0633\u0648\u0649"}</span>
+                      <strong>{formatCurrency(settlementData.total_settled_amount)}</strong>
+                    </div>
+                    <div>
+                      <span>{"\u0627\u0644\u0645\u062a\u0628\u0642\u064a"}</span>
+                      <strong>{formatCurrency(settlementData.remaining_settlement_amount)}</strong>
+                    </div>
+                    <div>
+                      <span>{"\u0637\u0644\u0628\u0627\u062a \u0642\u064a\u062f \u0627\u0644\u0645\u0631\u0627\u062c\u0639\u0629"}</span>
+                      <strong>{formatCurrency(settlementData.pending_settlement_amount)}</strong>
+                    </div>
+                  </div>
+
+                  <form className="customer-settlement-form" onSubmit={handleSettlementRequest}>
+                    <div className="customer-settlement-form-grid">
+                      <label>
+                        <span>{"\u0642\u064a\u0645\u0629 \u0627\u0644\u062a\u0633\u0648\u064a\u0629"}</span>
+                        <input
+                          type="number"
+                          name="amount"
+                          min="0"
+                          step="0.01"
+                          max={settlementData.available_settlement_request_amount || 0}
+                          value={settlementForm.amount}
+                          onChange={handleSettlementFormChange}
+                          placeholder={formatCurrency(settlementData.available_settlement_request_amount)}
+                        />
+                      </label>
+                      <label>
+                        <span>{"\u0637\u0631\u064a\u0642\u0629 \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645"}</span>
+                        <select
+                          name="payment_method"
+                          value={settlementForm.payment_method}
+                          onChange={handleSettlementFormChange}
+                        >
+                          {Object.entries(settlementMethodLabels).map(([value, label]) => (
+                            <option key={value} value={value}>
+                              {label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      {settlementForm.payment_method === "bank_transfer" ? (
+                        <>
+                          <label>
+                            <span>{"\u0627\u0633\u0645 \u0627\u0644\u0628\u0646\u0643"}</span>
+                            <input
+                              type="text"
+                              name="bank_name"
+                              value={settlementForm.bank_name}
+                              onChange={handleSettlementFormChange}
+                            />
+                          </label>
+                          <label>
+                            <span>{"\u0627\u0633\u0645 \u0635\u0627\u062d\u0628 \u0627\u0644\u062d\u0633\u0627\u0628"}</span>
+                            <input
+                              type="text"
+                              name="bank_account_holder"
+                              value={settlementForm.bank_account_holder}
+                              onChange={handleSettlementFormChange}
+                            />
+                          </label>
+                          <label>
+                            <span>{"\u0631\u0642\u0645 \u0627\u0644\u062d\u0633\u0627\u0628"}</span>
+                            <input
+                              type="text"
+                              name="bank_account_number"
+                              value={settlementForm.bank_account_number}
+                              onChange={handleSettlementFormChange}
+                            />
+                          </label>
+                          <label>
+                            <span>{"IBAN \u0627\u062e\u062a\u064a\u0627\u0631\u064a"}</span>
+                            <input
+                              type="text"
+                              name="bank_iban"
+                              value={settlementForm.bank_iban}
+                              onChange={handleSettlementFormChange}
+                            />
+                          </label>
+                        </>
+                      ) : null}
+                      <label className="customer-settlement-notes">
+                        <span>{"\u0645\u0644\u0627\u062d\u0638\u0627\u062a \u0627\u062e\u062a\u064a\u0627\u0631\u064a\u0629"}</span>
+                        <textarea
+                          name="notes"
+                          rows="3"
+                          value={settlementForm.notes}
+                          onChange={handleSettlementFormChange}
+                        />
+                      </label>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="customer-settlement-submit"
+                      disabled={
+                        isSubmittingSettlement ||
+                        Number(settlementData.available_settlement_request_amount) <= 0
+                      }
+                    >
+                      {isSubmittingSettlement
+                        ? "\u062c\u0627\u0631\u064a \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0637\u0644\u0628..."
+                        : "\u0637\u0644\u0628 \u062a\u0633\u0648\u064a\u0629"}
+                    </button>
+                  </form>
+
+                  <div className="customer-settlement-history">
+                    <h3>{"\u0633\u062c\u0644 \u0627\u0644\u062a\u0633\u0648\u064a\u0627\u062a"}</h3>
+                    {settlementData.settlements?.length ? (
+                      settlementData.settlements.map((settlement) => (
+                        <article className="customer-settlement-record" key={settlement.id}>
+                          <div>
+                            <strong>{formatCurrency(settlement.amount)}</strong>
+                            <span className={`customer-settlement-status ${settlement.status}`}>
+                              {settlement.customer_confirmed_at
+                                ? "\u062a\u0645 \u062a\u0623\u0643\u064a\u062f \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645"
+                                : settlementStatusLabels[settlement.status] || settlement.status}
+                            </span>
+                          </div>
+                          <p>
+                            {"\u0637\u0631\u064a\u0642\u0629 \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645: "}
+                            {settlementMethodLabels[settlement.payment_method] || settlement.payment_method}
+                          </p>
+                          {settlement.payment_method === "bank_transfer" ? (
+                            <p>
+                              {settlement.bank_name} - {settlement.bank_account_number}
+                            </p>
+                          ) : null}
+                          <small>
+                            {"\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u0637\u0644\u0628: "}
+                            {formatSettlementDate(settlement.requested_at || settlement.created_at)}
+                          </small>
+                          {settlement.settled_at ? (
+                            <small>
+                              {"\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u0625\u0631\u0633\u0627\u0644: "}
+                              {formatSettlementDate(settlement.settled_at)}
+                            </small>
+                          ) : null}
+                          {settlement.status === "settled" && !settlement.customer_confirmed_at ? (
+                            <button
+                              type="button"
+                              className="customer-settlement-confirm"
+                              onClick={() => handleConfirmSettlementReceipt(settlement.id)}
+                            >
+                              <FiCheckCircle aria-hidden="true" />
+                              {"\u062a\u0645 \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645"}
+                            </button>
+                          ) : null}
+                        </article>
+                      ))
+                    ) : (
+                      <p className="customer-settlement-message">
+                        {"\u0644\u0627 \u062a\u0648\u062c\u062f \u062a\u0633\u0648\u064a\u0627\u062a \u0645\u0633\u062c\u0644\u0629 \u062d\u0627\u0644\u064a\u0627\u064b."}
+                      </p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <p className="customer-settlement-message">
+                  {"\u062a\u0639\u0630\u0631 \u062a\u062d\u0645\u064a\u0644 \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062a\u0633\u0648\u064a\u0627\u062a."}
+                </p>
+              )}
             </section>
 
             <section className="customer-password-card">
@@ -734,13 +1153,32 @@ const CustomerProfilePage = () => {
               <FiPackage aria-hidden="true" />
             </h2>
 
+            <div className="customer-orders-filters" role="group" aria-label="Order filters">
+              {orderFilterOptions.map((filterOption) => (
+                <button
+                  key={filterOption.value}
+                  type="button"
+                  className={`customer-orders-filter-btn${
+                    ordersFilter === filterOption.value ? " is-active" : ""
+                  }`}
+                  onClick={() => setOrdersFilter(filterOption.value)}
+                >
+                  {filterOption.label}
+                </button>
+              ))}
+            </div>
+
             <div className="customer-orders-list">
               {isLoadingOrders ? (
                 <p className="customer-orders-message">جاري تحميل طلباتك...</p>
               ) : customerOrders.length === 0 ? (
                 <p className="customer-orders-message">لا توجد طلبات مسجلة على حسابك حالياً.</p>
+              ) : filteredCustomerOrders.length === 0 ? (
+                <p className="customer-orders-message">
+                  {"\u0644\u0627 \u062a\u0648\u062c\u062f \u0637\u0644\u0628\u0627\u062a \u0636\u0645\u0646 \u0647\u0630\u0627 \u0627\u0644\u062a\u0635\u0646\u064a\u0641 \u062d\u0627\u0644\u064a\u0627\u064b."}
+                </p>
               ) : (
-                customerOrders.map((order) => (
+                filteredCustomerOrders.map((order) => (
                   <article className="customer-order-item" key={order.trackingNumber}>
                     <div className="customer-order-top">
                       <span className={`customer-order-status ${order.statusType}`}>

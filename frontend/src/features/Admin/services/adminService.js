@@ -19,3 +19,8 @@ export async function settleMerchant(merchantId, payload) {
   const response = await API.post(`/admin/merchants/${merchantId}/settlements`, payload);
   return response.data;
 }
+
+export async function markMerchantSettlementSent(settlementId, payload = {}) {
+  const response = await API.patch(`/admin/merchant-settlements/${settlementId}/sent`, payload);
+  return response.data;
+}

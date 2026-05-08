@@ -552,6 +552,15 @@
   transform: none;
 }
 
+.phoenix-merchants__settle-btn--compact {
+  width: fit-content;
+  min-width: 150px;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: var(--phoenix-admin-caption);
+}
+
 .phoenix-merchants__feedback {
   margin: 0;
   padding: 12px 14px;
@@ -588,6 +597,24 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.phoenix-merchants__settlement-bank {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px !important;
+  justify-content: stretch !important;
+  padding: 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.phoenix-merchants__settlement-bank span {
+  color: #475569;
+  font-size: var(--phoenix-admin-caption);
+  font-weight: 700;
+  direction: rtl;
 }
 
 .phoenix-merchants__settlement-record p,

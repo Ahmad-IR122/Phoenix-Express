@@ -13,6 +13,7 @@ const {
   getEmployeeOrdersData,
   getEmployeeOrderDetailsData,
   updateEmployeeOrderStatus,
+  updateEmployeeShipmentLocation,
   getEmployeeProfileData,
   updateEmployeeProfileData,
   updateEmployeeVehicleData,
@@ -449,6 +450,29 @@ const updateAuthenticatedEmployeeOrderStatus = async (req, res) => {
   }
 };
 
+const updateAuthenticatedEmployeeShipmentLocation = async (req, res) => {
+  try {
+    const updatedOrder = await updateEmployeeShipmentLocation({
+      userId: req.user.id,
+      shipmentId: Number(req.params.shipmentId),
+      latitude: req.body.latitude,
+      longitude: req.body.longitude,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Employee shipment location updated successfully',
+      data: updatedOrder,
+      mockAuth: Boolean(req.user.isMockAuth),
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Failed to update shipment location',
+    });
+  }
+};
+
 const getAuthenticatedEmployeeWallet = async (req, res) => {
   try {
     const walletData = await getEmployeeWalletData({
@@ -507,6 +531,7 @@ module.exports = {
   getAuthenticatedEmployeeOrders,
   getAuthenticatedEmployeeOrderDetails,
   updateAuthenticatedEmployeeOrderStatus,
+  updateAuthenticatedEmployeeShipmentLocation,
   getAuthenticatedEmployeeWallet,
   submitAuthenticatedEmployeeWithdrawal,
 };
