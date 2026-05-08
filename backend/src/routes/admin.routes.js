@@ -18,6 +18,7 @@ router.get('/reports/returned', authenticateAdmin, adminController.getAdminRetur
 router.get('/merchants', adminController.getAdminMerchants);
 router.get('/merchants/:id', adminController.getAdminMerchantById);
 router.post('/merchants/:id/settlements', authenticateAdmin, adminController.settleAdminMerchant);
+router.patch('/merchant-settlements/:id/sent', authenticateAdmin, adminController.markMerchantSettlementAsSent);
 router.get('/delegates', adminController.getAdminDelegates);
 router.patch('/delegates/:id/status', adminController.updateAdminDelegateStatus);
 router.get('/parcel-distribution', adminController.getParcelDistribution);

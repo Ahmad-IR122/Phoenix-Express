@@ -2,6 +2,9 @@
 
 const {
   Customer,
+  MerchantSettlement,
+  Order,
+  Region,
   User,
   IndividualCustomerProfile,
   CompanyCustomerProfile,
@@ -11,8 +14,11 @@ const {
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase();
 const normalizePhone = (value) => String(value || "").trim();
 const normalizeName = (value) => String(value || "").trim();
+const normalizeText = (value) => String(value || "").trim();
+const toNumber = (value) => Number(value || 0);
 const DEFAULT_CUSTOMER_NAME = "\u0639\u0645\u064A\u0644 \u0641\u064A\u0646\u0648\u0643\u0633";
 const DEFAULT_COMPANY_NAME = "\u0634\u0631\u0643\u0629 \u0641\u064A\u0646\u0648\u0643\u0633";
+const ALLOWED_SETTLEMENT_METHODS = ["cash", "bank_transfer", "ewallet"];
 
 const getEmailLocalPart = (email) => normalizeEmail(email).split("@")[0];
 
@@ -87,6 +93,93 @@ const customerIncludes = [
     as: "company_profile",
   },
 ];
+
+const mapMerchantSettlement = (settlement) => ({
+  id: settlement.id,
+  amount: toNumber(settlement.amount),
+  status: settlement.status,
+  payment_method: settlement.payment_method || "cash",
+  settled_at: settlement.settled_at,
+  requested_at: settlement.requested_at,
+  customer_confirmed_at: settlement.customer_confirmed_at,
+  bank_name: settlement.bank_name || "",
+  bank_account_holder: settlement.bank_account_holder || "",
+  bank_account_number: settlement.bank_account_number || "",
+  bank_iban: settlement.bank_iban || "",
+  notes: settlement.notes || "",
+  created_at: settlement.createdAt,
+});
+
+const getCustomerSettlementSummary = async (customerId) => {
+  const [deliveredFinancials, settlements] = await Promise.all([
+    Order.findAll({
+      attributes: [
+        [
+          sequelize.fn(
+            "SUM",
+            sequelize.literal('COALESCE("Order"."declared_value", 0)')
+          ),
+          "merchant_due",
+        ],
+        [
+          sequelize.fn(
+            "SUM",
+            sequelize.literal('COALESCE("region"."price", 0)')
+          ),
+          "phoenix_commission",
+        ],
+      ],
+      where: {
+        customer_id: customerId,
+        status: "delivered",
+      },
+      include: [
+        {
+          model: Region,
+          as: "region",
+          attributes: [],
+          required: false,
+        },
+      ],
+      raw: true,
+    }),
+    MerchantSettlement.findAll({
+      where: { customer_id: customerId },
+      order: [["createdAt", "DESC"]],
+    }),
+  ]);
+
+  const financialRow = deliveredFinancials?.[0] || {};
+  const merchantDue = toNumber(financialRow.merchant_due);
+  const phoenixCommission = toNumber(financialRow.phoenix_commission);
+  const totalCollected = merchantDue + phoenixCommission;
+  const settledAmount = settlements
+    .filter((settlement) => settlement.status === "settled")
+    .reduce((sum, settlement) => sum + toNumber(settlement.amount), 0);
+  const pendingAmount = settlements
+    .filter((settlement) => ["pending", "requested"].includes(settlement.status))
+    .reduce((sum, settlement) => sum + toNumber(settlement.amount), 0);
+  const remainingAmount = Math.max(merchantDue - settledAmount, 0);
+  const availableRequestAmount = Math.max(merchantDue - settledAmount - pendingAmount, 0);
+
+  return {
+    total_collected: totalCollected,
+    merchant_due: merchantDue,
+    phoenix_commission: phoenixCommission,
+    total_settled_amount: settledAmount,
+    pending_settlement_amount: pendingAmount,
+    remaining_settlement_amount: remainingAmount,
+    available_settlement_request_amount: availableRequestAmount,
+    settlements: settlements.map(mapMerchantSettlement),
+  };
+};
+
+const getAuthenticatedCustomer = async (userId, transaction = undefined) =>
+  Customer.findOne({
+    where: { user_id: userId },
+    include: customerIncludes,
+    transaction,
+  });
 
 const getProfilePayload = (body = {}, customerType) => {
   if (customerType === "individual") {
@@ -453,6 +546,177 @@ const updateAuthenticatedCustomerProfile = async (req, res) => {
   }
 };
 
+const getAuthenticatedCustomerSettlements = async (req, res) => {
+  try {
+    const customer = await getAuthenticatedCustomer(req.user.id);
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: "Customer profile not found",
+      });
+    }
+
+    const summary = await getCustomerSettlementSummary(customer.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Customer settlements fetched successfully",
+      data: summary,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch customer settlements",
+      errors: [error.message],
+    });
+  }
+};
+
+const requestAuthenticatedCustomerSettlement = async (req, res) => {
+  try {
+    const customer = await getAuthenticatedCustomer(req.user.id);
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: "Customer profile not found",
+      });
+    }
+
+    const summary = await getCustomerSettlementSummary(customer.id);
+    const availableAmount = toNumber(summary.available_settlement_request_amount);
+    const requestedAmount = toNumber(req.body?.amount);
+    const amount = requestedAmount > 0 ? requestedAmount : availableAmount;
+    const paymentMethod = normalizeText(req.body?.payment_method);
+    const bankName = normalizeText(req.body?.bank_name);
+    const bankAccountHolder = normalizeText(req.body?.bank_account_holder);
+    const bankAccountNumber = normalizeText(req.body?.bank_account_number);
+    const bankIban = normalizeText(req.body?.bank_iban);
+    const notes = normalizeText(req.body?.notes) || null;
+
+    if (availableAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No amount is currently available for settlement",
+      });
+    }
+
+    if (amount <= 0 || amount > availableAmount) {
+      return res.status(400).json({
+        success: false,
+        message: "Settlement amount must be greater than zero and within the available balance",
+      });
+    }
+
+    if (!ALLOWED_SETTLEMENT_METHODS.includes(paymentMethod)) {
+      return res.status(400).json({
+        success: false,
+        message: "A valid settlement method is required",
+      });
+    }
+
+    if (paymentMethod === "bank_transfer" && (!bankName || !bankAccountHolder || !bankAccountNumber)) {
+      return res.status(400).json({
+        success: false,
+        message: "Bank name, account holder, and account number are required",
+      });
+    }
+
+    const settlement = await MerchantSettlement.create({
+      customer_id: customer.id,
+      amount,
+      status: "requested",
+      payment_method: paymentMethod,
+      requested_at: new Date(),
+      bank_name: paymentMethod === "bank_transfer" ? bankName : null,
+      bank_account_holder: paymentMethod === "bank_transfer" ? bankAccountHolder : null,
+      bank_account_number: paymentMethod === "bank_transfer" ? bankAccountNumber : null,
+      bank_iban: paymentMethod === "bank_transfer" ? bankIban || null : null,
+      notes,
+    });
+
+    const refreshedSummary = await getCustomerSettlementSummary(customer.id);
+
+    return res.status(201).json({
+      success: true,
+      message: "Settlement request submitted successfully",
+      data: {
+        settlement: mapMerchantSettlement(settlement),
+        summary: refreshedSummary,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to request settlement",
+      errors: [error.message],
+    });
+  }
+};
+
+const confirmAuthenticatedCustomerSettlement = async (req, res) => {
+  try {
+    const customer = await getAuthenticatedCustomer(req.user.id);
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: "Customer profile not found",
+      });
+    }
+
+    const settlement = await MerchantSettlement.findOne({
+      where: {
+        id: req.params.id,
+        customer_id: customer.id,
+      },
+    });
+
+    if (!settlement) {
+      return res.status(404).json({
+        success: false,
+        message: "Settlement request not found",
+      });
+    }
+
+    if (settlement.status !== "settled") {
+      return res.status(400).json({
+        success: false,
+        message: "Settlement must be marked as sent before confirmation",
+      });
+    }
+
+    if (settlement.customer_confirmed_at) {
+      return res.status(400).json({
+        success: false,
+        message: "Settlement receipt is already confirmed",
+      });
+    }
+
+    await settlement.update({
+      customer_confirmed_at: new Date(),
+    });
+
+    const refreshedSummary = await getCustomerSettlementSummary(customer.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Settlement receipt confirmed successfully",
+      data: {
+        settlement: mapMerchantSettlement(settlement),
+        summary: refreshedSummary,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to confirm settlement receipt",
+      errors: [error.message],
+    });
+  }
+};
+
 const updateCustomer = async (req, res) => {
   const transaction = await sequelize.transaction();
 
@@ -622,6 +886,9 @@ module.exports = {
   findCustomerById,
   getAuthenticatedCustomerProfile,
   updateAuthenticatedCustomerProfile,
+  getAuthenticatedCustomerSettlements,
+  requestAuthenticatedCustomerSettlement,
+  confirmAuthenticatedCustomerSettlement,
   updateCustomer,
   deleteCustomer,
 };

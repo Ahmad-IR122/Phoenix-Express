@@ -35,6 +35,30 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: true,
       },
+      requested_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      customer_confirmed_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      bank_name: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      bank_account_holder: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      bank_account_number: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      bank_iban: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       notes: {
         type: DataTypes.TEXT,
         allowNull: true,

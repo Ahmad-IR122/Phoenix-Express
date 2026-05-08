@@ -18,6 +18,21 @@ export const getCustomerOrders = async () => {
   return response.data;
 };
 
+export const getCustomerSettlements = async () => {
+  const response = await API.get("/customers/settlements/me");
+  return response.data;
+};
+
+export const requestCustomerSettlement = async (payload) => {
+  const response = await API.post("/customers/settlements/me/request", payload);
+  return response.data;
+};
+
+export const confirmCustomerSettlement = async (settlementId) => {
+  const response = await API.patch(`/customers/settlements/me/${settlementId}/confirm`);
+  return response.data;
+};
+
 export const updateCustomerOrder = async (orderId, payload) => {
   const response = await API.put(`/orders/me/${orderId}`, payload);
   return response.data;

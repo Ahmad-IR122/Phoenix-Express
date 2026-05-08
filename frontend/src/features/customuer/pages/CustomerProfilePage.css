@@ -70,6 +70,7 @@
 
 .customer-orders-card,
 .customer-info-card,
+.customer-settlements-card,
 .customer-password-card {
   background: #ffffff;
   border-radius: 14px;
@@ -282,6 +283,7 @@
 }
 
 .customer-info-card,
+.customer-settlements-card,
 .customer-password-card {
   padding: 1.75rem 2rem;
 }
@@ -390,6 +392,199 @@
   line-height: 1.7;
 }
 
+.customer-settlements-card {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.customer-settlement-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.customer-settlement-summary div {
+  min-height: 96px;
+  padding: 0.95rem;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #f8fcff 0%, #ffffff 100%);
+}
+
+.customer-settlement-summary span,
+.customer-settlement-form span {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: #64748b;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.customer-settlement-summary strong {
+  color: #38b6ff;
+  font-size: 1.12rem;
+  font-weight: 950;
+}
+
+.customer-settlement-form {
+  padding: 1rem;
+  border: 1px solid #e3edf8;
+  border-radius: 13px;
+  background: #f8fbff;
+}
+
+.customer-settlement-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.customer-settlement-form label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.customer-settlement-form input,
+.customer-settlement-form select,
+.customer-settlement-form textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 0.68rem 0.85rem;
+  border: 1px solid #cfd6df;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+  font-size: 0.94rem;
+}
+
+.customer-settlement-form textarea {
+  min-height: 86px;
+  resize: vertical;
+}
+
+.customer-settlement-notes {
+  grid-column: 1 / -1;
+}
+
+.customer-settlement-submit,
+.customer-settlement-confirm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 0;
+  border-radius: 9px;
+  color: #ffffff;
+  font-family: inherit;
+  font-weight: 900;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.customer-settlement-submit {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 0.9rem;
+  background: #38b6ff;
+}
+
+.customer-settlement-confirm {
+  min-height: 38px;
+  padding: 0.5rem 0.85rem;
+  background: #08c854;
+}
+
+.customer-settlement-submit:hover,
+.customer-settlement-confirm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.75rem 1.25rem rgba(15, 23, 42, 0.14);
+}
+
+.customer-settlement-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
+  box-shadow: none;
+}
+
+.customer-settlement-history {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.customer-settlement-history h3 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.05rem;
+  font-weight: 950;
+}
+
+.customer-settlement-record {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.95rem;
+  border: 1px solid #dbe2ea;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+.customer-settlement-record > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.customer-settlement-record strong {
+  color: #38b6ff;
+  font-weight: 950;
+}
+
+.customer-settlement-record p,
+.customer-settlement-record small,
+.customer-settlement-message {
+  margin: 0;
+  color: #64748b;
+  font-weight: 800;
+  line-height: 1.7;
+}
+
+.customer-settlement-record small {
+  display: block;
+  font-size: 0.82rem;
+}
+
+.customer-settlement-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  color: #1465ff;
+  background: #dbeaff;
+  font-size: 0.82rem;
+  font-weight: 950;
+}
+
+.customer-settlement-status.settled {
+  color: #07943b;
+  background: #d9fbe6;
+}
+
+.customer-settlement-status.pending,
+.customer-settlement-status.requested {
+  color: #9a5b00;
+  background: #fff7e6;
+}
+
+.customer-settlement-message {
+  padding: 1rem;
+  border: 1px solid #e5edf4;
+  border-radius: 9px;
+  background: #f8fbff;
+  text-align: center;
+}
+
 .customer-password-form {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -475,9 +670,15 @@
   }
 
   .customer-info-card,
+  .customer-settlements-card,
   .customer-password-card,
   .customer-orders-card {
     padding: 1.4rem;
+  }
+
+  .customer-settlement-summary,
+  .customer-settlement-form-grid {
+    grid-template-columns: 1fr;
   }
 
   .customer-password-form {

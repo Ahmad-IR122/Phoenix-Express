@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import API from "../../../apis/api";
-import { settleMerchant } from "../services/adminService";
+import { markMerchantSettlementSent, settleMerchant } from "../services/adminService";
 import "./MerchantsPage.css";
 
 const STATUS_LABELS = {
@@ -62,7 +62,16 @@ const normalizeMerchant = (merchant) => ({
     merchant.settlement_status_label ||
     STATUS_LABELS[merchant.settlement_status] ||
     "غير نشط",
-  settlements: Array.isArray(merchant.settlements) ? merchant.settlements : [],
+  settlements: Array.isArray(merchant.settlements)
+    ? merchant.settlements.map((settlement) => ({
+        ...settlement,
+        amount: Number(settlement.amount) || 0,
+        bank_name: settlement.bank_name || "",
+        bank_account_holder: settlement.bank_account_holder || "",
+        bank_account_number: settlement.bank_account_number || "",
+        bank_iban: settlement.bank_iban || "",
+      }))
+    : [],
 });
 
 function MerchantsPage() {
@@ -74,6 +83,7 @@ function MerchantsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isSettling, setIsSettling] = useState(false);
+  const [markingSettlementId, setMarkingSettlementId] = useState(null);
   const [error, setError] = useState("");
   const [settlementFeedback, setSettlementFeedback] = useState({ message: "", type: "" });
   const [settlementForm, setSettlementForm] = useState({
@@ -152,7 +162,9 @@ function MerchantsPage() {
     const phoenixCommission = Math.max(totalRevenue - pendingSettlements, 0);
     const totalMerchants = merchants.length;
     const totalParcels = merchants.reduce((sum, item) => sum + item.totalOrders, 0);
-    const pendingSettlement = merchants.filter((item) => item.status === "pending").length;
+    const pendingSettlement = merchants.filter((item) =>
+      ["pending", "requested"].includes(item.status)
+    ).length;
 
     return {
       totalRevenue,
@@ -225,6 +237,39 @@ function MerchantsPage() {
       });
     } finally {
       setIsSettling(false);
+    }
+  };
+
+  const handleMarkSettlementSent = async (settlementId) => {
+    if (!selectedMerchant) return;
+
+    try {
+      setMarkingSettlementId(settlementId);
+      setSettlementFeedback({ message: "", type: "" });
+
+      const response = await markMerchantSettlementSent(settlementId);
+      const updatedMerchant = normalizeMerchant(response?.data?.merchant || selectedMerchant);
+
+      setSettlementFeedback({
+        message: response?.message || "\u062a\u0645 \u062a\u0633\u062c\u064a\u0644 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u062a\u0633\u0648\u064a\u0629 \u0628\u0646\u062c\u0627\u062d.",
+        type: "success",
+      });
+
+      setMerchants((current) =>
+        current.map((merchant) => (merchant.id === updatedMerchant.id ? updatedMerchant : merchant))
+      );
+
+      await loadMerchants();
+      await loadMerchantDetails(updatedMerchant.id, updatedMerchant);
+    } catch (requestError) {
+      setSettlementFeedback({
+        message:
+          requestError?.response?.data?.message ||
+          "\u062a\u0639\u0630\u0631 \u062a\u0633\u062c\u064a\u0644 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u062a\u0633\u0648\u064a\u0629 \u062d\u0627\u0644\u064a\u0627\u064b.",
+        type: "error",
+      });
+    } finally {
+      setMarkingSettlementId(null);
     }
   };
 
@@ -652,6 +697,31 @@ function MerchantsPage() {
                                 ? `تمت الموافقة في ${new Date(settlement.settled_at).toLocaleString("ar-PS")}`
                                 : "بانتظار موافقة التاجر"}
                             </small>
+                            {settlement.payment_method === "bank_transfer" ? (
+                              <div className="phoenix-merchants__settlement-bank">
+                                <span>{`\u0627\u0644\u0628\u0646\u0643: ${settlement.bank_name || "-"}`}</span>
+                                <span>{`\u0635\u0627\u062d\u0628 \u0627\u0644\u062d\u0633\u0627\u0628: ${settlement.bank_account_holder || "-"}`}</span>
+                                <span>{`\u0631\u0642\u0645 \u0627\u0644\u062d\u0633\u0627\u0628: ${settlement.bank_account_number || "-"}`}</span>
+                                {settlement.bank_iban ? <span>{`IBAN: ${settlement.bank_iban}`}</span> : null}
+                              </div>
+                            ) : null}
+                            {settlement.customer_confirmed_at ? (
+                              <small>
+                                {`\u0623\u0643\u062f \u0627\u0644\u062a\u0627\u062c\u0631 \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645 \u0641\u064a ${new Date(settlement.customer_confirmed_at).toLocaleString("ar-PS")}`}
+                              </small>
+                            ) : null}
+                            {settlement.status !== "settled" ? (
+                              <button
+                                type="button"
+                                className="phoenix-merchants__settle-btn phoenix-merchants__settle-btn--compact"
+                                disabled={markingSettlementId === settlement.id}
+                                onClick={() => handleMarkSettlementSent(settlement.id)}
+                              >
+                                {markingSettlementId === settlement.id
+                                  ? "\u062c\u0627\u0631\u064a \u0627\u0644\u062a\u062d\u062f\u064a\u062b..."
+                                  : "\u062a\u0645 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u062a\u0633\u0648\u064a\u0629"}
+                              </button>
+                            ) : null}
                           </div>
                         ))}
                       </div>
