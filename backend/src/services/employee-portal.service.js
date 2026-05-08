@@ -16,6 +16,7 @@ const {
   sequelize,
 } = require('../models');
 const { STATUS_LABELS } = require('./employee-dashboard.service');
+const { notifyAdmins } = require('./notification.service');
 
 const EMPLOYEE_ORDER_STATUS = {
   accepted: { status: 'available', statusLabel: 'متاحة' },
@@ -26,6 +27,8 @@ const EMPLOYEE_ORDER_STATUS = {
   delivered: { status: 'completed', statusLabel: 'مكتملة' },
   returned: { status: 'returned', statusLabel: 'مرتجعة' },
 };
+
+EMPLOYEE_ORDER_STATUS.cancelled = { status: 'cancelled', statusLabel: 'ملغاة' };
 
 const EMPLOYEE_AVAILABILITY_LABELS = {
   available: 'متاح',
@@ -772,6 +775,28 @@ const updateEmployeeOrderStatus = async ({ userId, shipmentId, status, currentLo
     }
   });
 
+  if (transition.nextStatus === 'returned') {
+    await notifyAdmins({
+      type: 'returned_shipment_created',
+      title: 'شحنة مرتجعة جديدة تحتاج متابعة',
+      body: `تم تحويل الشحنة رقم ${shipment.tracking_number || `PHX-${shipment.id}`} إلى حالة مرتجعة.`,
+      entityType: 'shipment',
+      entityId: shipment.id,
+      actionUrl: '/admin/returned-shipments',
+    });
+  }
+
+  if (transition.nextStatus === 'delivered') {
+    await notifyAdmins({
+      type: 'shipment_delivered_by_employee',
+      title: `تمت الطلبية بواسطة ${employee.full_name || 'الموظف'}`,
+      body: `أكمل ${employee.full_name || 'الموظف'} تسليم الطلبية رقم ${shipment.tracking_number || `PHX-${shipment.id}`}.`,
+      entityType: 'shipment',
+      entityId: shipment.id,
+      actionUrl: '/admin/parcel-distribution',
+    });
+  }
+
   const updatedShipment = await Shipment.findOne({
     where: {
       id: shipmentId,
@@ -1113,6 +1138,15 @@ const createEmployeeWithdrawalRequest = async ({ userId, amount, withdrawalMetho
     amount: numericAmount,
     withdrawal_method: normalizedMethod,
     status: 'pending',
+  });
+
+  await notifyAdmins({
+    type: 'delegate_handover_request_created',
+    title: `طلب تسليم مبلغ جديد من ${employee.full_name || 'مندوب'}`,
+    body: `تم إرسال طلب تسليم مبلغ بقيمة ${numericAmount} شيكل ويحتاج إلى مراجعة الأدمن.`,
+    entityType: 'withdrawal_request',
+    entityId: request.id,
+    actionUrl: '/admin/handover-requests',
   });
 
   return {

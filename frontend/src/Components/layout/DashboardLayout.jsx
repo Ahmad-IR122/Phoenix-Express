@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DashboardHeader from "./DashboardHeader";
 import DashboardSidebar from "./DashboardSidebar";
 import "../../styles/dashboard.css";
@@ -12,12 +12,28 @@ function DashboardLayout({
   pageDate,
   notificationCount,
   notifications,
+  onNotificationClick,
+  onMarkAllNotificationsAsRead,
   user,
   employeeName,
   onLogout,
   children,
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isSidebarOpen) {
+      document.body.style.overflow = "";
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isSidebarOpen]);
 
   return (
     <div dir="rtl" className={`phoenix-layout ${layoutType}`}>
@@ -29,7 +45,6 @@ function DashboardLayout({
           activeKey={activeKey}
           onNavigate={onNavigate}
           user={user}
-          onLogout={onLogout}
         />
       </aside>
 
@@ -38,6 +53,8 @@ function DashboardLayout({
           layoutType={layoutType}
           notificationCount={notificationCount}
           notifications={notifications}
+          onNotificationClick={onNotificationClick}
+          onMarkAllNotificationsAsRead={onMarkAllNotificationsAsRead}
           customDate={pageDate}
           employeeName={employeeName}
           onLogout={onLogout}
@@ -70,10 +87,6 @@ function DashboardLayout({
             >
               <i className="bi bi-x-lg"></i>
             </button>
-
-            <strong dir="rtl" className="phoenix-mobile-panel__title">
-              {brand.name}
-            </strong>
           </div>
 
           <DashboardSidebar
@@ -83,7 +96,6 @@ function DashboardLayout({
             activeKey={activeKey}
             onNavigate={onNavigate}
             user={user}
-            onLogout={onLogout}
             isMobile
             onClose={() => setIsSidebarOpen(false)}
           />

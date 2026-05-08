@@ -17,6 +17,7 @@ const vehicleRoutes = require("./routes/vehicle.routes");
 const walletRoutes = require("./routes/wallet.routes");
 const supportChatRoutes = require("./routes/supportChat.routes");
 const newsletterRoutes = require("./routes/newsletter.routes");
+const notificationRoutes = require("./routes/notification.routes");
 const qrCodeRoutes = require("./routes/generateQr.routes");
 app.use(
   cors({
@@ -41,6 +42,7 @@ app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/wallets', walletRoutes);
 app.use('/api/support-chat', supportChatRoutes);
 app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/api/generate-qr', qrCodeRoutes);
 /*   <!-- END of AHMAD code  --> */
 

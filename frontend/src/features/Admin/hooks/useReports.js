@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getAdminReports, getReturnedOrders } from "../services/reportsService";
 
 const initialFilters = {
+  search: "",
   orderNumber: "",
   merchantName: "",
   customerName: "",
@@ -29,6 +30,19 @@ function formatRangeDate(value) {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
+  }).format(new Date(value));
+}
+
+function formatArabicMonthYear(value) {
+  return new Intl.DateTimeFormat("ar-EG", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatArabicYear(value) {
+  return new Intl.DateTimeFormat("ar-EG", {
+    year: "numeric",
   }).format(new Date(value));
 }
 
@@ -161,6 +175,21 @@ export function useReports() {
 
   const filteredReports = useMemo(() => {
     return reports.filter((report) => {
+      const globalSearch = normalize(filters.search);
+      const matchesSearch =
+        !globalSearch ||
+        [
+          report.orderNumber,
+          report.merchantName,
+          report.customerName,
+          report.delegateName,
+          report.phone,
+          report.city,
+          report.area,
+          report.status,
+          report.paymentMethod,
+        ].some((value) => normalize(value).includes(globalSearch));
+
       const matchesOrderNumber =
         !normalize(filters.orderNumber) ||
         normalize(report.orderNumber).includes(normalize(filters.orderNumber));
@@ -177,13 +206,12 @@ export function useReports() {
         !normalize(filters.delegateName) ||
         normalize(report.delegateName).includes(normalize(filters.delegateName));
 
-      const matchesStatus =
-        filters.status === "all" || report.status === filters.status;
-
+      const matchesStatus = filters.status === "all" || report.status === filters.status;
       const matchesCity = filters.city === "all" || report.city === filters.city;
       const matchesDate = withinDateRange(report.createdAt, filters.dateFrom, filters.dateTo);
 
       return (
+        matchesSearch &&
         matchesOrderNumber &&
         matchesMerchant &&
         matchesCustomer &&
@@ -197,6 +225,21 @@ export function useReports() {
 
   const filteredReturnedOrders = useMemo(() => {
     return returnedOrders.filter((item) => {
+      const globalSearch = normalize(filters.search);
+      const matchesSearch =
+        !globalSearch ||
+        [
+          item.orderNumber,
+          item.merchantName,
+          item.customerName,
+          item.delegateName,
+          item.phone,
+          item.city,
+          item.area,
+          item.status,
+          item.paymentMethod,
+        ].some((value) => normalize(value).includes(globalSearch));
+
       const matchesOrderNumber =
         !normalize(filters.orderNumber) ||
         normalize(item.orderNumber).includes(normalize(filters.orderNumber));
@@ -218,6 +261,7 @@ export function useReports() {
       const matchesDate = withinDateRange(item.returnedAt, filters.dateFrom, filters.dateTo);
 
       return (
+        matchesSearch &&
         matchesOrderNumber &&
         matchesMerchant &&
         matchesCustomer &&
@@ -309,28 +353,28 @@ export function useReports() {
         id: "weekly-profit",
         label: "الأرباح الأسبوعية",
         value: formatCurrency(weeklyProfit),
-        note: `من ${formatRangeDate(weekStart)} إلى ${formatRangeDate(weekEnd)}`,
-        period: `الفترة: ${formatRangeDate(weekStart)} - ${formatRangeDate(weekEnd)}`,
+        note: `${formatRangeDate(weekStart)} - ${formatRangeDate(weekEnd)}`,
+        period: `${formatRangeDate(weekStart)} - ${formatRangeDate(weekEnd)}`,
         icon: "bi-cash-stack",
         iconClass: "phoenix-reports__summary-icon--blue",
         variant: "profit",
       },
       {
         id: "monthly-profit",
-        label: "الأرباح الشهرية",
+        label: `أرباح ${formatArabicMonthYear(now)}`,
         value: formatCurrency(monthlyProfit),
-        note: `من ${formatRangeDate(monthStart)} إلى ${formatRangeDate(monthEnd)}`,
-        period: `الفترة: ${formatRangeDate(monthStart)} - ${formatRangeDate(monthEnd)}`,
+        note: `${formatRangeDate(monthStart)} - ${formatRangeDate(monthEnd)}`,
+        period: `${formatRangeDate(monthStart)} - ${formatRangeDate(monthEnd)}`,
         icon: "bi-bank",
         iconClass: "phoenix-reports__summary-icon--indigo",
         variant: "profit",
       },
       {
         id: "yearly-profit",
-        label: "الأرباح السنوية",
+        label: `أرباح ${formatArabicYear(now)}`,
         value: formatCurrency(yearlyProfit),
-        note: `من ${formatRangeDate(yearStart)} إلى ${formatRangeDate(yearEnd)}`,
-        period: `الفترة: ${formatRangeDate(yearStart)} - ${formatRangeDate(yearEnd)}`,
+        note: `${formatRangeDate(yearStart)} - ${formatRangeDate(yearEnd)}`,
+        period: `${formatRangeDate(yearStart)} - ${formatRangeDate(yearEnd)}`,
         icon: "bi-shop-window",
         iconClass: "phoenix-reports__summary-icon--green",
         variant: "profit",

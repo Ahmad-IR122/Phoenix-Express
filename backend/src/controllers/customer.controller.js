@@ -10,6 +10,7 @@ const {
   CompanyCustomerProfile,
   sequelize,
 } = require("../models");
+const { notifyAdmins } = require("../services/notification.service");
 
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase();
 const normalizePhone = (value) => String(value || "").trim();
@@ -110,6 +111,8 @@ const mapMerchantSettlement = (settlement) => ({
   created_at: settlement.createdAt,
 });
 
+const OPEN_SETTLEMENT_STATUSES = ["pending", "requested"];
+
 const getCustomerSettlementSummary = async (customerId) => {
   const [deliveredFinancials, settlements] = await Promise.all([
     Order.findAll({
@@ -157,7 +160,7 @@ const getCustomerSettlementSummary = async (customerId) => {
     .filter((settlement) => settlement.status === "settled")
     .reduce((sum, settlement) => sum + toNumber(settlement.amount), 0);
   const pendingAmount = settlements
-    .filter((settlement) => ["pending", "requested"].includes(settlement.status))
+    .filter((settlement) => OPEN_SETTLEMENT_STATUSES.includes(settlement.status))
     .reduce((sum, settlement) => sum + toNumber(settlement.amount), 0);
   const remainingAmount = Math.max(merchantDue - settledAmount, 0);
   const availableRequestAmount = Math.max(merchantDue - settledAmount - pendingAmount, 0);
@@ -623,10 +626,25 @@ const requestAuthenticatedCustomerSettlement = async (req, res) => {
       });
     }
 
+    const existingOpenSettlement = await MerchantSettlement.findOne({
+      where: {
+        customer_id: customer.id,
+        status: OPEN_SETTLEMENT_STATUSES,
+      },
+      order: [["createdAt", "DESC"]],
+    });
+
+    if (existingOpenSettlement) {
+      return res.status(400).json({
+        success: false,
+        message: "There is already an open settlement request awaiting admin or merchant action",
+      });
+    }
+
     const settlement = await MerchantSettlement.create({
       customer_id: customer.id,
       amount,
-      status: "requested",
+      status: "pending",
       payment_method: paymentMethod,
       requested_at: new Date(),
       bank_name: paymentMethod === "bank_transfer" ? bankName : null,
@@ -634,6 +652,22 @@ const requestAuthenticatedCustomerSettlement = async (req, res) => {
       bank_account_number: paymentMethod === "bank_transfer" ? bankAccountNumber : null,
       bank_iban: paymentMethod === "bank_transfer" ? bankIban || null : null,
       notes,
+    });
+
+    const merchantName =
+      customer.company_profile?.company_name ||
+      customer.individual_profile?.full_name ||
+      customer.user?.full_name ||
+      customer.user?.email ||
+      "تاجر";
+
+    await notifyAdmins({
+      type: "merchant_settlement_requested",
+      title: `طلب تسوية جديد من ${merchantName}`,
+      body: `تم إرسال طلب تسوية بقيمة ${amount} شيكل ويحتاج إلى مراجعة الأدمن.`,
+      entityType: "merchant_settlement",
+      entityId: settlement.id,
+      actionUrl: "/admin/merchants",
     });
 
     const refreshedSummary = await getCustomerSettlementSummary(customer.id);
@@ -680,10 +714,10 @@ const confirmAuthenticatedCustomerSettlement = async (req, res) => {
       });
     }
 
-    if (settlement.status !== "settled") {
+    if (settlement.status !== "requested") {
       return res.status(400).json({
         success: false,
-        message: "Settlement must be marked as sent before confirmation",
+        message: "Settlement must be sent by admin before confirmation",
       });
     }
 
@@ -695,6 +729,7 @@ const confirmAuthenticatedCustomerSettlement = async (req, res) => {
     }
 
     await settlement.update({
+      status: "settled",
       customer_confirmed_at: new Date(),
     });
 

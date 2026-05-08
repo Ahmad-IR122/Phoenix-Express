@@ -150,9 +150,33 @@ const matchesOrderFilter = (order, filter) => {
 };
 
 const settlementStatusLabels = {
-  requested: "\u0628\u0627\u0646\u062a\u0638\u0627\u0631 \u0645\u0639\u0627\u0644\u062c\u0629 \u0627\u0644\u0625\u062f\u0627\u0631\u0629",
-  pending: "\u0642\u064a\u062f \u0627\u0644\u0645\u0631\u0627\u062c\u0639\u0629",
-  settled: "\u062a\u0645 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u062a\u0633\u0648\u064a\u0629",
+  pending: "\u0637\u0644\u0628\u0643 \u0642\u064a\u062f \u0645\u0631\u0627\u062c\u0639\u0629 \u0627\u0644\u0625\u062f\u0627\u0631\u0629",
+  requested: "\u062a\u0645 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u062a\u0633\u0648\u064a\u0629 \u0648\u0628\u0627\u0646\u062a\u0638\u0627\u0631 \u062a\u0623\u0643\u064a\u062f\u0643",
+  settled: "\u062a\u0645\u062a \u0627\u0644\u062a\u0633\u0648\u064a\u0629",
+  received: "\u062a\u0645\u062a \u0627\u0644\u062a\u0633\u0648\u064a\u0629",
+};
+
+const normalizeSettlementStatus = (status) => (status === "received" ? "settled" : status);
+
+const getSettlementNarrative = (settlement) => {
+  if (
+    (settlement.status === "settled" || settlement.status === "received") &&
+    settlement.customer_confirmed_at
+  ) {
+    return `\u0623\u0643\u062f\u062a \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645 \u0628\u062a\u0627\u0631\u064a\u062e ${formatSettlementDate(settlement.customer_confirmed_at)}`;
+  }
+
+  if (settlement.status === "requested") {
+    return settlement.settled_at
+      ? `\u062a\u0645 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u062a\u0633\u0648\u064a\u0629 \u0644\u0643 \u0628\u062a\u0627\u0631\u064a\u062e ${formatSettlementDate(settlement.settled_at)}. \u064a\u0631\u062c\u0649 \u062a\u0623\u0643\u064a\u062f \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645 \u0644\u0625\u063a\u0644\u0627\u0642\u0647\u0627.`
+      : "\u062a\u0645\u062a \u0627\u0644\u0645\u0648\u0627\u0641\u0642\u0629 \u0639\u0644\u0649 \u0627\u0644\u062a\u0633\u0648\u064a\u0629 \u0648\u0647\u064a \u0628\u0627\u0646\u062a\u0638\u0627\u0631 \u062a\u0623\u0643\u064a\u062f\u0643 \u0644\u0644\u0627\u0633\u062a\u0644\u0627\u0645.";
+  }
+
+  if (settlement.status === "pending") {
+    return "\u0623\u0631\u0633\u0644\u062a \u0637\u0644\u0628 \u062a\u0633\u0648\u064a\u0629 \u0644\u0644\u0625\u062f\u0627\u0631\u0629 \u0648\u0647\u0648 \u0627\u0644\u0622\u0646 \u0628\u0627\u0646\u062a\u0638\u0627\u0631 \u0627\u0644\u0645\u0631\u0627\u062c\u0639\u0629.";
+  }
+
+  return settlementStatusLabels[settlement.status] || settlement.status;
 };
 
 const settlementMethodLabels = {
@@ -875,15 +899,15 @@ const CustomerProfilePage = () => {
                 <>
                   <div className="customer-settlement-summary">
                     <div>
-                      <span>{"\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0645\u0628\u0627\u0644\u063a \u0627\u0644\u0645\u062d\u0635\u0644\u0629"}</span>
-                      <strong>{formatCurrency(settlementData.total_collected)}</strong>
+                      <span>{"\u0645\u0633\u062a\u062d\u0642\u0627\u062a\u0643 \u0645\u0646 \u0627\u0644\u0637\u0631\u0648\u062f \u0627\u0644\u0645\u0633\u0644\u0651\u0645\u0629"}</span>
+                      <strong>{formatCurrency(settlementData.merchant_due)}</strong>
                     </div>
                     <div>
-                      <span>{"\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u0633\u0648\u0649"}</span>
+                      <span>{"\u0627\u0644\u0645\u0628\u0644\u063a \u0627\u0644\u0645\u0633\u0648\u0651\u0649"}</span>
                       <strong>{formatCurrency(settlementData.total_settled_amount)}</strong>
                     </div>
                     <div>
-                      <span>{"\u0627\u0644\u0645\u062a\u0628\u0642\u064a"}</span>
+                      <span>{"\u0627\u0644\u0645\u062a\u0628\u0642\u064a \u0644\u0644\u062a\u0633\u0648\u064a\u0629"}</span>
                       <strong>{formatCurrency(settlementData.remaining_settlement_amount)}</strong>
                     </div>
                     <div>
@@ -989,14 +1013,15 @@ const CustomerProfilePage = () => {
                   <div className="customer-settlement-history">
                     <h3>{"\u0633\u062c\u0644 \u0627\u0644\u062a\u0633\u0648\u064a\u0627\u062a"}</h3>
                     {settlementData.settlements?.length ? (
-                      settlementData.settlements.map((settlement) => (
+                      settlementData.settlements.map((settlement) => {
+                        const normalizedStatus = normalizeSettlementStatus(settlement.status);
+
+                        return (
                         <article className="customer-settlement-record" key={settlement.id}>
                           <div>
                             <strong>{formatCurrency(settlement.amount)}</strong>
-                            <span className={`customer-settlement-status ${settlement.status}`}>
-                              {settlement.customer_confirmed_at
-                                ? "\u062a\u0645 \u062a\u0623\u0643\u064a\u062f \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645"
-                                : settlementStatusLabels[settlement.status] || settlement.status}
+                            <span className={`customer-settlement-status ${normalizedStatus}`}>
+                              {settlementStatusLabels[normalizedStatus] || normalizedStatus}
                             </span>
                           </div>
                           <p>
@@ -1012,24 +1037,30 @@ const CustomerProfilePage = () => {
                             {"\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u0637\u0644\u0628: "}
                             {formatSettlementDate(settlement.requested_at || settlement.created_at)}
                           </small>
+                          <small>
+                            {getSettlementNarrative({
+                              ...settlement,
+                              status: normalizedStatus,
+                            })}
+                          </small>
                           {settlement.settled_at ? (
                             <small>
                               {"\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u0625\u0631\u0633\u0627\u0644: "}
                               {formatSettlementDate(settlement.settled_at)}
                             </small>
                           ) : null}
-                          {settlement.status === "settled" && !settlement.customer_confirmed_at ? (
+                          {normalizedStatus === "requested" ? (
                             <button
                               type="button"
                               className="customer-settlement-confirm"
                               onClick={() => handleConfirmSettlementReceipt(settlement.id)}
                             >
                               <FiCheckCircle aria-hidden="true" />
-                              {"\u062a\u0645 \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645"}
+                              {"\u062a\u0623\u0643\u064a\u062f \u0627\u0633\u062a\u0644\u0627\u0645 \u0627\u0644\u062a\u0633\u0648\u064a\u0629"}
                             </button>
                           ) : null}
                         </article>
-                      ))
+                      )})
                     ) : (
                       <p className="customer-settlement-message">
                         {"\u0644\u0627 \u062a\u0648\u062c\u062f \u062a\u0633\u0648\u064a\u0627\u062a \u0645\u0633\u062c\u0644\u0629 \u062d\u0627\u0644\u064a\u0627\u064b."}

@@ -33,6 +33,14 @@ const STATUS_META = {
   },
 };
 
+STATUS_META.cancelled = {
+  label: 'ملغاة',
+  tone: 'returned',
+  group: 'returned',
+  cardActionLabel: 'الطلب ملغى',
+  detailsActionLabel: 'الطلب ملغى',
+};
+
 const FILTERS = [
   { key: 'all', label: 'الكل' },
   { key: 'available', label: 'متاحة' },
@@ -424,6 +432,14 @@ function EmployeeOrdersPage() {
             >
               تعذر التسليم
             </button>
+          ) : order.status === 'cancelled' ? (
+            <button
+              type="button"
+              className="employee-orders-page__confirm-btn employee-orders-page__confirm-btn--returned"
+              disabled
+            >
+              الطلب ملغى
+            </button>
           ) : (
             <div className="employee-orders-page__dual-actions">
               <button
@@ -687,13 +703,20 @@ function EmployeeOrdersPage() {
                             ? 'employee-orders-page__action-btn--completed'
                             : order.status === 'returned'
                               ? 'employee-orders-page__action-btn--returned'
-                              : 'employee-orders-page__action-btn--accept'
+                              : order.status === 'cancelled'
+                                ? 'employee-orders-page__action-btn--returned'
+                                : 'employee-orders-page__action-btn--accept'
                         }`}
                         onClick={(event) => {
                           event.stopPropagation();
                           handleCardAction(order);
                         }}
-                        disabled={order.status === 'completed' || order.status === 'returned' || updatingShipmentId === order.shipmentId}
+                        disabled={
+                          order.status === 'completed' ||
+                          order.status === 'returned' ||
+                          order.status === 'cancelled' ||
+                          updatingShipmentId === order.shipmentId
+                        }
                       >
                         {updatingShipmentId === order.shipmentId
                           ? 'جارٍ التحديث...'

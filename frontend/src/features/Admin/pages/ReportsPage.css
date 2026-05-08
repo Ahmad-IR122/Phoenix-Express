@@ -258,6 +258,10 @@
   gap: 8px;
 }
 
+.phoenix-reports__field--wide {
+  grid-column: span 2;
+}
+
 .phoenix-reports__field span {
   color: #475569;
   font-size: 0.72rem;

@@ -20,6 +20,7 @@ const {
   TrackingUpdate,
   sequelize,
 } = require("../models");
+const { notifyEmployee } = require("../services/notification.service");
 
 const ACTIVE_SHIPMENT_STATUSES = [
   "accepted",
@@ -221,9 +222,10 @@ const HANDOVER_METHOD_LABELS = {
   ewallet: "محفظة إلكترونية",
 };
 const MERCHANT_SETTLEMENT_STATUS_LABELS = {
-  pending: "بانتظار التسوية",
-  requested: "تم إرسال الطلب للتاجر",
+  pending: "طلب تسوية من التاجر",
+  requested: "بانتظار تأكيد التاجر",
   settled: "تمت التسوية",
+  awaiting_settlement: "مستحقات جاهزة للتسوية",
   inactive: "غير نشط",
 };
 const RETURNED_SHIPMENT_STATUS_LABELS = {
@@ -678,6 +680,16 @@ const assignParcelToDriver = async (req, res) => {
 
     await transaction.commit();
 
+    await notifyEmployee({
+      employeeId: employee.id,
+      type: "shipment_assigned_to_employee",
+      title: "تم إسناد شحنة جديدة لك",
+      body: `تم تعيين الطلب رقم ${order.id} لك للمتابعة والتوصيل.`,
+      entityType: "shipment",
+      entityId: shipment.id,
+      actionUrl: "/employee/orders",
+    });
+
     return res.status(200).json({
       success: true,
       message: "تم تخصيص الطرد للمندوب بنجاح",
@@ -956,6 +968,7 @@ const getAdminDashboard = async (req, res) => {
 };
 
 const buildMerchantStatusFromFinancials = ({
+  requestedSettlementAmount,
   merchantDue,
   settledAmount,
   pendingSettlementAmount,
@@ -966,10 +979,14 @@ const buildMerchantStatusFromFinancials = ({
   }
 
   if (pendingSettlementAmount > 0) {
+    return "pending";
+  }
+
+  if (requestedSettlementAmount > 0) {
     return "requested";
   }
 
-  return settledAmount >= merchantDue ? "settled" : "pending";
+  return settledAmount >= merchantDue ? "settled" : "awaiting_settlement";
 };
 
 const buildMerchantSummaryRow = ({
@@ -977,6 +994,7 @@ const buildMerchantSummaryRow = ({
   orderStats,
   deliveredFinancials,
   settledAmount,
+  requestedSettlementAmount,
   pendingSettlementAmount,
 }) => {
   const companyProfile = merchant.companyProfile || merchant.company_profile || null;
@@ -991,10 +1009,11 @@ const buildMerchantSummaryRow = ({
   const totalCollected = merchantDue + phoenixCommission;
   const remainingSettlementAmount = Math.max(merchantDue - settledAmount, 0);
   const availableSettlementRequestAmount = Math.max(
-    merchantDue - settledAmount - pendingSettlementAmount,
+    merchantDue - settledAmount - pendingSettlementAmount - requestedSettlementAmount,
     0
   );
   const settlementStatus = buildMerchantStatusFromFinancials({
+    requestedSettlementAmount,
     merchantDue,
     settledAmount,
     pendingSettlementAmount,
@@ -1020,6 +1039,7 @@ const buildMerchantSummaryRow = ({
     phoenix_commission: phoenixCommission,
     merchant_due: merchantDue,
     total_settled_amount: settledAmount,
+    requested_settlement_amount: requestedSettlementAmount,
     pending_settlement_amount: pendingSettlementAmount,
     outstanding_revenue: remainingSettlementAmount,
     remaining_settlement_amount: remainingSettlementAmount,
@@ -1140,9 +1160,16 @@ const getMerchantAggregationData = async ({ customerId = null } = {}) => {
           [
             sequelize.fn(
               "SUM",
-              sequelize.literal(`CASE WHEN "status" IN ('pending', 'requested') THEN COALESCE("amount", 0) ELSE 0 END`)
+              sequelize.literal(`CASE WHEN "status" = 'pending' THEN COALESCE("amount", 0) ELSE 0 END`)
             ),
             "pending_amount",
+          ],
+          [
+            sequelize.fn(
+              "SUM",
+              sequelize.literal(`CASE WHEN "status" = 'requested' THEN COALESCE("amount", 0) ELSE 0 END`)
+            ),
+            "requested_amount",
           ],
         ],
         where: orderWhere,
@@ -1163,6 +1190,7 @@ const getMerchantAggregationData = async ({ customerId = null } = {}) => {
       {
         settledAmount: toNumber(row.settled_amount),
         pendingAmount: toNumber(row.pending_amount),
+        requestedAmount: toNumber(row.requested_amount),
       },
     ])
   );
@@ -1174,6 +1202,7 @@ const getMerchantAggregationData = async ({ customerId = null } = {}) => {
         orderStats: orderStatsMap.get(merchant.id) || {},
         deliveredFinancials: deliveredFinancialsMap.get(merchant.id) || {},
         settledAmount: settlementMap.get(merchant.id)?.settledAmount || 0,
+        requestedSettlementAmount: settlementMap.get(merchant.id)?.requestedAmount || 0,
         pendingSettlementAmount: settlementMap.get(merchant.id)?.pendingAmount || 0,
       })
     )
@@ -1300,7 +1329,6 @@ const settleAdminMerchant = async (req, res) => {
     );
     const settlementAmount =
       requestedAmount > 0 ? requestedAmount : availableSettlementRequestAmount;
-    const status = "requested";
 
     if (settlementAmount <= 0) {
       return res.status(400).json({
@@ -1322,16 +1350,51 @@ const settleAdminMerchant = async (req, res) => {
         message: "A valid payment method is required",
       });
     }
-
-    const settlement = await MerchantSettlement.create({
-      customer_id: customerId,
-      amount: settlementAmount,
-      status,
-      payment_method: paymentMethod,
-      settled_at: null,
-      requested_at: new Date(),
-      notes,
+    const existingRequestedSettlement = await MerchantSettlement.findOne({
+      where: {
+        customer_id: customerId,
+        status: "requested",
+      },
+      order: [["createdAt", "DESC"]],
     });
+
+    if (existingRequestedSettlement) {
+      return res.status(400).json({
+        success: false,
+        message: "There is already a settlement awaiting merchant confirmation",
+      });
+    }
+
+    const existingPendingSettlement = await MerchantSettlement.findOne({
+      where: {
+        customer_id: customerId,
+        status: "pending",
+      },
+      order: [["createdAt", "DESC"]],
+    });
+
+    let settlement;
+
+    if (existingPendingSettlement) {
+      await existingPendingSettlement.update({
+        amount: settlementAmount,
+        status: "requested",
+        payment_method: paymentMethod || existingPendingSettlement.payment_method,
+        settled_at: new Date(),
+        notes: notes || existingPendingSettlement.notes,
+      });
+      settlement = existingPendingSettlement;
+    } else {
+      settlement = await MerchantSettlement.create({
+        customer_id: customerId,
+        amount: settlementAmount,
+        status: "requested",
+        payment_method: paymentMethod,
+        settled_at: new Date(),
+        requested_at: new Date(),
+        notes,
+      });
+    }
 
     const refreshedMerchants = await getMerchantAggregationData({ customerId });
     const refreshedMerchant = refreshedMerchants[0];
@@ -1386,12 +1449,19 @@ const markMerchantSettlementAsSent = async (req, res) => {
     if (settlement.status === "settled") {
       return res.status(400).json({
         success: false,
-        message: "Settlement is already marked as sent",
+        message: "Settlement is already closed",
+      });
+    }
+
+    if (settlement.status !== "pending") {
+      return res.status(400).json({
+        success: false,
+        message: "Only merchant-requested settlements can be marked as sent from this action",
       });
     }
 
     await settlement.update({
-      status: "settled",
+      status: "requested",
       settled_at: new Date(),
       notes: notes || settlement.notes,
     });
@@ -1626,7 +1696,8 @@ const getAdminReports = async (req, res) => {
       const shipment = order.shipment || null;
       const reportStatus = mapShipmentStatusToReportStatus(shipment?.current_status, order.status);
       const declaredValue = toNumber(order.declared_value);
-      const phoenixCommission = reportStatus === "delivered" ? toNumber(order.region?.price) : 0;
+      const deliveryFee = toNumber(order.region?.price);
+      const phoenixCommission = reportStatus === "delivered" ? deliveryFee : 0;
       const collectedAmount = reportStatus === "delivered" ? declaredValue + phoenixCommission : 0;
 
       return {
@@ -1642,7 +1713,8 @@ const getAdminReports = async (req, res) => {
         delegateName: shipment?.driver?.full_name || "غير مخصص",
         status: reportStatus,
         paymentMethod: "cod",
-        amount: declaredValue + phoenixCommission,
+        amount: deliveryFee,
+        deliveryFee,
         collectedAmount,
         phoenixCommission,
         merchantDue: reportStatus === "delivered" ? declaredValue : 0,
@@ -2866,6 +2938,27 @@ const updateAdminHandoverRequestStatus = async (req, res) => {
         },
       ],
     });
+
+    if (refreshedRequest?.employee_id && ["approved", "rejected"].includes(status)) {
+      await notifyEmployee({
+        employeeId: refreshedRequest.employee_id,
+        type:
+          status === "approved"
+            ? "withdrawal_request_approved"
+            : "withdrawal_request_rejected",
+        title:
+          status === "approved"
+            ? "تمت الموافقة على طلب تسليم المبلغ"
+            : "تم رفض طلب تسليم المبلغ",
+        body:
+          status === "approved"
+            ? `تمت الموافقة على طلبك بقيمة ${toNumber(refreshedRequest.amount)} شيكل.`
+            : `تم رفض طلبك بقيمة ${toNumber(refreshedRequest.amount)} شيكل.`,
+        entityType: "withdrawal_request",
+        entityId: refreshedRequest.id,
+        actionUrl: "/employee/payment",
+      });
+    }
 
     return res.status(200).json({
       success: true,

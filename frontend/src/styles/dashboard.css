@@ -45,11 +45,18 @@ button {
   min-width: clamp(260px, 21vw, 290px);
   flex-shrink: 0;
   background: #ffffff;
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  z-index: 30;
+  overflow: hidden;
 }
 
 .phoenix-main {
   flex: 1;
   min-width: 0;
+  margin-right: clamp(260px, 21vw, 290px);
 }
 
 .phoenix-page-content {
@@ -143,6 +150,8 @@ button {
   transition: transform 0.25s ease;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   box-shadow: -16px 0 40px rgba(15, 23, 42, 0.18);
 }
 
@@ -189,6 +198,10 @@ button {
 
   .phoenix-sidebar {
     display: none;
+  }
+
+  .phoenix-main {
+    margin-right: 0;
   }
 
   .phoenix-page-content {

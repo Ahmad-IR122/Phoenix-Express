@@ -2,30 +2,7 @@ import { useMemo } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import DashboardLayout from "../Components/layout/DashboardLayout";
 import adminNav from "../data/adminNav";
-
-const adminNotifications = [
-  {
-    id: 1,
-    title: "تم تسجيل طلب شحن جديد يحتاج مراجعة",
-    time: "منذ 5 دقائق",
-    type: "warning",
-    icon: "bi-exclamation-circle",
-  },
-  {
-    id: 2,
-    title: "تمت إضافة مندوب جديد إلى النظام",
-    time: "منذ 15 دقيقة",
-    type: "info",
-    icon: "bi-info-circle",
-  },
-  {
-    id: 3,
-    title: "يوجد تقرير يومي بانتظار الاعتماد",
-    time: "منذ 30 دقيقة",
-    type: "error",
-    icon: "bi-exclamation-octagon",
-  },
-];
+import useDashboardNotifications from "../hooks/useDashboardNotifications";
 
 const adminRouteByKey = {
   dashboard: "/admin/dashboard",
@@ -66,6 +43,16 @@ export default function AdminLayout() {
     }
   }, []);
 
+  const {
+    notifications,
+    unreadCount,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+  } = useDashboardNotifications({
+    enabled: storedUser?.role === "admin",
+    pollInterval: 5000,
+  });
+
   const activeItem =
     adminNavItems.find((item) => location.pathname.startsWith(item.path)) ||
     adminNavItems[0];
@@ -104,8 +91,10 @@ export default function AdminLayout() {
         }
       }}
       pageDate={getTodayLabel()}
-      notificationCount={adminNotifications.length}
-      notifications={adminNotifications}
+      notificationCount={unreadCount}
+      notifications={notifications}
+      onNotificationClick={(item) => markNotificationAsRead(item.id)}
+      onMarkAllNotificationsAsRead={markAllNotificationsAsRead}
       user={user}
       employeeName={user.name}
       onLogout={handleLogout}

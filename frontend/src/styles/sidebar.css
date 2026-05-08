@@ -17,14 +17,15 @@
 }
 
 .phoenix-sidebar-shell.is-desktop {
-  position: sticky;
-  top: 0;
+  height: 100vh;
+  min-height: 100vh;
 }
 
 .phoenix-sidebar-shell.is-mobile {
   min-height: 100%;
   padding: 8px 0 0;
   border-left: 0;
+  overflow: visible;
 }
 
 .phoenix-sidebar-top {
@@ -47,15 +48,21 @@
   width: 52px;
   height: 52px;
   border-radius: 16px;
-  background: #1fa8f5;
-  color: #ffffff;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
-  font-weight: 800;
   flex-shrink: 0;
-  box-shadow: 0 6px 14px rgba(56, 182, 255, 0.16);
+  border: 1px solid #dbeafe;
+  box-shadow: 0 8px 20px rgba(56, 182, 255, 0.12);
+  overflow: hidden;
+}
+
+.phoenix-brand-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .phoenix-brand-text {
@@ -199,7 +206,6 @@
   .phoenix-brand-avatar {
     width: 48px;
     height: 48px;
-    font-size: 1.15rem;
     border-radius: 14px;
   }
 

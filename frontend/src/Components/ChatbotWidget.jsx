@@ -460,7 +460,7 @@ const ChatbotWidget = () => {
       const activeThreadId = activeEmployeeThreadIdRef.current;
 
       if (!thread) {
-        if (activeThreadId) {
+        if (activeThreadId && activeThreadId !== PENDING_EMPLOYEE_THREAD_ID) {
           setActiveEmployeeThreadId(null);
           localStorage.removeItem(getUserActiveThreadKey());
         }
