@@ -268,13 +268,24 @@ function ReportsPage() {
 
       <div className="phoenix-reports__summary-grid">
         {summaryCards.map((card) => (
-          <article key={card.id} className="phoenix-reports__summary-card">
+          <article
+            key={card.id}
+            className={`phoenix-reports__summary-card${
+              card.variant === "profit" ? " phoenix-reports__summary-card--profit" : ""
+            }`}
+          >
             <div className={`phoenix-reports__summary-icon ${card.iconClass}`}>
               <i className={`bi ${card.icon}`}></i>
             </div>
             <div className="phoenix-reports__summary-content">
               <span className="phoenix-reports__summary-label">{card.label}</span>
               <strong className="phoenix-reports__summary-value">{card.value}</strong>
+              {card.period ? (
+                <span className="phoenix-reports__summary-period">{card.period}</span>
+              ) : null}
+              {card.note ? (
+                <span className="phoenix-reports__summary-note">{card.note}</span>
+              ) : null}
             </div>
           </article>
         ))}

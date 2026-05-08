@@ -18,8 +18,11 @@ router.get('/reports/returned', authenticateAdmin, adminController.getAdminRetur
 router.get('/merchants', adminController.getAdminMerchants);
 router.get('/merchants/:id', adminController.getAdminMerchantById);
 router.post('/merchants/:id/settlements', authenticateAdmin, adminController.settleAdminMerchant);
+router.post('/delegates', adminController.createAdminDelegate);
 router.patch('/merchant-settlements/:id/sent', authenticateAdmin, adminController.markMerchantSettlementAsSent);
 router.get('/delegates', adminController.getAdminDelegates);
+router.get('/delegates/:id', adminController.getAdminDelegateDetails);
+router.put('/delegates/:id', adminController.updateAdminDelegate);
 router.patch('/delegates/:id/status', adminController.updateAdminDelegateStatus);
 router.get('/parcel-distribution', adminController.getParcelDistribution);
 router.post('/parcel-distribution/assign', adminController.assignParcelToDriver);
