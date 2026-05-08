@@ -1,4 +1,5 @@
 import "../../styles/sidebar.css";
+import logo from "../../Images/Phonex_logo.jpeg";
 
 function DashboardSidebar({
   layoutType = "admin",
@@ -7,7 +8,6 @@ function DashboardSidebar({
   activeKey,
   onNavigate,
   user,
-  onLogout,
   isMobile = false,
   onClose,
 }) {
@@ -20,7 +20,9 @@ function DashboardSidebar({
     >
       <div className="phoenix-sidebar-top">
         <div className="phoenix-brand-block">
-          <div className="phoenix-brand-avatar">{brand.avatarText || "P"}</div>
+          <div className="phoenix-brand-avatar">
+            <img src={logo} alt="Phoenix logo" className="phoenix-brand-logo" />
+          </div>
 
           <div className="phoenix-brand-text text-end">
             <h2 className="phoenix-brand-title">{brand.name}</h2>
@@ -48,31 +50,17 @@ function DashboardSidebar({
               <span>{item.label}</span>
             </button>
           ))}
-
-          {onLogout ? (
-            <button
-              type="button"
-              className="phoenix-nav-item"
-              onClick={() => {
-                onClose?.();
-                onLogout();
-              }}
-            >
-              <i className="bi bi-box-arrow-right"></i>
-              <span>تسجيل الخروج</span>
-            </button>
-          ) : null}
         </nav>
       </div>
 
-      {user && (
+      {user ? (
         <div className="phoenix-sidebar-user" dir="rtl">
           <div dir="rtl" className="phoenix-sidebar-user-text text-end">
             <div className="phoenix-user-name">{user.name}</div>
             <div className="phoenix-user-email">{user.email}</div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

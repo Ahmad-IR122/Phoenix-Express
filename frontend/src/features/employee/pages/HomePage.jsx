@@ -109,8 +109,6 @@ function EmployeeDashboardPage() {
     }));
   }, [dashboard]);
 
-  const employeeName = dashboard?.employee?.full_name || 'الموظف';
-
   const handleAvailabilityChange = async (nextStatus) => {
     if (nextStatus === availabilityStatus) return;
 
@@ -156,7 +154,7 @@ function EmployeeDashboardPage() {
           <p className="employee-dashboard__hero-subtitle">
             {loading
               ? 'جاري تحميل الملخص...'
-              : `مرحبًا ${employeeName}`}
+              : 'ملخص سريع لمهامك ومؤشراتك اليومية'}
           </p>
         </div>
 

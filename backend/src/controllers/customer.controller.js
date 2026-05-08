@@ -10,6 +10,7 @@ const {
   CompanyCustomerProfile,
   sequelize,
 } = require("../models");
+const { notifyAdmins } = require("../services/notification.service");
 
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase();
 const normalizePhone = (value) => String(value || "").trim();
@@ -651,6 +652,22 @@ const requestAuthenticatedCustomerSettlement = async (req, res) => {
       bank_account_number: paymentMethod === "bank_transfer" ? bankAccountNumber : null,
       bank_iban: paymentMethod === "bank_transfer" ? bankIban || null : null,
       notes,
+    });
+
+    const merchantName =
+      customer.company_profile?.company_name ||
+      customer.individual_profile?.full_name ||
+      customer.user?.full_name ||
+      customer.user?.email ||
+      "تاجر";
+
+    await notifyAdmins({
+      type: "merchant_settlement_requested",
+      title: `طلب تسوية جديد من ${merchantName}`,
+      body: `تم إرسال طلب تسوية بقيمة ${amount} شيكل ويحتاج إلى مراجعة الأدمن.`,
+      entityType: "merchant_settlement",
+      entityId: settlement.id,
+      actionUrl: "/admin/merchants",
     });
 
     const refreshedSummary = await getCustomerSettlementSummary(customer.id);

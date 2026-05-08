@@ -1,10 +1,13 @@
 import { useMemo, useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../../styles/dashboardHeader.css";
 
 function DashboardHeader({
   layoutType = "admin",
   notificationCount = 0,
   notifications = [],
+  onNotificationClick,
+  onMarkAllNotificationsAsRead,
   customDate,
   employeeName,
   onLogout,
@@ -12,6 +15,7 @@ function DashboardHeader({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   const todayDate = useMemo(() => {
     if (customDate) return customDate;
@@ -61,6 +65,22 @@ function DashboardHeader({
     ? `مرحبًا، ${employeeName || "الموظف"}`
     : "مرحبًا بك في لوحة التحكم";
 
+  const handleItemClick = async (item) => {
+    if (onNotificationClick) {
+      await onNotificationClick(item);
+    }
+
+    if (item.actionUrl) {
+      navigate(item.actionUrl);
+      setIsOpen(false);
+    }
+  };
+
+  const handleMarkAll = async () => {
+    if (!onMarkAllNotificationsAsRead) return;
+    await onMarkAllNotificationsAsRead();
+  };
+
   return (
     <header dir="rtl" className="phoenix-header">
       <div className="phoenix-header-inner">
@@ -109,12 +129,26 @@ function DashboardHeader({
               <div dir="rtl" className="phoenix-notification-dropdown">
                 <div className="phoenix-notification-dropdown-header">
                   <h3>التنبيهات</h3>
+                  {notifications.length > 0 && onMarkAllNotificationsAsRead ? (
+                    <button
+                      type="button"
+                      className="phoenix-view-all-btn"
+                      onClick={handleMarkAll}
+                    >
+                      تعليم الكل كمقروء
+                    </button>
+                  ) : null}
                 </div>
 
                 <div className="phoenix-notification-list">
                   {notifications.length > 0 ? (
                     notifications.map((item) => (
-                      <div key={item.id} className="phoenix-notification-item">
+                      <button
+                        key={item.id}
+                        type="button"
+                        className="phoenix-notification-item"
+                        onClick={() => handleItemClick(item)}
+                      >
                         <div className="phoenix-notification-item-text">
                           <div className="phoenix-notification-text">{item.title}</div>
                           <div className="phoenix-notification-time">{item.time}</div>
@@ -123,18 +157,12 @@ function DashboardHeader({
                         <div className={`phoenix-notification-icon ${item.type || "info"}`}>
                           <i className={`bi ${item.icon || "bi-bell"}`}></i>
                         </div>
-                      </div>
+                      </button>
                     ))
                   ) : (
-                    <div className="phoenix-notification-empty">
-                      لا يوجد تنبيهات حالياً
-                    </div>
+                    <div className="phoenix-notification-empty">لا يوجد تنبيهات حاليًا</div>
                   )}
                 </div>
-
-                <button type="button" className="phoenix-view-all-btn">
-                  عرض جميع التنبيهات
-                </button>
               </div>
             )}
           </div>

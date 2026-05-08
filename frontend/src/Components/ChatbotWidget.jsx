@@ -22,6 +22,7 @@ const CHAT_STORAGE_KEY = "phoenix_assistant_history";
 const CHAT_LANGUAGE_KEY = "phoenix_assistant_language";
 const EMPLOYEE_CHAT_STORAGE_KEY = "phoenix_employee_chat_threads";
 const ACTIVE_EMPLOYEE_THREAD_KEY = "phoenix_active_employee_thread";
+const EMPLOYEE_SEEN_MESSAGES_KEY = "phoenix_seen_employee_messages";
 const PENDING_EMPLOYEE_THREAD_ID = "pending-employee-thread";
 
 const statusLabels = {
@@ -183,6 +184,26 @@ const getUserChatStorageKey = (user = getStoredUser()) =>
 
 const getUserActiveThreadKey = (user = getStoredUser()) =>
   `${ACTIVE_EMPLOYEE_THREAD_KEY}_${getUserStorageId(user)}`;
+
+const getUserSeenEmployeeMessagesKey = (user = getStoredUser()) =>
+  `${EMPLOYEE_SEEN_MESSAGES_KEY}_${getUserStorageId(user)}`;
+
+const getSeenEmployeeMessageIds = (user = getStoredUser()) => {
+  try {
+    const stored = localStorage.getItem(getUserSeenEmployeeMessagesKey(user));
+    const parsed = stored ? JSON.parse(stored) : [];
+    return new Set(Array.isArray(parsed) ? parsed : []);
+  } catch {
+    return new Set();
+  }
+};
+
+const saveSeenEmployeeMessageIds = (ids, user = getStoredUser()) => {
+  localStorage.setItem(
+    getUserSeenEmployeeMessagesKey(user),
+    JSON.stringify(Array.from(ids).slice(-200))
+  );
+};
 
 const isUserAuthenticated = () =>
   Boolean(
@@ -439,7 +460,7 @@ const ChatbotWidget = () => {
       const activeThreadId = activeEmployeeThreadIdRef.current;
 
       if (!thread) {
-        if (activeThreadId) {
+        if (activeThreadId && activeThreadId !== PENDING_EMPLOYEE_THREAD_ID) {
           setActiveEmployeeThreadId(null);
           localStorage.removeItem(getUserActiveThreadKey());
         }
@@ -459,6 +480,7 @@ const ChatbotWidget = () => {
           .map((message) => message.sourceId || message.id)
           .filter(Boolean)
       );
+      const seenEmployeeSourceIds = getSeenEmployeeMessageIds();
       const existingEmployeeTexts = new Set(
         allKnownMessages
           .filter((message) => message.role === "bot")
@@ -468,6 +490,7 @@ const ChatbotWidget = () => {
         (message) =>
           message.role === "employee" &&
           !existingSourceIds.has(getEmployeeMessageSourceId(message)) &&
+          !seenEmployeeSourceIds.has(getEmployeeMessageSourceId(message)) &&
           !syncedEmployeeSourceIdsRef.current.has(getEmployeeMessageSourceId(message)) &&
           !existingEmployeeTexts.has(message.text)
       );
@@ -475,8 +498,11 @@ const ChatbotWidget = () => {
       if (newEmployeeMessages.length === 0) return;
 
       newEmployeeMessages.forEach((message) => {
-        syncedEmployeeSourceIdsRef.current.add(getEmployeeMessageSourceId(message));
+        const sourceId = getEmployeeMessageSourceId(message);
+        syncedEmployeeSourceIdsRef.current.add(sourceId);
+        seenEmployeeSourceIds.add(sourceId);
       });
+      saveSeenEmployeeMessageIds(seenEmployeeSourceIds);
 
       if (!activeThreadId && thread.id) {
         setActiveEmployeeThreadId(thread.id);
@@ -1003,6 +1029,17 @@ const saveSupportMessage = (rawText) => {
       return;
     }
 
+    if (!activeEmployeeThreadId) {
+      addBotMessage(
+        language === "ar"
+          ? "\u064a\u0631\u062c\u0649 \u0627\u062e\u062a\u064a\u0627\u0631 \u0623\u062d\u062f \u0627\u0644\u062e\u064a\u0627\u0631\u0627\u062a \u0627\u0644\u0645\u0648\u062c\u0648\u062f\u0629\u060c \u0623\u0648 \u0641\u062a\u062d \u0645\u062d\u0627\u062f\u062b\u0629 \u0645\u0639 \u0627\u0644\u0645\u0648\u0638\u0641 \u0644\u0643\u062a\u0627\u0628\u0629 \u0631\u0633\u0627\u0644\u0629 \u0645\u0628\u0627\u0634\u0631\u0629."
+          : "Please choose one of the available options, or open employee chat to type a direct message."
+      );
+      setInputValue("");
+      sendLockRef.current = false;
+      return;
+    }
+
     if (activeEmployeeThreadId && isBackToAssistantRequest(trimmedValue)) {
       setInputValue("");
       setActiveEmployeeThreadId(null);
@@ -1069,14 +1106,32 @@ const saveSupportMessage = (rawText) => {
       return;
     }
 
-    if (text !== (isArabic ? "طھظˆط§طµظ„ ظ…ط¹ ط§ظ„ظ…ظˆط¸ظپ" : "Contact employee")) {
-      setActiveEmployeeThreadId(null);
-      localStorage.removeItem(getUserActiveThreadKey());
+    const isContactEmployeePrompt =
+      text === (isArabic ? "طھظˆط§طµظ„ ظ…ط¹ ط§ظ„ظ…ظˆط¸ظپ" : "Contact employee") ||
+      text === "تواصل مع الموظف";
+
+    if (isContactEmployeePrompt) {
+      startEmployeeChat();
+      setIsQuickQuestionsOpen(false);
+      return;
     }
 
-    setInputValue(text);
+    setActiveEmployeeThreadId(null);
+    localStorage.removeItem(getUserActiveThreadKey());
+    setMessages((current) => [
+      ...current,
+      createMessage("user", text, { channel: "assistant" }),
+    ]);
+    setIsTyping(true);
     setIsQuickQuestionsOpen(false);
-    window.setTimeout(() => inputRef.current?.focus(), 40);
+    window.setTimeout(async () => {
+      try {
+        const responseText = await buildResponse(text);
+        if (responseText) addBotMessage(responseText);
+      } finally {
+        setIsTyping(false);
+      }
+    }, 450);
   };
 
   const handleEndEmployeeChat = () => {
@@ -1217,7 +1272,11 @@ const saveSupportMessage = (rawText) => {
                   aria-label="Chat message"
                   disabled={!isAuthenticated}
                 />
-                <button type="submit" disabled={!isAuthenticated || !inputValue.trim() || isTyping} aria-label="Send message">
+                <button
+                  type="submit"
+                  disabled={!isAuthenticated || !inputValue.trim() || isTyping}
+                  aria-label="Send message"
+                >
                   <FiSend aria-hidden="true" />
                 </button>
               </form>

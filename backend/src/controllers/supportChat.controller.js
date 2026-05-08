@@ -8,6 +8,7 @@ const {
   SupportConversation,
   SupportMessage,
 } = require('../models');
+const { notifyEmployee } = require('../services/notification.service');
 
 const { Op } = Sequelize;
 
@@ -171,9 +172,20 @@ const sendCustomerMessage = async (req, res) => {
       order: [[{ model: SupportMessage, as: 'messages' }, 'created_at', 'ASC']],
     });
 
+    const mappedConversation = mapConversation(fullConversation);
+
+    await notifyEmployee({
+      type: 'support_message_received',
+      title: 'رسالة دعم جديدة من عميل',
+      body: `${mappedConversation.customerName}: ${text.slice(0, 120)}`,
+      entityType: 'support_conversation',
+      entityId: conversation.id,
+      actionUrl: '/employee/support-chats',
+    });
+
     return res.status(201).json({
       success: true,
-      data: mapConversation(fullConversation),
+      data: mappedConversation,
     });
   } catch (error) {
     return res.status(error.status || 500).json({

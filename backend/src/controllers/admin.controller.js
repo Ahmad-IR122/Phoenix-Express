@@ -20,6 +20,7 @@ const {
   TrackingUpdate,
   sequelize,
 } = require("../models");
+const { notifyEmployee } = require("../services/notification.service");
 
 const ACTIVE_SHIPMENT_STATUSES = [
   "accepted",
@@ -678,6 +679,16 @@ const assignParcelToDriver = async (req, res) => {
     );
 
     await transaction.commit();
+
+    await notifyEmployee({
+      employeeId: employee.id,
+      type: "shipment_assigned_to_employee",
+      title: "تم إسناد شحنة جديدة لك",
+      body: `تم تعيين الطلب رقم ${order.id} لك للمتابعة والتوصيل.`,
+      entityType: "shipment",
+      entityId: shipment.id,
+      actionUrl: "/employee/orders",
+    });
 
     return res.status(200).json({
       success: true,
@@ -2927,6 +2938,27 @@ const updateAdminHandoverRequestStatus = async (req, res) => {
         },
       ],
     });
+
+    if (refreshedRequest?.employee_id && ["approved", "rejected"].includes(status)) {
+      await notifyEmployee({
+        employeeId: refreshedRequest.employee_id,
+        type:
+          status === "approved"
+            ? "withdrawal_request_approved"
+            : "withdrawal_request_rejected",
+        title:
+          status === "approved"
+            ? "تمت الموافقة على طلب تسليم المبلغ"
+            : "تم رفض طلب تسليم المبلغ",
+        body:
+          status === "approved"
+            ? `تمت الموافقة على طلبك بقيمة ${toNumber(refreshedRequest.amount)} شيكل.`
+            : `تم رفض طلبك بقيمة ${toNumber(refreshedRequest.amount)} شيكل.`,
+        entityType: "withdrawal_request",
+        entityId: refreshedRequest.id,
+        actionUrl: "/employee/payment",
+      });
+    }
 
     return res.status(200).json({
       success: true,
