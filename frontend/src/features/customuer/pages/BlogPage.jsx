@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FiCalendar, FiUser, FiClock } from "react-icons/fi";
 import Swal from "sweetalert2";
 import { subscribeToNewsletter } from "../../../services/newsletterService";
+import API from "../../../apis/api";
 import "./BlogPage.css";
 
 const articles = [
@@ -165,6 +166,7 @@ const articles = [
 ];
 
 const categories = ["الكل", "نصائح", "تقنية", "إرشادات", "قصص نجاح", "خلف الكواليس", "أخبار"];
+void categories;
 const BlogPage = () => {
   const navigate = useNavigate();
   const articlesSectionRef = React.useRef(null);
@@ -173,9 +175,42 @@ const BlogPage = () => {
   const [selectedArticle, setSelectedArticle] = React.useState(null);
   const [newsletterEmail, setNewsletterEmail] = React.useState("");
   const [activeCategory, setActiveCategory] = React.useState("الكل");
+  const [cmsArticles, setCmsArticles] = React.useState([]);
+  const visibleArticles = cmsArticles.length ? cmsArticles : articles;
+  const visibleCategories = [
+    "الكل",
+    ...Array.from(new Set(visibleArticles.map((article) => article.category).filter(Boolean))),
+  ];
   const filteredArticles = activeCategory === "الكل"
-    ? articles
-    : articles.filter((article) => article.category === activeCategory);
+    ? visibleArticles
+    : visibleArticles.filter((article) => article.category === activeCategory);
+
+  React.useEffect(() => {
+    API.get("/articles")
+      .then((response) => {
+        const items = Array.isArray(response.data?.data) ? response.data.data : [];
+        setCmsArticles(
+          items.map((article) => ({
+            icon: "📝",
+            category: article.category || "أخبار",
+            title: article.title,
+            description: article.description || "",
+            date: article.published_date
+              ? new Date(article.published_date).toLocaleDateString("ar-PS")
+              : "",
+            readTime: "5 دقائق",
+            content: (article.content || article.description || "")
+              .split(/\n{2,}/)
+              .map((section, index) => ({
+                heading: index === 0 ? article.title : `فقرة ${index + 1}`,
+                body: section.trim(),
+              }))
+              .filter((section) => section.body),
+          }))
+        );
+      })
+      .catch(() => {});
+  }, []);
 
   const handleNewsletterSubmit = async (event) => {
     event.preventDefault();
@@ -342,7 +377,7 @@ const BlogPage = () => {
             <h4>تصفح حسب الفئة</h4>
 
             <div className="category-list">
-              {categories.map((category) => (
+              {visibleCategories.map((category) => (
                 <Button
                   key={category}
                   className={`category-pill ${activeCategory === category ? "active" : ""}`}
@@ -453,7 +488,10 @@ const BlogPage = () => {
 
               <Modal.Body className="blog-article-modal__body">
                 <p>{selectedArticle.description}</p>
-                {selectedArticle.content.map((section) => (
+                {(selectedArticle.content?.length
+                  ? selectedArticle.content
+                  : [{ heading: selectedArticle.title, body: selectedArticle.description }]
+                ).map((section) => (
                   <React.Fragment key={section.heading}>
                     <h4>{section.heading}</h4>
                     <p>{section.body}</p>

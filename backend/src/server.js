@@ -17,7 +17,7 @@ const vehicleRoutes = require("./routes/vehicle.routes");
 const walletRoutes = require("./routes/wallet.routes");
 const supportChatRoutes = require("./routes/supportChat.routes");
 const newsletterRoutes = require("./routes/newsletter.routes");
-const qrCodeRoutes = require("./routes/generateQr.routes");
+const qrCodeRoutes = require("./routes/genarateQr.routes");
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -42,6 +42,7 @@ app.use('/api/wallets', walletRoutes);
 app.use('/api/support-chat', supportChatRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/generate-qr', qrCodeRoutes);
+app.use('/api/photogalleries', photoGalleryRoutes);
 /*   <!-- END of AHMAD code  --> */
 
 /*   <!-- RAGHAD  code  --> */
