@@ -108,6 +108,42 @@ const mapOrderToDeliveryFormState = (order) => ({
   orderDescription: order.package_description || "",
 });
 
+const orderFilterOptions = [
+  {
+    value: "all",
+    label: "\u0627\u0644\u0643\u0644",
+  },
+  {
+    value: "company",
+    label: "\u062f\u0627\u062e\u0644 \u0627\u0644\u0634\u0631\u0643\u0629",
+  },
+  {
+    value: "shipping",
+    label: "\u0642\u064a\u062f \u0627\u0644\u062a\u0648\u0635\u064a\u0644",
+  },
+  {
+    value: "delivered",
+    label: "\u062a\u0645 \u0627\u0644\u062a\u0633\u0644\u064a\u0645",
+  },
+];
+
+const orderFilterStatusMap = {
+  company: ["pending", "accepted"],
+  shipping: [
+    "picked_up",
+    "in_transit",
+    "arrived_to_destination_city",
+    "out_for_delivery",
+  ],
+  delivered: ["delivered"],
+};
+
+const matchesOrderFilter = (order, filter) => {
+  if (filter === "all") return true;
+
+  return (orderFilterStatusMap[filter] || []).includes(order.rawStatus);
+};
+
 const getStoredUser = () => {
   const storedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
   if (!storedUser) return {};
@@ -225,6 +261,7 @@ const CustomerProfilePage = () => {
   const [isSavingPassword, setIsSavingPassword] = React.useState(false);
   const [customerOrders, setCustomerOrders] = React.useState([]);
   const [isLoadingOrders, setIsLoadingOrders] = React.useState(true);
+  const [ordersFilter, setOrdersFilter] = React.useState("all");
   const [profileForm, setProfileForm] = React.useState({
     name: getDisplayName(storedUser),
     email: storedUser.email || "ahmad@example.com",
@@ -266,6 +303,11 @@ const CustomerProfilePage = () => {
 
     loadProfile();
   }, []);
+
+  const filteredCustomerOrders = React.useMemo(
+    () => customerOrders.filter((order) => matchesOrderFilter(order, ordersFilter)),
+    [customerOrders, ordersFilter]
+  );
 
   React.useEffect(() => {
     const loadOrders = async () => {
@@ -734,13 +776,32 @@ const CustomerProfilePage = () => {
               <FiPackage aria-hidden="true" />
             </h2>
 
+            <div className="customer-orders-filters" role="group" aria-label="Order filters">
+              {orderFilterOptions.map((filterOption) => (
+                <button
+                  key={filterOption.value}
+                  type="button"
+                  className={`customer-orders-filter-btn${
+                    ordersFilter === filterOption.value ? " is-active" : ""
+                  }`}
+                  onClick={() => setOrdersFilter(filterOption.value)}
+                >
+                  {filterOption.label}
+                </button>
+              ))}
+            </div>
+
             <div className="customer-orders-list">
               {isLoadingOrders ? (
                 <p className="customer-orders-message">جاري تحميل طلباتك...</p>
               ) : customerOrders.length === 0 ? (
                 <p className="customer-orders-message">لا توجد طلبات مسجلة على حسابك حالياً.</p>
+              ) : filteredCustomerOrders.length === 0 ? (
+                <p className="customer-orders-message">
+                  {"\u0644\u0627 \u062a\u0648\u062c\u062f \u0637\u0644\u0628\u0627\u062a \u0636\u0645\u0646 \u0647\u0630\u0627 \u0627\u0644\u062a\u0635\u0646\u064a\u0641 \u062d\u0627\u0644\u064a\u0627\u064b."}
+                </p>
               ) : (
-                customerOrders.map((order) => (
+                filteredCustomerOrders.map((order) => (
                   <article className="customer-order-item" key={order.trackingNumber}>
                     <div className="customer-order-top">
                       <span className={`customer-order-status ${order.statusType}`}>

@@ -386,10 +386,33 @@
   box-shadow: 0 12px 22px rgba(220, 38, 38, 0.16);
 }
 
+.employee-orders-page__action-btn--location,
+.employee-orders-page__location-btn {
+  background: linear-gradient(135deg, #0284c7, #38b6ff);
+  box-shadow: 0 12px 22px rgba(14, 165, 233, 0.18);
+}
+
+.employee-orders-page__location-btn {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 12px;
+  border: 0;
+  border-radius: 14px;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
 .employee-orders-page__card-actions,
 .employee-orders-page__dual-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 10px;
 }
 
