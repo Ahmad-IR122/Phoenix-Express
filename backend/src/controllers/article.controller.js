@@ -4,12 +4,13 @@ const { Article } = require('../models');
 
 const createArticle = async (req, res) => {
   try {
-    const { title, category, description, published_date } = req.body;
+    const { title, category, description, content, published_date } = req.body;
 
     const article = await Article.create({
       title,
       category,
       description,
+      content,
       published_date,
     });
 
@@ -78,7 +79,7 @@ const findArticleById = async (req, res) => {
 const updateArticle = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, category, description, published_date } = req.body;
+    const { title, category, description, content, published_date } = req.body;
     const article = await Article.findByPk(id);
 
     if (!article) {
@@ -92,6 +93,7 @@ const updateArticle = async (req, res) => {
       title: title !== undefined ? title : article.title,
       category: category !== undefined ? category : article.category,
       description: description !== undefined ? description : article.description,
+      content: content !== undefined ? content : article.content,
       published_date:
         published_date !== undefined ? published_date : article.published_date,
     });
