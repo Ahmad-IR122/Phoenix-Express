@@ -312,14 +312,24 @@
   color: #16a34a;
 }
 
+.phoenix-merchants__badge--requested {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
 .phoenix-merchants__badge--pending {
   background: #ffedd5;
   color: #ea580c;
 }
 
+.phoenix-merchants__badge--awaiting {
+  background: #f3e8ff;
+  color: #9333ea;
+}
+
 .phoenix-merchants__badge--inactive {
-  background: #fee2e2;
-  color: #dc2626;
+  background: #e5e7eb;
+  color: #4b5563;
 }
 
 /* Details Button */

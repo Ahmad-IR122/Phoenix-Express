@@ -566,7 +566,8 @@
   font-weight: 950;
 }
 
-.customer-settlement-status.settled {
+.customer-settlement-status.settled,
+.customer-settlement-status.received {
   color: #07943b;
   background: #d9fbe6;
 }

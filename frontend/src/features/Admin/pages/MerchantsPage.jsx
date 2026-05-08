@@ -5,74 +5,87 @@ import "./MerchantsPage.css";
 
 const STATUS_LABELS = {
   settled: "تمت التسوية",
-  requested: "تم إرسال الطلب للتاجر",
-  pending: "بانتظار التسوية",
+  requested: "بانتظار تأكيد التاجر",
+  pending: "طلب تسوية من التاجر",
+  awaiting_settlement: "مستحقات جاهزة للتسوية",
   inactive: "غير نشط",
 };
 
 const STATUS_CLASS = {
   settled: "phoenix-merchants__badge--active",
-  requested: "phoenix-merchants__badge--pending",
+  requested: "phoenix-merchants__badge--requested",
   pending: "phoenix-merchants__badge--pending",
+  awaiting_settlement: "phoenix-merchants__badge--awaiting",
   inactive: "phoenix-merchants__badge--inactive",
 };
 
 const FILTER_OPTIONS = [
   { key: "all", label: "الكل" },
   { key: "settled", label: "تمت التسوية" },
-  { key: "requested", label: "تم إرسال الطلب" },
-  { key: "pending", label: "بانتظار التسوية" },
+  { key: "requested", label: "بانتظار تأكيد التاجر" },
+  { key: "pending", label: "طلبات تسوية من التجار" },
+  { key: "awaiting_settlement", label: "مستحقات جاهزة للتسوية" },
   { key: "inactive", label: "غير نشط" },
 ];
-
 const PAYMENT_METHOD_OPTIONS = [
   { value: "cash", label: "نقداً" },
   { value: "bank_transfer", label: "تحويل بنكي" },
   { value: "ewallet", label: "محفظة إلكترونية" },
 ];
-
 const formatCurrency = (value) =>
   `${new Intl.NumberFormat("ar").format(Number(value) || 0)} ₪`;
 
-const normalizeMerchant = (merchant) => ({
-  id: merchant.id,
-  name: merchant.merchant_name || "-",
-  phone: merchant.phone || "-",
-  email: merchant.email || "-",
-  location: merchant.location || "-",
-  totalOrders: Number(merchant.total_parcels) || 0,
-  deliveredOrders: Number(merchant.delivered_count) || 0,
-  processingOrders: Number(merchant.pending_count) || 0,
-  cancelledOrders: Number(merchant.returned_count) || 0,
-  totalCollected: Number(merchant.total_collected) || 0,
-  phoenixCommission: Number(merchant.phoenix_commission) || 0,
-  merchantDue: Number(merchant.merchant_due) || 0,
-  totalSettledAmount: Number(merchant.total_settled_amount) || 0,
-  pendingSettlementAmount: Number(merchant.pending_settlement_amount) || 0,
-  outstandingRevenue:
-    Number(merchant.remaining_settlement_amount ?? merchant.outstanding_revenue) || 0,
-  availableSettlementRequestAmount:
-    Number(
-      merchant.available_settlement_request_amount ??
-        merchant.remaining_settlement_amount ??
-        merchant.outstanding_revenue
-    ) || 0,
-  status: merchant.settlement_status || "inactive",
-  statusLabel:
-    merchant.settlement_status_label ||
-    STATUS_LABELS[merchant.settlement_status] ||
-    "غير نشط",
-  settlements: Array.isArray(merchant.settlements)
-    ? merchant.settlements.map((settlement) => ({
-        ...settlement,
-        amount: Number(settlement.amount) || 0,
-        bank_name: settlement.bank_name || "",
-        bank_account_holder: settlement.bank_account_holder || "",
-        bank_account_number: settlement.bank_account_number || "",
-        bank_iban: settlement.bank_iban || "",
-      }))
-    : [],
-});
+const normalizeSettlementStatus = (status) => (status === "received" ? "settled" : status);
+
+const normalizeMerchant = (merchant) => {
+  const pendingSettlementAmount = Number(merchant.pending_settlement_amount) || 0;
+  const requestedSettlementAmount = Number(merchant.requested_settlement_amount) || 0;
+  const derivedStatus =
+    pendingSettlementAmount > 0
+      ? "pending"
+      : requestedSettlementAmount > 0
+        ? "requested"
+        : merchant.settlement_status || "inactive";
+
+  return {
+    id: merchant.id,
+    name: merchant.merchant_name || "-",
+    phone: merchant.phone || "-",
+    email: merchant.email || "-",
+    location: merchant.location || "-",
+    totalOrders: Number(merchant.total_parcels) || 0,
+    deliveredOrders: Number(merchant.delivered_count) || 0,
+    processingOrders: Number(merchant.pending_count) || 0,
+    cancelledOrders: Number(merchant.returned_count) || 0,
+    totalCollected: Number(merchant.total_collected) || 0,
+    phoenixCommission: Number(merchant.phoenix_commission) || 0,
+    merchantDue: Number(merchant.merchant_due) || 0,
+    totalSettledAmount: Number(merchant.total_settled_amount) || 0,
+    requestedSettlementAmount,
+    pendingSettlementAmount,
+    outstandingRevenue:
+      Number(merchant.remaining_settlement_amount ?? merchant.outstanding_revenue) || 0,
+    availableSettlementRequestAmount:
+      Number(
+        merchant.available_settlement_request_amount ??
+          merchant.remaining_settlement_amount ??
+          merchant.outstanding_revenue
+      ) || 0,
+    status: derivedStatus,
+    statusLabel: STATUS_LABELS[derivedStatus] || merchant.settlement_status_label || "غير نشط",
+    settlements: Array.isArray(merchant.settlements)
+      ? merchant.settlements.map((settlement) => ({
+          ...settlement,
+          status: normalizeSettlementStatus(settlement.status),
+          amount: Number(settlement.amount) || 0,
+          bank_name: settlement.bank_name || "",
+          bank_account_holder: settlement.bank_account_holder || "",
+          bank_account_number: settlement.bank_account_number || "",
+          bank_iban: settlement.bank_iban || "",
+        }))
+      : [],
+  };
+};
 
 function MerchantsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -220,7 +233,7 @@ function MerchantsPage() {
       const updatedMerchant = normalizeMerchant(response?.data?.merchant || selectedMerchant);
 
       setSettlementFeedback({
-        message: response?.message || "تم تسجيل طلب التسوية بانتظار موافقة التاجر.",
+        message: response?.message || "تم إنشاء التسوية وهي الآن بانتظار تأكيد التاجر.",
         type: "success",
       });
 
@@ -588,7 +601,7 @@ function MerchantsPage() {
                       <div>
                         <h3 className="phoenix-merchants__modal-section-title">تسوية مستحقات التاجر</h3>
                         <p className="phoenix-merchants__modal-financial-note">
-                          يتم تسجيل الطلب من جهة الإدارة أولاً، ولن تُحتسب التسوية نهائياً حتى يوافق عليها التاجر.
+                          يمكن للإدارة إنشاء تسوية مباشرة للتاجر، أو اعتماد طلب تسوية مرسل من التاجر. ولا تُغلق التسوية نهائياً إلا بعد تأكيد التاجر للاستلام.
                         </p>
                       </div>
                     </div>
@@ -667,7 +680,7 @@ function MerchantsPage() {
                           className="phoenix-merchants__settle-btn"
                           disabled={isSettling || isLoadingDetails}
                         >
-                          {isSettling ? "جاري الحفظ..." : "تسجيل التسوية"}
+                          {isSettling ? "جاري الحفظ..." : "إنشاء تسوية للتاجر"}
                         </button>
                       </div>
                     </form>
@@ -693,9 +706,11 @@ function MerchantsPage() {
                             </p>
                             <p>{settlement.notes || "بدون ملاحظات"}</p>
                             <small>
-                              {settlement.status === "settled" && settlement.settled_at
-                                ? `تمت الموافقة في ${new Date(settlement.settled_at).toLocaleString("ar-PS")}`
-                                : "بانتظار موافقة التاجر"}
+                              {settlement.status === "settled" && settlement.customer_confirmed_at
+                                ? `أكّد التاجر الاستلام في ${new Date(settlement.customer_confirmed_at).toLocaleString("ar-PS")}`
+                                : settlement.status === "requested" && settlement.settled_at
+                                  ? `تم إرسال التسوية للتاجر في ${new Date(settlement.settled_at).toLocaleString("ar-PS")} وهي بانتظار تأكيده`
+                                  : "هذا طلب تسوية مرسل من التاجر ويحتاج اعتماد الإدارة"}
                             </small>
                             {settlement.payment_method === "bank_transfer" ? (
                               <div className="phoenix-merchants__settlement-bank">
@@ -705,12 +720,7 @@ function MerchantsPage() {
                                 {settlement.bank_iban ? <span>{`IBAN: ${settlement.bank_iban}`}</span> : null}
                               </div>
                             ) : null}
-                            {settlement.customer_confirmed_at ? (
-                              <small>
-                                {`\u0623\u0643\u062f \u0627\u0644\u062a\u0627\u062c\u0631 \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645 \u0641\u064a ${new Date(settlement.customer_confirmed_at).toLocaleString("ar-PS")}`}
-                              </small>
-                            ) : null}
-                            {settlement.status !== "settled" ? (
+                            {settlement.status === "pending" ? (
                               <button
                                 type="button"
                                 className="phoenix-merchants__settle-btn phoenix-merchants__settle-btn--compact"
@@ -719,7 +729,7 @@ function MerchantsPage() {
                               >
                                 {markingSettlementId === settlement.id
                                   ? "\u062c\u0627\u0631\u064a \u0627\u0644\u062a\u062d\u062f\u064a\u062b..."
-                                  : "\u062a\u0645 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u062a\u0633\u0648\u064a\u0629"}
+                                  : "\u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0637\u0644\u0628 \u0648\u0625\u0631\u0633\u0627\u0644\u0647 \u0644\u0644\u062a\u0627\u062c\u0631"}
                               </button>
                             ) : null}
                           </div>
@@ -742,4 +752,3 @@ function MerchantsPage() {
 }
 
 export default MerchantsPage;
-

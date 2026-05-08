@@ -63,7 +63,7 @@ function buildCsvRows(rows) {
     "المندوب",
     "الحالة",
     "طريقة الدفع",
-    "المبلغ",
+    "سعر التوصيل / العمولة",
     "تاريخ الإنشاء",
     "آخر تحديث",
     "المدينة",
@@ -78,7 +78,7 @@ function buildCsvRows(rows) {
       row.delegateName,
       statusMeta[row.status]?.label || row.status,
       paymentMethodMeta[row.paymentMethod] || row.paymentMethod,
-      row.amount,
+      row.deliveryFee ?? row.phoenixCommission ?? row.amount,
       formatDateTime(row.createdAt),
       formatDateTime(row.updatedAt),
       row.city,
@@ -134,6 +134,7 @@ function ReportsPage() {
 
   const resetFilters = () => {
     setFilters({
+      search: "",
       orderNumber: "",
       merchantName: "",
       customerName: "",
@@ -168,7 +169,7 @@ function ReportsPage() {
             <td>${row.delegateName}</td>
             <td>${statusMeta[row.status]?.label || row.status}</td>
             <td>${paymentMethodMeta[row.paymentMethod] || row.paymentMethod}</td>
-            <td>${formatCurrency(row.amount)}</td>
+            <td>${formatCurrency(row.deliveryFee ?? row.phoenixCommission ?? row.amount)}</td>
             <td>${formatDateTime(row.createdAt)}</td>
             <td>${formatDateTime(row.updatedAt)}</td>
           </tr>
@@ -218,7 +219,7 @@ function ReportsPage() {
                 <th>المندوب</th>
                 <th>الحالة</th>
                 <th>طريقة الدفع</th>
-                <th>المبلغ</th>
+                <th>سعر التوصيل / العمولة</th>
                 <th>تاريخ الإنشاء</th>
                 <th>آخر تحديث</th>
               </tr>
@@ -311,6 +312,16 @@ function ReportsPage() {
         </div>
 
         <div className="phoenix-reports__filters-grid">
+          <label className="phoenix-reports__field phoenix-reports__field--wide">
+            <span>بحث شامل في الصفحة</span>
+            <input
+              type="text"
+              value={filters.search}
+              placeholder="ابحث برقم الطلب، التاجر، العميل، المندوب، الهاتف، المدينة..."
+              onChange={(event) => handleFilterChange("search", event.target.value)}
+            />
+          </label>
+
           <label className="phoenix-reports__field">
             <span>البحث برقم الطلب</span>
             <input
@@ -461,7 +472,9 @@ function ReportsPage() {
                       </span>
                     </td>
                     <td>{paymentMethodMeta[report.paymentMethod] || report.paymentMethod}</td>
-                    <td className="phoenix-reports__amount">{formatCurrency(report.amount)}</td>
+                    <td className="phoenix-reports__amount">
+                      {formatCurrency(report.deliveryFee ?? report.phoenixCommission ?? report.amount)}
+                    </td>
                     <td>{formatDateTime(report.createdAt)}</td>
                     <td>{formatDateTime(report.updatedAt)}</td>
                     <td>
@@ -518,8 +531,10 @@ function ReportsPage() {
                     <strong>{report.delegateName}</strong>
                   </div>
                   <div>
-                    <span>المبلغ</span>
-                    <strong>{formatCurrency(report.amount)}</strong>
+                    <span>سعر التوصيل / العمولة</span>
+                    <strong>
+                      {formatCurrency(report.deliveryFee ?? report.phoenixCommission ?? report.amount)}
+                    </strong>
                   </div>
                 </div>
 
@@ -595,8 +610,12 @@ function ReportsPage() {
                 <strong>{selectedOrder.area}</strong>
               </div>
               <div>
-                <span>المبلغ</span>
-                <strong>{formatCurrency(selectedOrder.amount)}</strong>
+                <span>سعر التوصيل / العمولة</span>
+                <strong>
+                  {formatCurrency(
+                    selectedOrder.deliveryFee ?? selectedOrder.phoenixCommission ?? selectedOrder.amount
+                  )}
+                </strong>
               </div>
               <div>
                 <span>المبلغ المحصل</span>
