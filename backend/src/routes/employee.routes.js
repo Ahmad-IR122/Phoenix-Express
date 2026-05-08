@@ -21,6 +21,7 @@ router.patch('/documents/:id', mockEmployeeAuth, employeeController.updateAuthen
 router.delete('/documents/:id', mockEmployeeAuth, employeeController.deleteAuthenticatedEmployeeDocument);
 router.get('/orders', mockEmployeeAuth, employeeController.getAuthenticatedEmployeeOrders);
 router.patch('/orders/:shipmentId/status', mockEmployeeAuth, employeeController.updateAuthenticatedEmployeeOrderStatus);
+router.patch('/orders/:shipmentId/location', mockEmployeeAuth, employeeController.updateAuthenticatedEmployeeShipmentLocation);
 router.get('/orders/:shipmentId', mockEmployeeAuth, employeeController.getAuthenticatedEmployeeOrderDetails);
 router.get('/wallet', mockEmployeeAuth, employeeController.getAuthenticatedEmployeeWallet);
 router.post('/wallet/withdrawals', mockEmployeeAuth, employeeController.submitAuthenticatedEmployeeWithdrawal);

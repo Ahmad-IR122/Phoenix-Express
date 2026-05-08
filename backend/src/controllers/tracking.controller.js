@@ -161,6 +161,15 @@ const lookupTrackingByNumber = async (req, res) => {
         destination_city: shipment.order?.destination_city || null,
         sender_name: shipment.order?.sender_name || null,
         receiver_name: shipment.order?.receiver_name || null,
+        current_latitude:
+          shipment.current_latitude !== null && shipment.current_latitude !== undefined
+            ? Number(shipment.current_latitude)
+            : null,
+        current_longitude:
+          shipment.current_longitude !== null && shipment.current_longitude !== undefined
+            ? Number(shipment.current_longitude)
+            : null,
+        location_updated_at: shipment.location_updated_at,
       },
     });
   } catch (error) {

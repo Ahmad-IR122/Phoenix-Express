@@ -49,6 +49,18 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: 'accepted',
       },
       estimated_delivery_date: DataTypes.DATE,
+      current_latitude: {
+        type: DataTypes.DECIMAL(10, 7),
+        allowNull: true,
+      },
+      current_longitude: {
+        type: DataTypes.DECIMAL(10, 7),
+        allowNull: true,
+      },
+      location_updated_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     },
     {
       sequelize,

@@ -405,6 +405,15 @@ const mapOrderCard = (shipment) => {
     originCity: fallbackValue(order?.origin_city),
     destinationCity: fallbackValue(order?.destination_city),
     timeWindow: shipment.estimated_delivery_date,
+    currentLatitude:
+      shipment.current_latitude !== null && shipment.current_latitude !== undefined
+        ? Number(shipment.current_latitude)
+        : null,
+    currentLongitude:
+      shipment.current_longitude !== null && shipment.current_longitude !== undefined
+        ? Number(shipment.current_longitude)
+        : null,
+    locationUpdatedAt: shipment.location_updated_at,
   };
 };
 
@@ -437,6 +446,15 @@ const mapOrderDetails = (shipment) => {
         ? Number(order.declared_value)
         : null,
     estimatedDeliveryDate: shipment.estimated_delivery_date,
+    currentLatitude:
+      shipment.current_latitude !== null && shipment.current_latitude !== undefined
+        ? Number(shipment.current_latitude)
+        : null,
+    currentLongitude:
+      shipment.current_longitude !== null && shipment.current_longitude !== undefined
+        ? Number(shipment.current_longitude)
+        : null,
+    locationUpdatedAt: shipment.location_updated_at,
     region: region
       ? {
           id: region.id,
@@ -445,6 +463,80 @@ const mapOrderDetails = (shipment) => {
         }
       : null,
   };
+};
+
+const updateEmployeeShipmentLocation = async ({ userId, shipmentId, latitude, longitude }) => {
+  const employee = await ensureAuthenticatedEmployee({ userId });
+  const numericLatitude = Number(latitude);
+  const numericLongitude = Number(longitude);
+
+  if (
+    !Number.isFinite(numericLatitude) ||
+    !Number.isFinite(numericLongitude) ||
+    numericLatitude < -90 ||
+    numericLatitude > 90 ||
+    numericLongitude < -180 ||
+    numericLongitude > 180
+  ) {
+    const error = new Error('Invalid shipment location coordinates');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const shipment = await Shipment.findOne({
+    where: {
+      id: shipmentId,
+      driver_id: employee.id,
+      current_status: {
+        [Op.in]: ACTIVE_SHIPMENT_STATUSES,
+      },
+    },
+    include: [
+      {
+        model: Order,
+        as: 'order',
+        include: [
+          {
+            model: Region,
+            as: 'region',
+            attributes: ['id', 'name', 'price'],
+            required: false,
+          },
+        ],
+      },
+    ],
+  });
+
+  if (!shipment || !shipment.order) {
+    const error = new Error('Employee active shipment not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  await shipment.update({
+    current_latitude: numericLatitude,
+    current_longitude: numericLongitude,
+    location_updated_at: new Date(),
+  });
+
+  const updatedShipment = await Shipment.findByPk(shipment.id, {
+    include: [
+      {
+        model: Order,
+        as: 'order',
+        include: [
+          {
+            model: Region,
+            as: 'region',
+            attributes: ['id', 'name', 'price'],
+            required: false,
+          },
+        ],
+      },
+    ],
+  });
+
+  return mapOrderCard(updatedShipment);
 };
 
 const getAssignedEmployeeShipments = async ({ employeeId }) =>
@@ -1042,6 +1134,7 @@ module.exports = {
   getEmployeeDashboardData,
   getEmployeeOrderDetailsData,
   updateEmployeeOrderStatus,
+  updateEmployeeShipmentLocation,
   getEmployeeProfileData,
   updateEmployeeProfileData,
   updateEmployeeVehicleData,
