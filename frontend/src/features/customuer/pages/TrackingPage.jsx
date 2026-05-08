@@ -92,6 +92,42 @@ const fallbackValue = (value) => value || "غير متوفر";
 const isAuthenticated = () =>
   Boolean(localStorage.getItem("token") || sessionStorage.getItem("token"));
 
+const hasLiveLocation = (shipment) =>
+  Number.isFinite(Number(shipment?.current_latitude)) &&
+  Number.isFinite(Number(shipment?.current_longitude));
+
+const buildOpenStreetMapUrl = (shipment) => {
+  const latitude = Number(shipment.current_latitude);
+  const longitude = Number(shipment.current_longitude);
+  const latitudePadding = 0.018;
+  const longitudePadding = 0.028;
+  const bbox = [
+    longitude - longitudePadding,
+    latitude - latitudePadding,
+    longitude + longitudePadding,
+    latitude + latitudePadding,
+  ].join("%2C");
+
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${latitude}%2C${longitude}`;
+};
+
+const formatLocationUpdatedAt = (value) => {
+  if (!value) return "\u0644\u0645 \u064a\u062a\u0645 \u062a\u062d\u062f\u064a\u062b \u0627\u0644\u0645\u0648\u0642\u0639 \u0628\u0639\u062f";
+
+  const parsedDate = new Date(value);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "\u0644\u0645 \u064a\u062a\u0645 \u062a\u062d\u062f\u064a\u062b \u0627\u0644\u0645\u0648\u0642\u0639 \u0628\u0639\u062f";
+  }
+
+  return new Intl.DateTimeFormat("ar-PS", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "numeric",
+    month: "long",
+  }).format(parsedDate);
+};
+
 const TrackingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -172,11 +208,34 @@ const TrackingPage = () => {
     }
   }, [navigate]);
 
+  const refreshTrackingLocation = React.useCallback(async () => {
+    if (!shipment?.tracking_number || !isAuthenticated()) {
+      return;
+    }
+
+    try {
+      const response = await getTrackingByNumber(shipment.tracking_number);
+      setShipment(response?.data || null);
+    } catch {
+      // Keep the latest visible shipment data when background refresh fails.
+    }
+  }, [shipment?.tracking_number]);
+
   useEffect(() => {
     if (trackingNumberFromState) {
       performSearch(trackingNumberFromState);
     }
   }, [performSearch, trackingNumberFromState]);
+
+  useEffect(() => {
+    if (!shipment?.tracking_number) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(refreshTrackingLocation, 10000);
+
+    return () => window.clearInterval(intervalId);
+  }, [refreshTrackingLocation, shipment?.tracking_number]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -330,6 +389,44 @@ const TrackingPage = () => {
                       })}
                     </div>
                   </div>
+                </div>
+              </div>
+
+              <div className="card border-0 tracking-result-card tracking-live-map-card mb-4">
+                <div className="card-body p-4 p-md-5">
+                  <div className="tracking-live-map-header">
+                    <div>
+                      <h2 className="tracking-details-title mb-2">
+                        {"\u062a\u062a\u0628\u0639 \u0627\u0644\u0645\u0646\u062f\u0648\u0628 \u0639\u0644\u0649 \u0627\u0644\u062e\u0631\u064a\u0637\u0629"}
+                      </h2>
+                      <p className="tracking-live-map-subtitle mb-0">
+                        {hasLiveLocation(shipment)
+                          ? `\u0622\u062e\u0631 \u062a\u062d\u062f\u064a\u062b: ${formatLocationUpdatedAt(shipment.location_updated_at)}`
+                          : "\u0644\u0645 \u064a\u062d\u062f\u062b \u0627\u0644\u0645\u0646\u062f\u0648\u0628 \u0645\u0648\u0642\u0639\u0647 \u0628\u0639\u062f."}
+                      </p>
+                    </div>
+                    <span className="tracking-live-map-badge">
+                      {"Live"}
+                    </span>
+                  </div>
+
+                  {hasLiveLocation(shipment) ? (
+                    <div className="tracking-live-map-frame mt-4">
+                      <iframe
+                        title="Live shipment location"
+                        src={buildOpenStreetMapUrl(shipment)}
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                      />
+                    </div>
+                  ) : (
+                    <div className="tracking-live-map-empty mt-4">
+                      <BsTruck aria-hidden="true" />
+                      <p className="mb-0">
+                        {"\u0633\u062a\u0638\u0647\u0631 \u0627\u0644\u062e\u0631\u064a\u0637\u0629 \u0647\u0646\u0627 \u0628\u0645\u062c\u0631\u062f \u0623\u0646 \u064a\u062d\u062f\u062b \u0627\u0644\u0645\u0646\u062f\u0648\u0628 \u0645\u0648\u0642\u0639 \u0627\u0644\u0634\u062d\u0646\u0629."}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 

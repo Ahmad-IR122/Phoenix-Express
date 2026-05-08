@@ -102,6 +102,7 @@ function EmployeeOrdersPage() {
   const [loadError, setLoadError] = useState('');
   const [actionError, setActionError] = useState('');
   const [updatingShipmentId, setUpdatingShipmentId] = useState(null);
+  const [updatingLocationShipmentId, setUpdatingLocationShipmentId] = useState(null);
 
   const loadOrders = async () => {
     try {
@@ -223,6 +224,52 @@ function EmployeeOrdersPage() {
     }
   };
 
+  const updateShipmentLocation = async (order) => {
+    if (!order?.shipmentId) {
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      setActionError('المتصفح لا يدعم خدمة تحديد الموقع.');
+      return;
+    }
+
+    try {
+      setUpdatingLocationShipmentId(order.shipmentId);
+      setActionError('');
+
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 12000,
+          maximumAge: 0,
+        });
+      });
+
+      const response = await API.patch(
+        `/employees/orders/${order.shipmentId}/location`,
+        {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        }
+      );
+
+      const updatedOrder = response.data?.data;
+
+      if (updatedOrder) {
+        replaceOrder(updatedOrder);
+      }
+    } catch (error) {
+      setActionError(
+        error.code === 1
+          ? 'يرجى السماح للمتصفح بالوصول إلى موقعك الحالي.'
+          : 'تعذر تحديث موقع الشحنة حالياً. حاول مرة أخرى.'
+      );
+    } finally {
+      setUpdatingLocationShipmentId(null);
+    }
+  };
+
   const handleAcceptOrder = (order) => updateShipmentStatus(order, 'picked_up');
 
   const handleCompleteOrder = (order) => updateShipmentStatus(order, 'delivered');
@@ -253,6 +300,7 @@ function EmployeeOrdersPage() {
     const isAvailable = order.status === 'available';
     const isCompleted = order.status === 'completed';
     const isUpdating = updatingShipmentId === order.shipmentId;
+    const isUpdatingLocation = updatingLocationShipmentId === order.shipmentId;
 
     return (
       <div className="employee-orders-page__details-card">
@@ -396,6 +444,18 @@ function EmployeeOrdersPage() {
               </button>
             </div>
           )}
+
+          {order.status === 'in_progress' ? (
+            <button
+              type="button"
+              className="employee-orders-page__location-btn"
+              onClick={() => updateShipmentLocation(order)}
+              disabled={isUpdatingLocation}
+            >
+              <i className="bi bi-geo-alt"></i>
+              {isUpdatingLocation ? 'جارٍ تحديث الموقع...' : 'تحديث موقعي الحالي'}
+            </button>
+          ) : null}
         </div>
       </div>
     );
@@ -604,6 +664,19 @@ function EmployeeOrdersPage() {
                           disabled={updatingShipmentId === order.shipmentId}
                         >
                           {updatingShipmentId === order.shipmentId ? 'جارٍ التحديث...' : 'تعذر التسليم'}
+                        </button>
+                        <button
+                          type="button"
+                          className="employee-orders-page__action-btn employee-orders-page__action-btn--location"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            updateShipmentLocation(order);
+                          }}
+                          disabled={updatingLocationShipmentId === order.shipmentId}
+                        >
+                          {updatingLocationShipmentId === order.shipmentId
+                            ? 'جارٍ تحديد الموقع...'
+                            : 'تحديث موقعي'}
                         </button>
                       </div>
                     ) : (
