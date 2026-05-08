@@ -53,6 +53,7 @@ const formatPublicFeedback = (feedback) => {
     rating: plainFeedback.rating,
     comment: plainFeedback.comment,
     customer_location: plainFeedback.customer_location,
+    is_visible: plainFeedback.is_visible,
     created_at: plainFeedback.created_at || plainFeedback.createdAt,
     customer: {
       id: plainFeedback.customer?.id,
@@ -155,6 +156,7 @@ const createAuthenticatedFeedback = async (req, res) => {
 const getFeedbackSummary = async (req, res) => {
   try {
     const feedbacks = await Feedback.findAll({
+      where: { is_visible: true },
       include: feedbackIncludes,
       order: [['createdAt', 'DESC']],
     });
@@ -238,7 +240,7 @@ const findFeedbackById = async (req, res) => {
 const updateFeedback = async (req, res) => {
   try {
     const { id } = req.params;
-    const { customer_id, rating, comment, customer_location } = req.body;
+    const { customer_id, rating, comment, customer_location, is_visible } = req.body;
     const feedback = await Feedback.findByPk(id);
 
     if (!feedback) {
@@ -256,6 +258,8 @@ const updateFeedback = async (req, res) => {
         customer_location !== undefined
           ? String(customer_location || '').trim() || null
           : feedback.customer_location,
+      is_visible:
+        is_visible !== undefined ? Boolean(is_visible) : feedback.is_visible,
       comment: comment !== undefined ? comment : feedback.comment,
     });
 

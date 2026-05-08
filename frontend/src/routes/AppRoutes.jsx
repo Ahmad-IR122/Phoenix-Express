@@ -27,6 +27,7 @@ import DelegatesPage from "../features/Admin/pages/DelegatesPage";
 import HandoverRequestsPage from "../features/Admin/pages/HandoverRequestsPage";
 import ReportsPage from "../features/Admin/pages/ReportsPage";
 import AdminProfilePage from "../features/Admin/pages/AdminProfilePage";
+import ContentManagementPage from "../features/Admin/pages/ContentManagementPage";
 
 import EmployeeHomePage from "../features/employee/pages/HomePage";
 import OrdersPage from "../features/employee/pages/OrdersPage";
@@ -105,6 +106,7 @@ export default function AppRoutes() {
           <Route path="/admin/merchants" element={<MerchantsPage />} />
           <Route path="/admin/delegates" element={<DelegatesPage />} />
           <Route path="/admin/handover-requests" element={<HandoverRequestsPage />} />
+          <Route path="/admin/content" element={<ContentManagementPage />} />
           <Route path="/admin/reports" element={<ReportsPage />} />
           <Route path="/admin/profile" element={<AdminProfilePage />} />
         </Route>

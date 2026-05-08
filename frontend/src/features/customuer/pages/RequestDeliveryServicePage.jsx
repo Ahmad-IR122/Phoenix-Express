@@ -91,6 +91,17 @@ const RequestDeliveryServicePage = () => {
       return;
     }
 
+    if (!formData.selectedRegion) {
+      Swal.fire({
+        icon: "warning",
+        title: "اختيار المنطقة مطلوب",
+        text: "يرجى اختيار منطقة التوصيل قبل المتابعة.",
+        confirmButtonText: "حسنًا",
+        confirmButtonColor: "#38b6ff",
+      });
+      return;
+    }
+
     if (isEditMode) {
       setIsSavingEdit(true);
 
@@ -163,24 +174,31 @@ const RequestDeliveryServicePage = () => {
                     >
                       <i className="bi bi-geo-alt"></i> المنطقة
                     </label>
-                    <select
+                    <input
                       id="delivery-region"
-                      className="form-select request-delivery-service-page__input"
+                      type="hidden"
                       value={formData.selectedRegion}
-                      onChange={(event) =>
-                        handleChange("selectedRegion", event.target.value)
-                      }
                       required
-                    >
-                      <option value="" disabled>
-                        اختر المنطقة
-                      </option>
+                    />
+                    <div className="request-delivery-service-page__region-options">
                       {deliveryRegionOptions.map((region) => (
-                        <option key={region.value} value={region.value}>
-                          {`${region.label} (${region.price} شيكل)`}
-                        </option>
+                        <button
+                          key={region.value}
+                          type="button"
+                          className={`request-delivery-service-page__region-option${
+                            formData.selectedRegion === region.value
+                              ? " is-selected"
+                              : ""
+                          }`}
+                          onClick={() =>
+                            handleChange("selectedRegion", region.value)
+                          }
+                        >
+                          <span>{region.label}</span>
+                          <strong>{region.price} شيكل</strong>
+                        </button>
                       ))}
-                    </select>
+                    </div>
 
                     {selectedRegionDetails ? (
                       <div className="request-delivery-service-page__price text-center">

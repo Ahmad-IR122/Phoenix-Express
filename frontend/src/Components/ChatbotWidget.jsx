@@ -1270,11 +1270,11 @@ const saveSupportMessage = (rawText) => {
                   onChange={(event) => setInputValue(event.target.value)}
                   placeholder={isArabic ? "اكتب سؤالك هنا..." : "Ask about shipments, orders, or support..."}
                   aria-label="Chat message"
-                  disabled={!isAuthenticated}
+                  disabled={!isAuthenticated || !isEmployeeChatActive}
                 />
                 <button
                   type="submit"
-                  disabled={!isAuthenticated || !inputValue.trim() || isTyping}
+                  disabled={!isAuthenticated || !isEmployeeChatActive || !inputValue.trim() || isTyping}
                   aria-label="Send message"
                 >
                   <FiSend aria-hidden="true" />

@@ -11,6 +11,7 @@ const adminRouteByKey = {
   traders: "/admin/merchants",
   couriers: "/admin/delegates",
   handover: "/admin/handover-requests",
+  content: "/admin/content",
   reports: "/admin/reports",
   profile: "/admin/profile",
 };

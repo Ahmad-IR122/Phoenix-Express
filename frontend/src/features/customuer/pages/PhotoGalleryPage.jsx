@@ -4,9 +4,10 @@ import './PhotoGalleryPage.css';
 import deliveryImg from "../../../Images/delivery.png";
 import fleetImg from "../../../Images/fleet.png";
 import customersImg from "../../../Images/customers.png";
+import API from "../../../apis/api";
 
 const PhotoGalleryPage = () => {
-  const galleryItems = [
+  const fallbackGalleryItems = [
     {
       id: 1,
       title: "خدمات التوصيل الاحترافية",
@@ -26,6 +27,24 @@ const PhotoGalleryPage = () => {
       img: customersImg,
     },
   ];
+  const [cmsGalleryItems, setCmsGalleryItems] = React.useState([]);
+  const galleryItems = cmsGalleryItems.length ? cmsGalleryItems : fallbackGalleryItems;
+
+  React.useEffect(() => {
+    API.get("/photogalleries")
+      .then((response) => {
+        const items = Array.isArray(response.data?.data) ? response.data.data : [];
+        setCmsGalleryItems(
+          items.map((item) => ({
+            id: item.id,
+            title: item.name,
+            desc: item.description || "",
+            img: item.image_url,
+          }))
+        );
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="photo-gallery-page">
