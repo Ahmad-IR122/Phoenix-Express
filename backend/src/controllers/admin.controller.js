@@ -10,6 +10,7 @@ const {
   Employee,
   Vehicle,
   EmployeeWallet,
+  WalletTransaction,
   WithdrawalRequest,
   Customer,
   CompanyCustomerProfile,
@@ -56,6 +57,8 @@ const ARABIC_DAY_NAMES = [
 const DASHBOARD_TIME_ZONE = process.env.DASHBOARD_TIME_ZONE || "Asia/Hebron";
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase();
 const normalizePhone = (value) => String(value || "").trim();
+const buildDelegateAddress = ({ city, area }) =>
+  [String(city || "").trim(), String(area || "").trim()].filter(Boolean).join(" - ");
 
 const getStartOfDay = (date = new Date()) => {
   return moment.tz(date, DASHBOARD_TIME_ZONE).startOf("day").toDate();
@@ -934,9 +937,6 @@ const getAdminDashboard = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Admin dashboard error:", error);
-    console.error("Failed to fetch admin dashboard data:", error.message);
-
     return res.status(500).json({
       success: false,
       message: "Failed to fetch admin dashboard data",
@@ -1180,7 +1180,6 @@ const getAdminMerchants = async (req, res) => {
       data: merchants,
     });
   } catch (error) {
-    console.error("FETCH MERCHANTS ERROR:", error);
     return res.status(500).json({
       success: false,
       message: "Failed to fetch merchants",
@@ -1233,7 +1232,6 @@ const getAdminMerchantById = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("FETCH MERCHANTS ERROR:", error);
     return res.status(500).json({
       success: false,
       message: "Failed to fetch merchant",
@@ -1323,7 +1321,6 @@ const settleAdminMerchant = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("MERCHANT SETTLEMENT ERROR:", error);
     return res.status(500).json({
       success: false,
       message: "Failed to settle merchant",
@@ -2034,6 +2031,7 @@ const getAdminDelegates = async (req, res) => {
         userId: employee.user?.id || null,
         full_name: employee.full_name,
         phone: employee.user?.phone || "",
+        address: employee.address || "",
         availability_status: employee.availability_status,
         is_active: Boolean(employee.is_active),
         vehicle: employee.vehicle
@@ -2092,6 +2090,393 @@ const getAdminDelegates = async (req, res) => {
       success: false,
       message: "فشل في جلب بيانات المناديب",
       errors: [error.message],
+    });
+  }
+};
+
+const mapDelegateShipmentDetails = (shipment) => ({
+  shipmentId: shipment.id,
+  orderId: shipment.order?.id || null,
+  orderNumber: shipment.tracking_number || buildTrackingNumber(shipment.order?.id),
+  customerName: shipment.order?.receiver_name || "-",
+  customerPhone: shipment.order?.receiver_phone || "-",
+  merchantName: resolveMerchantName(shipment.order || {}),
+  city: shipment.order?.destination_city || "-",
+  area: shipment.order?.receiver_address || "-",
+  amount: toNumber(shipment.order?.declared_value),
+  paymentMethod: shipment.order?.payment_method || "-",
+  status: ASSIGNED_PARCEL_STATUS_LABELS[shipment.current_status] || shipment.current_status || "-",
+  rawStatus: shipment.current_status || "-",
+  updatedAt: shipment.updatedAt,
+  createdAt: shipment.createdAt,
+});
+
+const getAdminDelegateDetails = async (req, res) => {
+  try {
+    const delegateId = toNumber(req.params.id);
+
+    if (!delegateId) {
+      return res.status(400).json({
+        success: false,
+        message: "رقم المندوب غير صالح",
+      });
+    }
+
+    const employee = await Employee.findByPk(delegateId, {
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "phone", "email"],
+          required: false,
+        },
+        {
+          model: Vehicle,
+          as: "vehicle",
+          required: false,
+        },
+        {
+          model: EmployeeWallet,
+          as: "wallet",
+          attributes: ["id", "available_balance", "total_earnings"],
+          required: false,
+        },
+      ],
+    });
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "المندوب غير موجود",
+      });
+    }
+
+    const shipments = await Shipment.findAll({
+      where: {
+        driver_id: employee.id,
+      },
+      attributes: ["id", "tracking_number", "current_status", "createdAt", "updatedAt"],
+      include: [
+        {
+          model: Order,
+          as: "order",
+          required: true,
+          attributes: [
+            "id",
+            "receiver_name",
+            "receiver_phone",
+            "receiver_address",
+            "destination_city",
+            "declared_value",
+            "sender_name",
+          ],
+          include: [
+            {
+              model: Customer,
+              as: "customer",
+              attributes: ["id"],
+              required: false,
+              include: [
+                {
+                  model: CompanyCustomerProfile,
+                  as: "company_profile",
+                  attributes: ["company_name"],
+                  required: false,
+                },
+                {
+                  model: IndividualCustomerProfile,
+                  as: "individual_profile",
+                  attributes: ["full_name"],
+                  required: false,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      order: [["updatedAt", "DESC"]],
+    });
+
+    const walletTransactions = employee.wallet
+      ? await WalletTransaction.findAll({
+          where: {
+            wallet_id: employee.wallet.id,
+          },
+          attributes: ["transaction_type", "amount", "createdAt"],
+          order: [["createdAt", "DESC"]],
+        })
+      : [];
+
+    const activeShipments = shipments.filter((shipment) =>
+      ACTIVE_SHIPMENT_STATUSES.includes(shipment.current_status),
+    );
+    const deliveredShipments = shipments.filter((shipment) => shipment.current_status === "delivered");
+    const returnedShipments = shipments.filter((shipment) => shipment.current_status === "returned");
+
+    const monthlyPerformanceMap = shipments.reduce((accumulator, shipment) => {
+      const monthKey = getLocalDateKey(shipment.updatedAt).slice(0, 7);
+
+      if (!monthKey) {
+        return accumulator;
+      }
+
+      if (!accumulator[monthKey]) {
+        accumulator[monthKey] = {
+          month: monthKey,
+          delivered: 0,
+          returned: 0,
+          active: 0,
+          collections: 0,
+        };
+      }
+
+      if (shipment.current_status === "delivered") {
+        accumulator[monthKey].delivered += 1;
+        accumulator[monthKey].collections += toNumber(shipment.order?.declared_value);
+      }
+
+      if (shipment.current_status === "returned") {
+        accumulator[monthKey].returned += 1;
+      }
+
+      if (ACTIVE_SHIPMENT_STATUSES.includes(shipment.current_status)) {
+        accumulator[monthKey].active += 1;
+      }
+
+      return accumulator;
+    }, {});
+
+    const walletBalance = toNumber(employee.wallet?.available_balance);
+    const earningCredits = walletTransactions
+      .filter((transaction) => transaction.transaction_type === "earning")
+      .reduce((sum, transaction) => sum + toNumber(transaction.amount), 0);
+    const withdrawals = walletTransactions
+      .filter((transaction) => ["withdrawal", "handover"].includes(transaction.transaction_type))
+      .reduce((sum, transaction) => sum + Math.abs(toNumber(transaction.amount)), 0);
+
+    return res.status(200).json({
+      success: true,
+      message: "تم جلب تفاصيل المندوب بنجاح",
+      data: {
+        id: employee.id,
+        userId: employee.user?.id || null,
+        name: employee.full_name,
+        phone: employee.user?.phone || "-",
+        email: employee.user?.email || "-",
+        address: employee.address || "-",
+        city: employee.address || "-",
+        area: employee.address || "-",
+        vehicleType: employee.vehicle?.type || "motorcycle",
+        nationalId: "-",
+        licenseNumber: employee.vehicle?.plate_number || "-",
+        isActive: Boolean(employee.is_active),
+        activityState: employee.is_active ? "active" : "inactive",
+        status: employee.availability_status,
+        activeOrdersCount: activeShipments.length,
+        totalDeliveries: deliveredShipments.length,
+        returnedOrdersCount: returnedShipments.length,
+        collectedAmount: walletBalance,
+        finance: {
+          walletBalance,
+          earningCredits,
+          withdrawals,
+        },
+        currentOrders: activeShipments.map(mapDelegateShipmentDetails),
+        recentDeliveries: deliveredShipments.slice(0, 6).map(mapDelegateShipmentDetails),
+        returnedOrders: returnedShipments.slice(0, 6).map((shipment) => ({
+          ...mapDelegateShipmentDetails(shipment),
+          returnedReason: shipment.order?.receiver_address || "-",
+        })),
+        monthlyPerformance: Object.values(monthlyPerformanceMap)
+          .sort((left, right) => right.month.localeCompare(left.month))
+          .slice(0, 4),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "فشل في جلب تفاصيل المندوب",
+      errors: [error.message],
+    });
+  }
+};
+
+const createAdminDelegate = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const fullName = String(req.body?.fullName || "").trim();
+    const phone = normalizePhone(req.body?.phone);
+    const city = String(req.body?.city || "").trim();
+    const area = String(req.body?.area || "").trim();
+    const vehicleType = String(req.body?.vehicleType || "motorcycle").trim();
+    const licenseNumber = String(req.body?.licenseNumber || "").trim();
+    const isActive = req.body?.isActive !== undefined ? Boolean(req.body.isActive) : true;
+
+    if (!fullName || !phone || !city || !area || !licenseNumber) {
+      await transaction.rollback();
+      return res.status(400).json({
+        success: false,
+        message: "بيانات المندوب غير مكتملة",
+      });
+    }
+
+    const user = await User.create(
+      {
+        email: `employee-${phone}@phoenix.local`,
+        phone,
+        password: phone,
+        role: "employee",
+        full_name: fullName,
+      },
+      { transaction },
+    );
+
+    const employee = await Employee.create(
+      {
+        user_id: user.id,
+        full_name: fullName,
+        address: buildDelegateAddress({ city, area }),
+        is_active: isActive,
+        availability_status: isActive ? "available" : "offline",
+      },
+      { transaction },
+    );
+
+    await Vehicle.create(
+      {
+        employee_id: employee.id,
+        brand: city,
+        model: area,
+        type: vehicleType,
+        plate_number: licenseNumber,
+      },
+      { transaction },
+    );
+
+    await EmployeeWallet.findOrCreate({
+      where: { employee_id: employee.id },
+      defaults: {
+        employee_id: employee.id,
+        available_balance: 0,
+        total_earnings: 0,
+      },
+      transaction,
+    });
+
+    await transaction.commit();
+
+    return res.status(201).json({
+      success: true,
+      message: "تمت إضافة المندوب بنجاح",
+      data: { id: employee.id },
+    });
+  } catch (error) {
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
+    return res.status(400).json({
+      success: false,
+      message: "فشل في إضافة المندوب",
+      errors: error.errors ? error.errors.map((err) => err.message) : [error.message],
+    });
+  }
+};
+
+const updateAdminDelegate = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const delegateId = toNumber(req.params.id);
+    const fullName = String(req.body?.fullName || "").trim();
+    const phone = normalizePhone(req.body?.phone);
+    const city = String(req.body?.city || "").trim();
+    const area = String(req.body?.area || "").trim();
+    const vehicleType = String(req.body?.vehicleType || "motorcycle").trim();
+    const licenseNumber = String(req.body?.licenseNumber || "").trim();
+    const isActive = req.body?.isActive !== undefined ? Boolean(req.body.isActive) : true;
+
+    if (!delegateId || !fullName || !phone || !city || !area || !licenseNumber) {
+      await transaction.rollback();
+      return res.status(400).json({
+        success: false,
+        message: "بيانات المندوب غير مكتملة",
+      });
+    }
+
+    const employee = await Employee.findByPk(delegateId, {
+      include: [
+        { model: User, as: "user", required: true },
+        { model: Vehicle, as: "vehicle", required: false },
+      ],
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+
+    if (!employee) {
+      await transaction.rollback();
+      return res.status(404).json({
+        success: false,
+        message: "المندوب غير موجود",
+      });
+    }
+
+    await employee.user.update(
+      {
+        phone,
+        full_name: fullName,
+      },
+      { transaction },
+    );
+
+    await employee.update(
+      {
+        full_name: fullName,
+        address: buildDelegateAddress({ city, area }),
+        is_active: isActive,
+        availability_status: isActive ? employee.availability_status : "offline",
+      },
+      { transaction },
+    );
+
+    if (employee.vehicle) {
+      await employee.vehicle.update(
+        {
+          brand: city,
+          model: area,
+          type: vehicleType,
+          plate_number: licenseNumber,
+        },
+        { transaction },
+      );
+    } else {
+      await Vehicle.create(
+        {
+          employee_id: employee.id,
+          brand: city,
+          model: area,
+          type: vehicleType,
+          plate_number: licenseNumber,
+        },
+        { transaction },
+      );
+    }
+
+    await transaction.commit();
+
+    return res.status(200).json({
+      success: true,
+      message: "تم تحديث بيانات المندوب بنجاح",
+      data: { id: employee.id },
+    });
+  } catch (error) {
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
+    return res.status(400).json({
+      success: false,
+      message: "فشل في تحديث بيانات المندوب",
+      errors: error.errors ? error.errors.map((err) => err.message) : [error.message],
     });
   }
 };
@@ -2186,31 +2571,7 @@ const reassignReturnedShipment = async (req, res) => {
         message: "المندوب غير متاح حاليًا لإعادة التخصيص",
       });
     }
-
-    const activeParcels = await Shipment.count({
-      where: {
-        driver_id: employee.id,
-        current_status: {
-          [Op.in]: ACTIVE_SHIPMENT_STATUSES,
-        },
-      },
-      transaction,
-    });
-
-    if (activeParcels >= 5) {
-      await transaction.rollback();
-      return res.status(400).json({
-        success: false,
-        message: "لا يمكن إعادة تخصيص الشحنة لهذا المندوب لأنه مشغول حاليًا",
-      });
-    }
-
-    await employee.update(
-      {
-        availability_status: "busy",
-      },
-      { transaction },
-    );
+    // Reassignment now depends only on the employee's explicit availability status.
 
     await shipment.update(
       {
@@ -2410,7 +2771,6 @@ const updateAdminHandoverRequestStatus = async (req, res) => {
       data: mapHandoverRequestRow(refreshedRequest),
     });
   } catch (error) {
-    console.error("Admin handover status update error:", error);
     if (!transaction.finished) {
       await transaction.rollback();
     }
@@ -2647,7 +3007,10 @@ module.exports = {
   getAdminReturnedOrdersReport,
   getParcelDistribution,
   assignParcelToDriver,
+  createAdminDelegate,
   getAdminDelegates,
+  getAdminDelegateDetails,
+  updateAdminDelegate,
   updateAdminDelegateStatus,
   getReturnedShipments,
   reassignReturnedShipment,

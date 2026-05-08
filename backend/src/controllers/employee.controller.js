@@ -442,11 +442,6 @@ const updateAuthenticatedEmployeeOrderStatus = async (req, res) => {
       mockAuth: Boolean(req.user.isMockAuth),
     });
   } catch (error) {
-    console.error('Employee order status update error:', error);
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
-    console.error('Validation errors:', error.errors);
-
     return res.status(error.statusCode || 500).json({
       success: false,
       message: error.message || 'Failed to update employee order status',

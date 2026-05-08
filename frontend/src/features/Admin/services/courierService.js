@@ -1,6 +1,5 @@
 import API from "../../../apis/api";
 
-// TODO: Replace the remaining local details/create/edit mutations with dedicated admin endpoints.
 const NOW = new Date("2026-04-24T12:00:00");
 const ACTIVE_SHIPMENT_STATUSES = ["assigned", "picked_up", "in_transit", "out_for_delivery"];
 const DELIVERED_SHIPMENT_STATUSES = ["delivered"];
@@ -787,8 +786,9 @@ export async function getAllCouriers() {
       userId: delegate.userId,
       name: delegate.full_name,
       phone: delegate.phone || "-",
-      city: delegate.vehicle?.brand || "-",
-      area: delegate.vehicle?.model || "-",
+      city: delegate.address || "-",
+      area: delegate.address || "-",
+      address: delegate.address || "-",
       vehicleType: delegate.vehicle?.type || "motorcycle",
       nationalId: "-",
       licenseNumber: delegate.vehicle?.plate_number || "-",
@@ -808,56 +808,13 @@ export async function getAllCouriers() {
 }
 
 export async function createCourier(payload) {
-  const nextId = Math.max(...employeesTable.map((item) => item.id), 0) + 1;
-
-  employeesTable = [
-    ...employeesTable,
-    {
-      id: nextId,
-      fullName: payload.fullName,
-      phone: payload.phone,
-      city: payload.city,
-      area: payload.area,
-      vehicleType: payload.vehicleType,
-      nationalId: payload.nationalId || "",
-      licenseNumber: payload.licenseNumber || "",
-      isActive: payload.isActive,
-      lastSeenAt: NOW.toISOString(),
-    },
-  ];
-
-  employeeWalletsTable = [
-    ...employeeWalletsTable,
-    {
-      employeeId: nextId,
-      currentBalance: 0,
-      currency: "ILS",
-      updatedAt: NOW.toISOString(),
-    },
-  ];
-
-  return deriveCourierRow(employeesTable[employeesTable.length - 1]);
+  const response = await API.post("/admin/delegates", payload);
+  return response.data?.data || null;
 }
 
 export async function updateCourier(courierId, payload) {
-  employeesTable = employeesTable.map((employee) =>
-    employee.id === courierId
-      ? {
-          ...employee,
-          fullName: payload.fullName,
-          phone: payload.phone,
-          city: payload.city,
-          area: payload.area,
-          vehicleType: payload.vehicleType,
-          nationalId: payload.nationalId || "",
-          licenseNumber: payload.licenseNumber || "",
-          isActive: payload.isActive,
-        }
-      : employee
-  );
-
-  const updated = employeesTable.find((employee) => employee.id === courierId);
-  return updated ? deriveCourierRow(updated) : null;
+  const response = await API.put(`/admin/delegates/${courierId}`, payload);
+  return response.data?.data || null;
 }
 
 export async function toggleCourierStatus(courierId, isActive) {
@@ -868,5 +825,25 @@ export async function toggleCourierStatus(courierId, isActive) {
 }
 
 export async function getCourierDetails(courierId) {
-  return buildDetailsSection(courierId);
+  const response = await API.get(`/admin/delegates/${courierId}`);
+  const payload = response.data?.data || null;
+
+  if (!payload) {
+    return null;
+  }
+
+  return {
+    ...payload,
+    returnedOrdersCount: Number(payload.returnedOrdersCount || 0),
+    collectedAmount: Number(payload.collectedAmount || 0),
+    finance: {
+      walletBalance: Number(payload.finance?.walletBalance || 0),
+      earningCredits: Number(payload.finance?.earningCredits || 0),
+      withdrawals: Number(payload.finance?.withdrawals || 0),
+    },
+    currentOrders: Array.isArray(payload.currentOrders) ? payload.currentOrders : [],
+    recentDeliveries: Array.isArray(payload.recentDeliveries) ? payload.recentDeliveries : [],
+    returnedOrders: Array.isArray(payload.returnedOrders) ? payload.returnedOrders : [],
+    monthlyPerformance: Array.isArray(payload.monthlyPerformance) ? payload.monthlyPerformance : [],
+  };
 }

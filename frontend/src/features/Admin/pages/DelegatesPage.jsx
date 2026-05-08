@@ -99,8 +99,8 @@ function buildFormFromCourier(courier) {
   return {
     fullName: courier.name,
     phone: courier.phone,
-    area: courier.area,
-    city: courier.city,
+    area: courier.address || courier.area,
+    city: courier.city === courier.area ? "" : courier.city,
     vehicleType: courier.vehicleType,
     nationalId: courier.nationalId === "-" ? "" : courier.nationalId,
     licenseNumber: courier.licenseNumber === "-" ? "" : courier.licenseNumber,
@@ -696,9 +696,7 @@ function DelegatesPage() {
                     <div>
                       <span className="phoenix-delegates__eyebrow">ملف المندوب</span>
                       <h2>{selectedCourierDetails.name}</h2>
-                      <p>
-                        {selectedCourierDetails.city} - {selectedCourierDetails.area}
-                      </p>
+                      <p>{selectedCourierDetails.address || selectedCourierDetails.area}</p>
                     </div>
                   </div>
 
@@ -720,6 +718,10 @@ function DelegatesPage() {
                   <article className="phoenix-delegates__details-card">
                     <h3>بيانات المندوب</h3>
                     <div className="phoenix-delegates__details-list">
+                      <div>
+                        <span>العنوان</span>
+                        <strong>{selectedCourierDetails.address || "-"}</strong>
+                      </div>
                       <div>
                         <span>رقم الهاتف</span>
                         <strong dir="ltr">{selectedCourierDetails.phone}</strong>
@@ -763,19 +765,11 @@ function DelegatesPage() {
                       </div>
                       <div>
                         <span>مرتجعات هذا الأسبوع</span>
-                        <strong>{formatNumber(selectedCourierDetails.returnedOrders)}</strong>
+                        <strong>{formatNumber(selectedCourierDetails.returnedOrdersCount)}</strong>
                       </div>
                       <div>
                         <span>المبالغ المحصلة</span>
                         <strong>{formatCurrency(selectedCourierDetails.collectedAmount)}</strong>
-                      </div>
-                      <div>
-                        <span>الرصيد المالي</span>
-                        <strong>{formatCurrency(selectedCourierDetails.finance.walletBalance)}</strong>
-                      </div>
-                      <div>
-                        <span>التقييم العام</span>
-                        <strong>{selectedCourierDetails.overallRating} / 5</strong>
                       </div>
                     </div>
                   </article>
@@ -878,31 +872,7 @@ function DelegatesPage() {
                     </div>
                   </article>
 
-                  <article className="phoenix-delegates__details-section phoenix-delegates__details-section--finance">
-                    <div className="phoenix-delegates__section-head">
-                      <h3>الرصيد والإنجاز المالي</h3>
-                      <span>ملخص مالي</span>
-                    </div>
-                    <div className="phoenix-delegates__finance-grid">
-                      <div>
-                        <span>الرصيد الحالي</span>
-                        <strong>{formatCurrency(selectedCourierDetails.finance.walletBalance)}</strong>
-                      </div>
-                      <div>
-                        <span>إجمالي التحصيل</span>
-                        <strong>{formatCurrency(selectedCourierDetails.finance.collectionsTotal)}</strong>
-                      </div>
-                      <div>
-                        <span>إجمالي أرباح المندوب</span>
-                        <strong>{formatCurrency(selectedCourierDetails.finance.earningCredits)}</strong>
-                      </div>
-                      <div>
-                        <span>إجمالي السحوبات</span>
-                        <strong>{formatCurrency(selectedCourierDetails.finance.withdrawals)}</strong>
-                      </div>
-                    </div>
-                  </article>
-                </div>
+                  </div>
               </>
             )}
           </div>
@@ -913,3 +883,6 @@ function DelegatesPage() {
 }
 
 export default DelegatesPage;
+
+
+
