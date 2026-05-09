@@ -12,7 +12,6 @@ export const getTrackingQrCode = async (trackingNumber) => {
   const response = await API.get(
     `/generate-qr/${encodeURIComponent(trackingNumber)}`
   );
-
   return response.data;
 };
 

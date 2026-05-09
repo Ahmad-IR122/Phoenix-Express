@@ -221,9 +221,9 @@ const getEmployeeDashboard = async (req, res) => {
       fallbackMockAuth: Boolean(req.user?.isFallbackMockAuth),
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(error.statusCode || 500).json({
       success: false,
-      message: 'Failed to fetch employee dashboard',
+      message: error.message || 'Failed to fetch employee dashboard',
       errors: [error.message],
     });
   }

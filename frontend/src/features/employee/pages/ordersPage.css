@@ -275,6 +275,13 @@
   gap: 12px;
 }
 
+.employee-orders-page__price-side {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
 .employee-orders-page__price {
   color: #16a34a;
   font-size: 27px;
@@ -285,6 +292,10 @@
 .employee-orders-page__price-stack {
   display: grid;
   gap: 4px;
+}
+
+.employee-orders-page__qr {
+  flex-shrink: 0;
 }
 
 .employee-orders-page__price-caption {
@@ -477,6 +488,18 @@
 
 .employee-orders-page__detail-item--wide {
   grid-column: 1 / -1;
+}
+
+.employee-orders-page__detail-item--qr {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.employee-orders-page__details-qr {
+  width: 100%;
+  justify-items: center;
 }
 
 .employee-orders-page__detail-label {
@@ -694,6 +717,10 @@
   .employee-orders-page__modal-header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .employee-orders-page__price-side {
+    justify-content: space-between;
   }
 
   .employee-orders-page__info-grid {

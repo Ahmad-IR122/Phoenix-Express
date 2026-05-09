@@ -15,7 +15,6 @@ API.interceptors.request.use((config) => {
       : null;
 
   config.headers = config.headers || {};
-  config.headers['x-mock-auth-mode'] = 'employee-dev';
 
   if (!storedUser) {
     return config;
@@ -38,6 +37,7 @@ API.interceptors.request.use((config) => {
 
     if (role) {
       config.headers['x-user-role'] = role;
+      config.headers['x-mock-auth-mode'] = `${role}-dev`;
     }
   } catch (error) {
     return config;

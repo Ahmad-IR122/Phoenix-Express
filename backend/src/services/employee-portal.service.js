@@ -254,8 +254,49 @@ const resolveEmployeeByUserId = async (userId) =>
     ],
   });
 
+const ensureEmployeeProfileExists = async (userId) => {
+  const user = await User.findByPk(userId, {
+    attributes: ['id', 'role', 'full_name', 'email', 'phone'],
+  });
+
+  if (!user) {
+    const error = new Error('Authenticated user not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (user.role !== 'employee') {
+    const error = new Error('Employee access only');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  const fallbackName =
+    String(user.full_name || '').trim() ||
+    String(user.email || '').trim() ||
+    String(user.phone || '').trim() ||
+    `Employee #${user.id}`;
+
+  await Employee.findOrCreate({
+    where: { user_id: user.id },
+    defaults: {
+      user_id: user.id,
+      full_name: fallbackName,
+      address: '',
+      is_active: true,
+      availability_status: 'available',
+    },
+  });
+
+  return resolveEmployeeByUserId(user.id);
+};
+
 const ensureAuthenticatedEmployee = async ({ userId }) => {
-  const employee = await resolveEmployeeByUserId(userId);
+  let employee = await resolveEmployeeByUserId(userId);
+
+  if (!employee) {
+    employee = await ensureEmployeeProfileExists(userId);
+  }
 
   if (!employee) {
     const error = new Error('Employee profile not found for the authenticated user');

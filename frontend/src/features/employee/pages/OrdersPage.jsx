@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import TrackingQrCode from '../../../Components/common/TrackingQrCode';
 import './ordersPage.css';
 import API from '../../../apis/api';
 
@@ -337,6 +338,17 @@ function EmployeeOrdersPage() {
               <p className="employee-orders-page__detail-label">رسوم التوصيل</p>
               <p className="employee-orders-page__detail-value">{order.formattedPrice}</p>
             </div>
+            <div className="employee-orders-page__detail-item employee-orders-page__detail-item--wide employee-orders-page__detail-item--qr">
+              <p className="employee-orders-page__detail-label">Shipment QR</p>
+              <TrackingQrCode
+                trackingNumber={order.shipmentNumber}
+                size="compact"
+                title=""
+                subtitle=""
+                showTrackingNumber={true}
+                className="employee-orders-page__details-qr"
+              />
+            </div>
             <div className="employee-orders-page__detail-item">
               <p className="employee-orders-page__detail-label">سعر الطرد</p>
               <p className="employee-orders-page__detail-value">
@@ -620,9 +632,19 @@ function EmployeeOrdersPage() {
 
                   <div className="employee-orders-page__card-body">
                     <div className="employee-orders-page__price-row">
-                      <div className="employee-orders-page__price-stack">
-                        <span className="employee-orders-page__price">{order.formattedPrice}</span>
-                        <span className="employee-orders-page__price-caption">رسوم التوصيل</span>
+                      <div className="employee-orders-page__price-side">
+                        <TrackingQrCode
+                          trackingNumber={order.shipmentNumber}
+                          size="compact"
+                          title=""
+                          subtitle=""
+                          showTrackingNumber={false}
+                          className="employee-orders-page__qr"
+                        />
+                        <div className="employee-orders-page__price-stack">
+                          <span className="employee-orders-page__price">{order.formattedPrice}</span>
+                          <span className="employee-orders-page__price-caption">رسوم التوصيل</span>
+                        </div>
                       </div>
                       <span className="employee-orders-page__time">
                         <i className="bi bi-clock"></i>
@@ -764,3 +786,5 @@ function EmployeeOrdersPage() {
 }
 
 export default EmployeeOrdersPage;
+
+
