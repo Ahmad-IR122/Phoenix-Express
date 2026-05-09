@@ -61,6 +61,30 @@ const normalizePhone = (value) => String(value || "").trim();
 const buildDelegateAddress = ({ city, area }) =>
   [String(city || "").trim(), String(area || "").trim()].filter(Boolean).join(" - ");
 
+const ensureAdminProfileExists = async (userId) => {
+  const user = await User.findByPk(userId, {
+    attributes: ["id", "role"],
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  if (user.role !== "admin") {
+    return null;
+  }
+
+  const [admin] = await Admin.findOrCreate({
+    where: { user_id: user.id },
+    defaults: {
+      user_id: user.id,
+      is_active: true,
+    },
+  });
+
+  return admin;
+};
+
 const getStartOfDay = (date = new Date()) => {
   return moment.tz(date, DASHBOARD_TIME_ZONE).startOf("day").toDate();
 };
@@ -1512,7 +1536,7 @@ const getAuthenticatedAdminProfile = async (req, res) => {
       });
     }
 
-    const admin = await Admin.findOne({
+    let admin = await Admin.findOne({
       where: { user_id: userId },
       include: [
         {
@@ -1523,6 +1547,21 @@ const getAuthenticatedAdminProfile = async (req, res) => {
         },
       ],
     });
+
+    if (!admin) {
+      await ensureAdminProfileExists(userId);
+      admin = await Admin.findOne({
+        where: { user_id: userId },
+        include: [
+          {
+            model: User,
+            as: "user",
+            attributes: ["id", "email", "phone", "role"],
+            required: true,
+          },
+        ],
+      });
+    }
 
     if (!admin || !admin.user) {
       return res.status(404).json({
@@ -1566,7 +1605,7 @@ const updateAuthenticatedAdminProfile = async (req, res) => {
       });
     }
 
-    const admin = await Admin.findOne({
+    let admin = await Admin.findOne({
       where: { user_id: userId },
       include: [
         {
@@ -1577,6 +1616,21 @@ const updateAuthenticatedAdminProfile = async (req, res) => {
         },
       ],
     });
+
+    if (!admin) {
+      await ensureAdminProfileExists(userId);
+      admin = await Admin.findOne({
+        where: { user_id: userId },
+        include: [
+          {
+            model: User,
+            as: "user",
+            attributes: ["id", "email", "phone", "role"],
+            required: true,
+          },
+        ],
+      });
+    }
 
     if (!admin || !admin.user) {
       return res.status(404).json({

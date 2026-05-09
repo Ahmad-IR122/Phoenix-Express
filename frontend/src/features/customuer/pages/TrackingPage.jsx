@@ -3,12 +3,12 @@ import {
   BsBoxSeam,
   BsCheck2Circle,
   BsClockHistory,
-  BsQrCode,
   BsTruck,
 } from "react-icons/bs";
 import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { getTrackingByNumber, getTrackingQrCode } from "../services/customerService";
+import TrackingQrCode from "../../../Components/common/TrackingQrCode";
+import { getTrackingByNumber } from "../services/customerService";
 import "../../../styles/TrackingPage.css";
 
 const searchIcon = (
@@ -138,8 +138,6 @@ const TrackingPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [hasSearched, setHasSearched] = useState(Boolean(trackingNumberFromState));
-  const [qrCodeImage, setQrCodeImage] = useState("");
-  const [isQrLoading, setIsQrLoading] = useState(false);
   const [showSupportOptions, setShowSupportOptions] = useState(false);
   const supportPhoneDisplay = "+972 59-252-0083";
   const supportWhatsappUrl = `https://web.whatsapp.com/send?phone=972592520083&text=${encodeURIComponent(
@@ -166,7 +164,6 @@ const TrackingPage = () => {
 
     setHasSearched(true);
     setShipment(null);
-    setQrCodeImage("");
 
     if (!normalizedTrackingNumber) {
       setErrorMessage("الرجاء إدخال رقم التتبع.");
@@ -240,42 +237,6 @@ const TrackingPage = () => {
 
     return () => window.clearInterval(intervalId);
   }, [refreshTrackingLocation, shipment?.tracking_number]);
-
-  useEffect(() => {
-    if (!shipment?.tracking_number) {
-      setQrCodeImage("");
-      setIsQrLoading(false);
-      return undefined;
-    }
-
-    let isMounted = true;
-
-    const loadQrCode = async () => {
-      setIsQrLoading(true);
-
-      try {
-        const response = await getTrackingQrCode(shipment.tracking_number);
-
-        if (isMounted) {
-          setQrCodeImage(response?.qrCode || "");
-        }
-      } catch {
-        if (isMounted) {
-          setQrCodeImage("");
-        }
-      } finally {
-        if (isMounted) {
-          setIsQrLoading(false);
-        }
-      }
-    };
-
-    loadQrCode();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [shipment?.tracking_number]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -478,37 +439,11 @@ const TrackingPage = () => {
                       امسح الرمز للوصول السريع إلى صفحة تتبع الشحنة.
                     </p>
                   </div>
-
-                  {isQrLoading ? (
-                    <div className="tracking-qr-loading">
-                      <div
-                        className="spinner-border text-primary tracking-spinner mb-3"
-                        role="status"
-                        aria-hidden="true"
-                      />
-                      <p className="tracking-feedback-text mb-0">جارٍ تحميل رمز التتبع...</p>
-                    </div>
-                  ) : qrCodeImage ? (
-                    <div className="tracking-qr-content">
-                      <div className="tracking-qr-frame mx-auto">
-                        <img
-                          src={qrCodeImage}
-                          alt={`QR code for shipment ${shipment.tracking_number}`}
-                          className="tracking-qr-image"
-                        />
-                      </div>
-                      <p className="tracking-qr-caption mb-0 mt-3" dir="ltr">
-                        {shipment.tracking_number}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="tracking-live-map-empty tracking-qr-empty">
-                      <BsQrCode aria-hidden="true" />
-                      <p className="mb-0">
-                        تعذر تحميل رمز التتبع حالياً. حاول تحديث الصفحة مرة أخرى.
-                      </p>
-                    </div>
-                  )}
+                  <TrackingQrCode
+                    trackingNumber={shipment.tracking_number}
+                    title=""
+                    subtitle=""
+                  />
                 </div>
               </div>
 
@@ -607,3 +542,4 @@ const TrackingPage = () => {
 };
 
 export default TrackingPage;
+

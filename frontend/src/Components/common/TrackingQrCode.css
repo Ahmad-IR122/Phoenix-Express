@@ -1,0 +1,87 @@
+.tracking-qr-widget {
+  display: grid;
+  gap: 12px;
+}
+
+.tracking-qr-widget__header {
+  display: grid;
+  gap: 4px;
+}
+
+.tracking-qr-widget__title {
+  margin: 0;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.tracking-qr-widget__subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.tracking-qr-widget__content,
+.tracking-qr-widget__state {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.tracking-qr-widget__frame {
+  padding: 12px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  border: 1px solid #dbeafe;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.tracking-qr-widget__image {
+  display: block;
+  width: 168px;
+  height: 168px;
+  object-fit: contain;
+}
+
+.tracking-qr-widget__tracking-number {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tracking-qr-widget__spinner {
+  width: 2rem;
+  height: 2rem;
+}
+
+.tracking-qr-widget__empty-icon {
+  font-size: 26px;
+  color: #60a5fa;
+}
+
+.tracking-qr-widget__message {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.tracking-qr-widget--compact {
+  justify-items: center;
+}
+
+.tracking-qr-widget--compact .tracking-qr-widget__frame {
+  padding: 8px;
+  border-radius: 18px;
+}
+
+.tracking-qr-widget--compact .tracking-qr-widget__image {
+  width: 86px;
+  height: 86px;
+}
+
+.tracking-qr-widget--compact .tracking-qr-widget__message {
+  font-size: 11px;
+}

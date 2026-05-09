@@ -61,3 +61,10 @@ export async function submitEmployeeHandoverRequest(payload) {
   const response = await API.post('/employees/wallet/withdrawals', payload);
   return response.data;
 }
+
+// export const getTrackingQrCode = async (trackingNumber) => {
+//   const response = await API.get(
+//     `/generate-qr/${encodeURIComponent(trackingNumber)}`
+//   );
+//   return response.data;
+// };
