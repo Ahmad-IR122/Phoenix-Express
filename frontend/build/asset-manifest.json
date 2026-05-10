@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.0ff63117.css",
-    "main.js": "/static/js/main.d3fac8f3.js",
+    "main.js": "/static/js/main.a53ffdd6.js",
     "static/js/453.18bc878d.chunk.js": "/static/js/453.18bc878d.chunk.js",
     "static/media/fleet.png": "/static/media/fleet.97acc17b3c8eab3b2e81.png",
     "static/media/customers.png": "/static/media/customers.46466f0d31bfb1d6dd5a.png",
@@ -9,11 +9,11 @@
     "static/media/Phonex_logo.jpeg": "/static/media/Phonex_logo.a7743134f4b46c4531c4.jpeg",
     "index.html": "/index.html",
     "main.0ff63117.css.map": "/static/css/main.0ff63117.css.map",
-    "main.d3fac8f3.js.map": "/static/js/main.d3fac8f3.js.map",
+    "main.a53ffdd6.js.map": "/static/js/main.a53ffdd6.js.map",
     "453.18bc878d.chunk.js.map": "/static/js/453.18bc878d.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.0ff63117.css",
-    "static/js/main.d3fac8f3.js"
+    "static/js/main.a53ffdd6.js"
   ]
 }
