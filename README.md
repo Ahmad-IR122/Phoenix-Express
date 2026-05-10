@@ -422,7 +422,10 @@ Frontend runs at: `http://localhost:3000`
 - Add Docker-based local setup for backend/frontend/PostgreSQL.
 - Improve CI pipeline to include linting and backend checks.
 
-## 15) Author
-**Author:** Ahmad  
-**GitHub:** Add your GitHub link here  
-**LinkedIn:** Add your LinkedIn link here  
+## 15) Authors & Contributors
+
+| Name   | GitHub | LinkedIn |
+|--------|--------|----------|
+| Ahmad  | Add your GitHub link here | Add your LinkedIn link here |
+| Ammal  | Add your GitHub link here | Add your LinkedIn link here |
+| Raghad | Add your GitHub link here | Add your LinkedIn link here |
