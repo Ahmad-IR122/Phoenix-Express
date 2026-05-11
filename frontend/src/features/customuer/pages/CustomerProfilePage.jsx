@@ -27,6 +27,11 @@ import {
   updateCustomerProfileLegacy,
 } from "../services/customerService";
 import "./CustomerProfilePage.css";
+import {
+  hasMinPasswordLength,
+  isValidEmail,
+  MIN_PASSWORD_LENGTH,
+} from "../../../utils/validators";
 
 const statusTextByValue = {
   accepted: "تم قبول الطلب",
@@ -231,7 +236,7 @@ const getProfileValidationMessage = ({ name, email, phone }) => {
   if (!name) return "الاسم مطلوب.";
   if (name.length < 2) return "الاسم لازم يكون حرفين على الأقل.";
   if (!email) return "البريد الإلكتروني مطلوب.";
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!isValidEmail(email)) {
     return "اكتبي بريد إلكتروني صحيح مثل name@example.com.";
   }
   if (!phone) return "رقم الهاتف مطلوب.";
@@ -550,11 +555,11 @@ const CustomerProfilePage = () => {
       return;
     }
 
-    if (newPassword.length < 8) {
+    if (!hasMinPasswordLength(newPassword)) {
       Swal.fire({
         icon: "warning",
         title: "كلمة المرور قصيرة",
-        text: "كلمة المرور الجديدة لازم تكون 8 أحرف على الأقل.",
+        text: `كلمة المرور الجديدة لازم تكون ${MIN_PASSWORD_LENGTH} أحرف على الأقل.`,
         confirmButtonText: "تمام",
         confirmButtonColor: "#38b6ff",
       });

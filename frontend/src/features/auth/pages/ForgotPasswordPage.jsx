@@ -12,6 +12,11 @@ import {
 } from "react-icons/hi2";
 import logo from "../../../Images/Phonex_logo.jpeg";
 import { forgotPassword, resetPassword } from "../services/authService";
+import {
+  hasMinPasswordLength,
+  isValidAuthPhone,
+  MIN_PASSWORD_LENGTH,
+} from "../../../utils/validators";
 
 const SUPPORT_PHONE = "972592520083";
 
@@ -21,7 +26,6 @@ const ForgotPasswordPage = () => {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const phoneRegex = /^(056|059)\d{7}$/;
 
   const openSupportWhatsapp = () => {
     const message = `مرحباً فينوكس، أحتاج مساعدة بخصوص استعادة كلمة المرور لحسابي المرتبط بالرقم: ${phone}`;
@@ -65,12 +69,23 @@ const ForgotPasswordPage = () => {
   const handleResetPassword = async (event) => {
     event.preventDefault();
 
-    if (!phoneRegex.test(phone)) {
+    if (!isValidAuthPhone(phone)) {
       Swal.fire({
         icon: "warning",
         title: "رقم الهاتف غير صحيح",
         text: "يرجى إدخال رقم هاتف صحيح يبدأ بـ 056 أو 059.",
         confirmButtonText: "حسنًا",
+        confirmButtonColor: "#38b6ff",
+      });
+      return;
+    }
+
+    if (!hasMinPasswordLength(newPassword)) {
+      Swal.fire({
+        icon: "warning",
+        title: "كلمة المرور قصيرة",
+        text: `كلمة المرور الجديدة لازم تكون ${MIN_PASSWORD_LENGTH} أحرف على الأقل.`,
+        confirmButtonText: "تمام",
         confirmButtonColor: "#38b6ff",
       });
       return;
