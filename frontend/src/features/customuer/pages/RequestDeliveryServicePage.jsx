@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { updateCustomerOrder } from "../services/customerService";
 import "./RequestDeliveryServicePage.css";
+import { isValidAuthPhone } from "../../../utils/validators";
 
 const deliveryRegionOptions = [
   { value: "west-bank", label: "الضفة الغربية", price: 20 },
@@ -21,7 +22,6 @@ const parcelStatusOptions = [
   { value: "urgent", label: "عاجل" },
   { value: "immediate", label: "فوري" },
 ];
-
 const isAuthenticated = () =>
   Boolean(localStorage.getItem("token") || sessionStorage.getItem("token"));
 
@@ -90,6 +90,28 @@ const RequestDeliveryServicePage = () => {
       }).then(() => navigate("/login", { state: { from: "/request-delivery" } }));
       return;
     }
+    const invalidSenderPhone = !isValidAuthPhone(formData.senderPhone);
+    const invalidReceiverPhone = !isValidAuthPhone(formData.receiverPhone);
+    if (invalidSenderPhone || invalidReceiverPhone) {
+      let title = "";
+      let text = "يرجى إدخال رقم هاتف صحيح يبدأ بـ 056 أو 059.";
+      if (invalidSenderPhone && invalidReceiverPhone) {
+        title = "رقما هاتفي المرسل والمستلم غير صحيحين";
+      } else if (invalidSenderPhone) {
+        title = "رقم هاتف المرسل غير صحيح";
+      } else {
+        title = "رقم هاتف المستلم غير صحيح";
+      }
+      Swal.fire({
+        icon: "warning",
+        title,
+        text,
+        confirmButtonText: "حسنًا",
+        confirmButtonColor: "#38b6ff",
+      });
+      return;
+    }
+
 
     if (!formData.selectedRegion) {
       Swal.fire({
@@ -120,7 +142,7 @@ const RequestDeliveryServicePage = () => {
           error.response?.status === 403
             ? "\u064a\u0645\u0643\u0646 \u062a\u0639\u062f\u064a\u0644 \u0627\u0644\u0637\u0631\u062f \u0641\u0642\u0637 \u0625\u0630\u0627 \u0643\u0627\u0646 \u0645\u0627 \u0632\u0627\u0644 \u062f\u0627\u062e\u0644 \u0627\u0644\u0634\u0631\u0643\u0629."
             : error.response?.data?.message ||
-              "\u062a\u0639\u0630\u0631 \u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a\u060c \u064a\u0631\u062c\u0649 \u0627\u0644\u0645\u062d\u0627\u0648\u0644\u0629 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.";
+            "\u062a\u0639\u0630\u0631 \u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a\u060c \u064a\u0631\u062c\u0649 \u0627\u0644\u0645\u062d\u0627\u0648\u0644\u0629 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.";
 
         Swal.fire({
           icon: "error",
@@ -185,11 +207,10 @@ const RequestDeliveryServicePage = () => {
                         <button
                           key={region.value}
                           type="button"
-                          className={`request-delivery-service-page__region-option${
-                            formData.selectedRegion === region.value
+                          className={`request-delivery-service-page__region-option${formData.selectedRegion === region.value
                               ? " is-selected"
                               : ""
-                          }`}
+                            }`}
                           onClick={() =>
                             handleChange("selectedRegion", region.value)
                           }

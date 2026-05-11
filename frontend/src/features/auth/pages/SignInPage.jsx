@@ -13,6 +13,12 @@ import {
 } from "react-icons/hi2";
 import logo from "../../../Images/Phonex_logo.jpeg";
 import { registerUser } from "../services/authService";
+import {
+  hasMinPasswordLength,
+  isValidAuthPhone,
+  isValidEmail,
+  MIN_PASSWORD_LENGTH,
+} from "../../../utils/validators";
 
 const SignInPage = () => {
   const navigate = useNavigate();
@@ -25,7 +31,6 @@ const SignInPage = () => {
   const [password, setPassword] = useState("");
   const supportWhatsappMessage = "مرحباً فينوكس، أحتاج مساعدة بخصوص إنشاء حساب.";
   const supportWhatsappUrl = `https://web.whatsapp.com/send?phone=972592520083&text=${encodeURIComponent(supportWhatsappMessage)}`;
-
   const openSupportWhatsapp = () => {
     window.open(supportWhatsappUrl, "_blank", "noopener,noreferrer");
   };
@@ -45,6 +50,21 @@ const SignInPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!isValidAuthPhone(phone)) {
+      showError("رقم الهاتف غير صالح", "يرجى إدخال رقم هاتف يبدأ بـ 056 أو 059 ويتكون من 10 أرقام.");
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      showError("البريد الإلكتروني غير صالح", "يرجى إدخال بريد إلكتروني صحيح.");
+      return;
+    }
+
+    if (!hasMinPasswordLength(password)) {
+      showError("كلمة المرور غير صالحة", `يرجى إدخال كلمة مرور مكونة من ${MIN_PASSWORD_LENGTH} أحرف على الأقل.`);
+      return;
+    }
 
     try {
       const payload = {
