@@ -215,8 +215,10 @@ const calculateCollectedAmountForOrder = (order) => {
       ? Number(order.declared_value)
       : 0;
   const deliveryFee =
-    order?.region?.price !== null && order?.region?.price !== undefined
-      ? Number(order.region.price)
+    order?.delivery_fee !== null && order?.delivery_fee !== undefined
+      ? Number(order.delivery_fee)
+      : order?.region?.price !== null && order?.region?.price !== undefined
+        ? Number(order.region.price)
       : 0;
 
   return {
@@ -225,6 +227,13 @@ const calculateCollectedAmountForOrder = (order) => {
     totalCollected: productPrice + deliveryFee,
   };
 };
+
+const getOrderDeliveryFee = (order) =>
+  order?.delivery_fee !== null && order?.delivery_fee !== undefined
+    ? Number(order.delivery_fee)
+    : order?.region?.price !== null && order?.region?.price !== undefined
+      ? Number(order.region.price)
+      : 0;
 
 const resolveEmployeeByUserId = async (userId) =>
   Employee.findOne({
@@ -429,7 +438,7 @@ const mapOrderCard = (shipment) => {
     shipmentStatus: shipment.current_status,
     shipmentStatusLabel: STATUS_LABELS[shipment.current_status] || shipment.current_status,
     isActive: ACTIVE_SHIPMENT_STATUSES.includes(shipment.current_status),
-    price: region?.price !== undefined && region?.price !== null ? Number(region.price) : 0,
+    price: getOrderDeliveryFee(order),
     declaredValue:
       order?.declared_value !== null && order?.declared_value !== undefined
         ? Number(order.declared_value)
@@ -474,7 +483,7 @@ const mapOrderDetails = (shipment) => {
     statusLabel: mappedStatus.statusLabel,
     shipmentStatus: shipment.current_status,
     shipmentStatusLabel: STATUS_LABELS[shipment.current_status] || shipment.current_status,
-    price: region?.price !== undefined && region?.price !== null ? Number(region.price) : 0,
+    price: getOrderDeliveryFee(order),
     senderName: order?.sender_name || null,
     senderPhone: order?.sender_phone || null,
     senderAddress: order?.sender_address || null,
@@ -503,7 +512,7 @@ const mapOrderDetails = (shipment) => {
       ? {
           id: region.id,
           name: region.name,
-          price: Number(region.price || 0),
+          price: getOrderDeliveryFee(order),
         }
       : null,
   };

@@ -148,6 +148,10 @@ const buildTrackingNumber = (orderId) => `PHX-${orderId}`;
 const normalizeSearchTerm = (value) => String(value || "").trim().toLowerCase();
 
 const formatMoneyValue = (value) => toNumber(value);
+const getOrderDeliveryFee = (order) =>
+  order?.delivery_fee !== null && order?.delivery_fee !== undefined
+    ? toNumber(order.delivery_fee)
+    : toNumber(order?.region?.price);
 
 const mapDistributionParcel = (order) => ({
   orderId: order.id,
@@ -171,7 +175,7 @@ const mapDistributionParcel = (order) => ({
     : null,
   regionName: order.region?.name || "-",
   productPrice: formatMoneyValue(order.declared_value),
-  deliveryFee: formatMoneyValue(order.region?.price),
+  deliveryFee: getOrderDeliveryFee(order),
   priority: DELIVERY_SPEED_PRIORITY[order.delivery_speed] || "عادي",
   packageDescription: order.package_description || "-",
   packageSize: order.package_size || "-",
@@ -478,7 +482,7 @@ const buildParcelDistributionPayload = ({
       : null,
     regionName: shipment.order?.region?.name || "-",
     productPrice: formatMoneyValue(shipment.order?.declared_value),
-    deliveryFee: formatMoneyValue(shipment.order?.region?.price),
+    deliveryFee: getOrderDeliveryFee(shipment.order),
     trackingNumber: shipment.tracking_number || buildTrackingNumber(shipment.order?.id),
   }));
 
@@ -806,7 +810,7 @@ const getAdminDashboard = async (req, res) => {
         },
       }),
       Order.findAll({
-        attributes: ["delivered_at"],
+        attributes: ["delivered_at", "delivery_fee"],
         where: {
           status: "delivered",
           delivered_at: {
@@ -854,7 +858,7 @@ const getAdminDashboard = async (req, res) => {
         raw: true,
       }),
       Order.findAll({
-        attributes: ["delivered_at"],
+        attributes: ["delivered_at", "delivery_fee"],
         where: {
           status: "delivered",
           delivered_at: {
@@ -915,7 +919,7 @@ const getAdminDashboard = async (req, res) => {
     ]);
 
     const dailyProfit = deliveredTodayRows.reduce(
-      (sum, order) => sum + toNumber(order.region?.price),
+      (sum, order) => sum + getOrderDeliveryFee(order),
       0,
     );
     const deliveredTodayCount = deliveredTodayRows.length;
@@ -937,7 +941,7 @@ const getAdminDashboard = async (req, res) => {
       const currentDay = weeklyRevenueMap.get(dateKey);
 
       if (currentDay) {
-        currentDay.total += toNumber(order.region?.price);
+        currentDay.total += getOrderDeliveryFee(order);
         currentDay.deliveredCount += 1;
       }
     });
@@ -1151,7 +1155,7 @@ const getMerchantAggregationData = async ({ customerId = null } = {}) => {
           [
             sequelize.fn(
               "SUM",
-              sequelize.literal('COALESCE("region"."price", 0)')
+              sequelize.literal('COALESCE("Order"."delivery_fee", COALESCE("region"."price", 0))')
             ),
             "phoenix_commission",
           ],
@@ -1837,7 +1841,7 @@ const getAdminReports = async (req, res) => {
       const shipment = order.shipment || null;
       const reportStatus = mapShipmentStatusToReportStatus(shipment?.current_status, order.status);
       const declaredValue = toNumber(order.declared_value);
-      const deliveryFee = toNumber(order.region?.price);
+      const deliveryFee = getOrderDeliveryFee(order);
       const phoenixCommission = reportStatus === "delivered" ? deliveryFee : 0;
       const collectedAmount = reportStatus === "delivered" ? declaredValue + phoenixCommission : 0;
 
@@ -2189,7 +2193,7 @@ const getReturnedShipments = async (req, res) => {
       employeeId: shipment.driver?.id || shipment.driver_id || null,
       returnedAt: shipment.updatedAt,
       productPrice: toNumber(shipment.order?.declared_value),
-      deliveryFee: toNumber(shipment.order?.region?.price),
+      deliveryFee: getOrderDeliveryFee(shipment.order),
       status: shipment.current_status,
       statusLabel:
         RETURNED_SHIPMENT_STATUS_LABELS[shipment.current_status] || shipment.current_status,

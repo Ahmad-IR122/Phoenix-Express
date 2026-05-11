@@ -185,7 +185,7 @@ function DashboardPage() {
         id: "active-shipments",
         title: "الطلبات النشطة",
         value: String(dashboardData.activeShipments),
-        note: "الشحنات المسندة وقيد التوصيل",
+        note: "",
         noteType: "positive",
         icon: "bi-box-seam",
       },
@@ -193,7 +193,7 @@ function DashboardPage() {
         id: "available-delegates",
         title: "المناديب المتاحون",
         value: String(dashboardData.availableDelegates),
-        note: "نشطون ومتاحة حالتهم",
+        note: "",
         noteType: "positive",
         icon: "bi-people",
       },
@@ -201,7 +201,7 @@ function DashboardPage() {
         id: "daily-profit",
         title: "الأرباح اليومية",
         value: formatCurrency(dashboardData.dailyProfit),
-        note: "رسوم التوصيل للطلبات المسلّمة اليوم",
+        note: "",
         noteType: "positive",
         icon: "bi-cash-stack",
       },
@@ -209,7 +209,7 @@ function DashboardPage() {
         id: "delivered-today",
         title: "المسلّمة اليوم",
         value: String(dashboardData.deliveredTodayCount),
-        note: "تحديث مباشر من الخادم",
+        note: "",
         noteType: "positive",
         icon: "bi-check2-circle",
       },
@@ -217,7 +217,7 @@ function DashboardPage() {
         id: "pending-shipments",
         title: "الطرود المعلقة",
         value: String(dashboardData.pendingShipments),
-        note: "بانتظار التخصيص",
+        note: "",
         noteType: "negative",
         icon: "bi-hourglass-split",
       },
@@ -311,15 +311,17 @@ function DashboardPage() {
             <div className="admin-dashboard__stat-content">
               <p className="admin-dashboard__stat-title">{stat.title}</p>
               <h3 className="admin-dashboard__stat-value">{isLoading ? "—" : stat.value}</h3>
-              <p
-                className={`admin-dashboard__stat-note ${
-                  stat.noteType === "positive"
-                    ? "admin-dashboard__stat-note--positive"
-                    : "admin-dashboard__stat-note--negative"
-                }`}
-              >
-                {stat.note}
-              </p>
+              {stat.note ? (
+                <p
+                  className={`admin-dashboard__stat-note ${
+                    stat.noteType === "positive"
+                      ? "admin-dashboard__stat-note--positive"
+                      : "admin-dashboard__stat-note--negative"
+                  }`}
+                >
+                  {stat.note}
+                </p>
+              ) : null}
             </div>
           </article>
         ))}

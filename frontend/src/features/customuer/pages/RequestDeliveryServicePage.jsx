@@ -1,15 +1,20 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { updateCustomerOrder } from "../services/customerService";
+import { getDeliveryRegions, updateCustomerOrder } from "../services/customerService";
 import "./RequestDeliveryServicePage.css";
 import { isValidAuthPhone } from "../../../utils/validators";
 
-const deliveryRegionOptions = [
+const DEFAULT_DELIVERY_REGION_OPTIONS = [
   { value: "west-bank", label: "الضفة الغربية", price: 20 },
   { value: "jerusalem", label: "القدس", price: 30 },
   { value: "inside", label: "الداخل", price: 70 },
 ];
+const REGION_VALUE_BY_NAME = {
+  west_bank: "west-bank",
+  jerusalem: "jerusalem",
+  inside: "inside",
+};
 
 const orderSizeOptions = [
   { value: "small", label: "صغير" },
@@ -49,6 +54,40 @@ const RequestDeliveryServicePage = () => {
   const isEditMode = Boolean(editOrderId);
   const [formData, setFormData] = useState(initialFormData);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [deliveryRegionOptions, setDeliveryRegionOptions] = useState(
+    DEFAULT_DELIVERY_REGION_OPTIONS
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadRegions = async () => {
+      try {
+        const response = await getDeliveryRegions();
+        const items = Array.isArray(response?.data) ? response.data : [];
+
+        if (!isMounted || !items.length) {
+          return;
+        }
+
+        setDeliveryRegionOptions(
+          items.map((region) => ({
+            value: REGION_VALUE_BY_NAME[region.name] || region.name,
+            label: region.label || region.name,
+            price: Number(region.price) || 0,
+          }))
+        );
+      } catch {
+        // Keep the current fallback prices if the request fails.
+      }
+    };
+
+    loadRegions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!isEditMode) {
@@ -74,7 +113,7 @@ const RequestDeliveryServicePage = () => {
       deliveryRegionOptions.find(
         (region) => region.value === formData.selectedRegion,
       ) || null,
-    [formData.selectedRegion],
+    [deliveryRegionOptions, formData.selectedRegion],
   );
 
   const handleSubmit = async (event) => {

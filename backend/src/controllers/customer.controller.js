@@ -127,7 +127,7 @@ const getCustomerSettlementSummary = async (customerId) => {
         [
           sequelize.fn(
             "SUM",
-            sequelize.literal('COALESCE("region"."price", 0)')
+            sequelize.literal('COALESCE("Order"."delivery_fee", COALESCE("region"."price", 0))')
           ),
           "phoenix_commission",
         ],

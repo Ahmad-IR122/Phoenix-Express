@@ -7,6 +7,7 @@ const { authenticateUser } = require('../middleware/auth.middleware');
 
 router.post('/', authenticateUser, orderController.createOrder);
 router.get('/', orderController.getAllOrders);
+router.get('/regions', orderController.getAvailableRegions);
 router.get('/me', authenticateUser, orderController.getAuthenticatedCustomerOrders);
 router.put('/me/:id', authenticateUser, orderController.updateAuthenticatedCustomerOrder);
 router.delete('/me/:id', authenticateUser, orderController.deleteAuthenticatedCustomerOrder);

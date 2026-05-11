@@ -16,6 +16,7 @@ import {
   getCustomerSupportConversation,
   sendCustomerSupportMessage,
 } from "../services/supportChatService";
+import { getDeliveryRegions } from "../features/customuer/services/customerService";
 import "../styles/ChatbotWidget.css";
 
 const CHAT_STORAGE_KEY = "phoenix_assistant_history";
@@ -67,6 +68,19 @@ const welcomeMessages = {
   en: "Welcome to Phoenix Assistant. I can help with shipment tracking, prices, delivery time, orders, or contacting the manager.",
 };
 
+const DEFAULT_REGION_PRICES = {
+  west_bank: 20,
+  jerusalem: 30,
+  inside: 70,
+};
+const formatRegionPriceSummary = (prices, language = "ar") => {
+  if (language === "ar") {
+    return `الضفة الغربية: ${prices.west_bank} شيكل، القدس: ${prices.jerusalem} شيكل، الداخل: ${prices.inside} شيكل`;
+  }
+
+  return `West Bank: ${prices.west_bank} ILS, Jerusalem: ${prices.jerusalem} ILS, Inside: ${prices.inside} ILS`;
+};
+
 const normalize = (text) => text.trim().toLowerCase();
 const isArabicText = (text) => /[\u0600-\u06FF]/.test(text);
 
@@ -99,14 +113,15 @@ const saveEmployeeThreads = (threads) => {
   localStorage.setItem(EMPLOYEE_CHAT_STORAGE_KEY, JSON.stringify(threads));
 };
 
-const getQuickQuestionResponse = (rawText, respondArabic) => {
+const getQuickQuestionResponse = (rawText, respondArabic, regionPrices = DEFAULT_REGION_PRICES) => {
   const question = rawText.trim();
+  const regionSummary = formatRegionPriceSummary(regionPrices, respondArabic ? "ar" : "en");
 
   const arabicAnswers = {
     "\u0648\u064a\u0646 \u0634\u062d\u0646\u062a\u064a\u061f":
       "\u0623\u0631\u0633\u0644 \u0631\u0642\u0645 \u0627\u0644\u062a\u062a\u0628\u0639 \u0643\u0645\u0627 \u064a\u0638\u0647\u0631 \u0641\u064a \u0637\u0644\u0628\u0643\u060c \u0645\u062b\u0644: VGCJAWZH3P\u060c \u0648\u0633\u0623\u0639\u0631\u0636 \u0627\u0644\u062d\u0627\u0644\u0629 \u0625\u0630\u0627 \u0643\u0627\u0646\u062a \u0627\u0644\u0634\u062d\u0646\u0629 \u0645\u0631\u062a\u0628\u0637\u0629 \u0628\u062d\u0633\u0627\u0628\u0643.",
     "\u0643\u0645 \u0633\u0639\u0631 \u0627\u0644\u062a\u0648\u0635\u064a\u0644\u061f":
-      "\u0627\u0644\u0633\u0639\u0631 \u064a\u0639\u062a\u0645\u062f \u0639\u0644\u0649 \u0645\u0646\u0637\u0642\u0629 \u0627\u0644\u062a\u0648\u0635\u064a\u0644. \u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0646\u0647\u0627\u0626\u064a \u064a\u0638\u0647\u0631 \u0644\u0643 \u062f\u0627\u062e\u0644 \u0646\u0645\u0648\u0630\u062c \u0637\u0644\u0628 \u062e\u062f\u0645\u0629 \u0627\u0644\u062a\u0648\u0635\u064a\u0644 \u0642\u0628\u0644 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0637\u0644\u0628.",
+      `السعر يعتمد على منطقة التوصيل. الأسعار الحالية هي: ${regionSummary}. ويظهر لك السعر النهائي داخل نموذج طلب خدمة التوصيل قبل إرسال الطلب.`,
     "\u0643\u0645 \u0645\u062f\u0629 \u0627\u0644\u062a\u0648\u0635\u064a\u0644\u061f":
       "\u0645\u062f\u0629 \u0627\u0644\u062a\u0648\u0635\u064a\u0644 \u062a\u062e\u062a\u0644\u0641 \u062d\u0633\u0628 \u0627\u0644\u0645\u0646\u0637\u0642\u0629 \u0648\u062d\u0627\u0644\u0629 \u0627\u0644\u0637\u0644\u0628. \u0628\u0639\u062f \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0637\u0644\u0628\u060c \u064a\u0645\u0643\u0646\u0643 \u0645\u062a\u0627\u0628\u0639\u0629 \u0627\u0644\u062a\u062d\u062f\u064a\u062b\u0627\u062a \u0645\u0646 \u0631\u0642\u0645 \u0627\u0644\u062a\u062a\u0628\u0639.",
     "\u0634\u0648 \u0627\u0644\u0645\u0646\u0627\u0637\u0642 \u0627\u0644\u0645\u062a\u0627\u062d\u0629\u061f":
@@ -127,7 +142,7 @@ const getQuickQuestionResponse = (rawText, respondArabic) => {
     "Where is my shipment?":
       "Send the tracking number exactly as shown in your order, for example: VGCJAWZH3P. I will show the status only if the shipment is linked to your account.",
     "What is the delivery price?":
-      "The price depends on the delivery region. The exact cost appears in the delivery request form before submitting the order.",
+      `The price depends on the delivery region. Current prices are: ${regionSummary}. The exact cost appears in the delivery request form before submitting the order.`,
     "How long does delivery take?":
       "Delivery time depends on the region and order status. After creating the order, follow updates using the tracking number.",
     "Which regions are covered?":
@@ -281,6 +296,7 @@ const ChatbotWidget = () => {
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [inputValue, setInputValue] = React.useState("");
   const [isTyping, setIsTyping] = React.useState(false);
+  const [regionPrices, setRegionPrices] = React.useState(DEFAULT_REGION_PRICES);
   const [isQuickQuestionsOpen, setIsQuickQuestionsOpen] = React.useState(false);
   const [activeEmployeeThreadId, setActiveEmployeeThreadId] = React.useState(
     () => localStorage.getItem(getUserActiveThreadKey()) || null
@@ -357,6 +373,35 @@ const ChatbotWidget = () => {
     [isArabic]
   );
   void quickQuestions;
+  React.useEffect(() => {
+    let isMounted = true;
+
+    const loadRegionPrices = async () => {
+      try {
+        const response = await getDeliveryRegions();
+        const items = Array.isArray(response?.data) ? response.data : [];
+
+        if (!isMounted || !items.length) {
+          return;
+        }
+
+        setRegionPrices(
+          items.reduce((accumulator, item) => {
+            accumulator[item.name] = Number(item.price) || 0;
+            return accumulator;
+          }, { ...DEFAULT_REGION_PRICES })
+        );
+      } catch {
+        // Keep fallback prices if the request fails.
+      }
+    };
+
+    loadRegionPrices();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   const visibleMessages = React.useMemo(
     () =>
       isEmployeeChatActive
@@ -831,7 +876,7 @@ const saveSupportMessage = (rawText) => {
     const inputLooksArabic = isArabicText(rawText);
     const responseLanguage = inputLooksArabic ? "ar" : language;
     const respondArabic = responseLanguage === "ar";
-    const quickQuestionResponse = getQuickQuestionResponse(rawText, respondArabic);
+    const quickQuestionResponse = getQuickQuestionResponse(rawText, respondArabic, regionPrices);
 
     if (quickQuestionResponse) {
       return quickQuestionResponse;

@@ -25,7 +25,7 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  min-height: 122px;
+  min-height: 88px;
 }
 
 .admin-dashboard__stat-icon {
@@ -44,7 +44,7 @@
 .admin-dashboard__stat-content {
   flex: 1;
   display: grid;
-  gap: 5px;
+  gap: 2px;
   min-width: 0;
 }
 

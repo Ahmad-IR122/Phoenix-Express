@@ -9,6 +9,7 @@ const {
   sequelize,
 } = require('../models');
 const { fn, col, literal, Op } = require('sequelize');
+const { notifyAdmins } = require('../services/notification.service');
 
 const REGION_NAME_MAP = {
   'west-bank': 'west_bank',
@@ -25,6 +26,11 @@ const DELIVERY_SPEED_MAP = {
 };
 
 const TRACKING_CHARSET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const REGION_LABEL_MAP = {
+  west_bank: 'الضفة الغربية',
+  jerusalem: 'القدس',
+  inside: 'الداخل',
+};
 
 const orderIncludes = [
   {
@@ -85,6 +91,32 @@ const resolveRegionId = async (payload, transaction) => {
   });
 
   return region?.id || null;
+};
+
+const resolveRegionPrice = async ({ regionId, transaction }) => {
+  if (!regionId) {
+    return 0;
+  }
+
+  const region = await Region.findByPk(regionId, {
+    attributes: ['id', 'price'],
+    transaction,
+  });
+
+  return region?.price !== null && region?.price !== undefined
+    ? Number(region.price)
+    : 0;
+};
+
+const shouldRefreshDeliveryFee = ({ existingOrder, nextRegionId }) => {
+  if (!existingOrder) {
+    return true;
+  }
+
+  const currentRegionId = Number(existingOrder.region_id || 0);
+  const requestedRegionId = Number(nextRegionId || currentRegionId || 0);
+
+  return currentRegionId !== requestedRegionId;
 };
 
 const resolveCustomerId = async (req, payload, transaction) => {
@@ -213,6 +245,7 @@ const normalizeCreatePayload = async (req, transaction) => {
   const payload = req.body || {};
   const regionId = await resolveRegionId(payload, transaction);
   const customerId = await resolveCustomerId(req, payload, transaction);
+  const deliveryFee = await resolveRegionPrice({ regionId, transaction });
 
   if (!regionId) {
     throw new Error('A valid delivery region is required');
@@ -246,6 +279,7 @@ const normalizeCreatePayload = async (req, transaction) => {
         : payload.orderPrice !== ''
           ? payload.orderPrice
           : null,
+    delivery_fee: deliveryFee,
     package_description:
       payload.package_description || payload.orderDescription || null,
     status: payload.status || 'pending',
@@ -285,6 +319,21 @@ const createOrder = async (req, res) => {
 
     const createdOrder = await Order.findByPk(order.id, {
       include: orderIncludes,
+    });
+
+    const customerName =
+      createdOrder?.customer?.full_name ||
+      createdOrder?.sender_name ||
+      createdOrder?.customer?.email ||
+      'زبون';
+
+    await notifyAdmins({
+      type: 'customer_order_created',
+      title: `طلبية جديدة من ${customerName}`,
+      body: `تم إنشاء طلبية جديدة برقم ${createdOrder?.id || order.id} وتحتاج إلى متابعة من الإدارة.`,
+      entityType: 'order',
+      entityId: createdOrder?.id || order.id,
+      actionUrl: '/admin/parcel-distribution',
     });
 
     return res.status(201).json({
@@ -371,6 +420,32 @@ const getMostRequestedRegion = async (req, res) => {
   }
 };
 
+const getAvailableRegions = async (req, res) => {
+  try {
+    const regions = await Region.findAll({
+      attributes: ['id', 'name', 'price'],
+      order: [['id', 'ASC']],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Regions fetched successfully',
+      data: regions.map((region) => ({
+        id: region.id,
+        name: region.name,
+        label: REGION_LABEL_MAP[region.name] || region.name,
+        price: Number(region.price || 0),
+      })),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch regions',
+      errors: [error.message],
+    });
+  }
+};
+
 const findOrderById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -431,9 +506,18 @@ const updateOrder = async (req, res) => {
       });
     }
 
+    const nextRegionId = region_id !== undefined ? region_id : order.region_id;
+    const shouldUpdateDeliveryFee = shouldRefreshDeliveryFee({
+      existingOrder: order,
+      nextRegionId,
+    });
+    const nextDeliveryFee = shouldUpdateDeliveryFee
+      ? await resolveRegionPrice({ regionId: nextRegionId, transaction: null })
+      : order.delivery_fee;
+
     await order.update({
       customer_id: customer_id !== undefined ? customer_id : order.customer_id,
-      region_id: region_id !== undefined ? region_id : order.region_id,
+      region_id: nextRegionId,
       sender_name: sender_name !== undefined ? sender_name : order.sender_name,
       sender_phone:
         sender_phone !== undefined ? sender_phone : order.sender_phone,
@@ -466,6 +550,7 @@ const updateOrder = async (req, res) => {
       status: status !== undefined ? status : order.status,
       delivered_at:
         delivered_at !== undefined ? delivered_at : order.delivered_at,
+      delivery_fee: nextDeliveryFee,
     });
 
     const updatedOrder = await Order.findByPk(id, {
@@ -499,10 +584,18 @@ const updateAuthenticatedCustomerOrder = async (req, res) => {
       transaction,
     });
     const updatePayload = await normalizeCreatePayload(req, transaction);
+    const shouldUpdateDeliveryFee = shouldRefreshDeliveryFee({
+      existingOrder: order,
+      nextRegionId: updatePayload.region_id,
+    });
 
     delete updatePayload.customer_id;
     delete updatePayload.status;
     delete updatePayload.delivered_at;
+
+    if (!shouldUpdateDeliveryFee) {
+      updatePayload.delivery_fee = order.delivery_fee;
+    }
 
     await order.update(updatePayload, { transaction });
     await transaction.commit();
@@ -602,6 +695,7 @@ const deleteAuthenticatedCustomerOrder = async (req, res) => {
 module.exports = {
   createOrder,
   getAllOrders,
+  getAvailableRegions,
   getMostRequestedRegion,
   getAuthenticatedCustomerOrders,
   updateAuthenticatedCustomerOrder,

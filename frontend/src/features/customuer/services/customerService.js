@@ -25,6 +25,11 @@ export const getCustomerOrders = async () => {
   return response.data;
 };
 
+export const getDeliveryRegions = async () => {
+  const response = await API.get("/orders/regions");
+  return response.data;
+};
+
 export const getCustomerSettlements = async () => {
   const response = await API.get("/customers/settlements/me");
   return response.data;
