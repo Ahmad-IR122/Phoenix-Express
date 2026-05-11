@@ -9,6 +9,7 @@ const adminRouteByKey = {
   shipments: "/admin/parcel-distribution",
   returns: "/admin/returned-shipments",
   traders: "/admin/merchants",
+  regions: "/admin/regions",
   couriers: "/admin/delegates",
   handover: "/admin/handover-requests",
   content: "/admin/content",

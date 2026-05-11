@@ -1251,6 +1251,93 @@ const getAdminMerchants = async (req, res) => {
   }
 };
 
+const REGION_LABELS = {
+  west_bank: "الضفة الغربية",
+  jerusalem: "القدس",
+  inside: "الداخل",
+};
+
+const getAdminRegions = async (req, res) => {
+  try {
+    const regions = await Region.findAll({
+      attributes: ["id", "name", "price"],
+      order: [["id", "ASC"]],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Regions fetched successfully",
+      data: regions.map((region) => ({
+        id: region.id,
+        name: region.name,
+        label: REGION_LABELS[region.name] || region.name,
+        price: toNumber(region.price),
+        created_at: region.createdAt || region.created_at || null,
+        updated_at: region.updatedAt || region.updated_at || null,
+      })),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch regions",
+      error: error.message,
+    });
+  }
+};
+
+const updateAdminRegionPrice = async (req, res) => {
+  try {
+    const regionId = toNumber(req.params.id);
+    const rawPrice = req.body?.price;
+    const nextPrice = Number(rawPrice);
+
+    if (!regionId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid region id",
+      });
+    }
+
+    if (!Number.isFinite(nextPrice) || nextPrice < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Region price must be a valid number greater than or equal to zero",
+      });
+    }
+
+    const region = await Region.findByPk(regionId);
+
+    if (!region) {
+      return res.status(404).json({
+        success: false,
+        message: "Region not found",
+      });
+    }
+
+    await region.update({
+      price: nextPrice,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Region price updated successfully",
+      data: {
+        id: region.id,
+        name: region.name,
+        label: REGION_LABELS[region.name] || region.name,
+        price: toNumber(region.price),
+        updated_at: region.updatedAt,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update region price",
+      error: error.message,
+    });
+  }
+};
+
 const getAdminMerchantById = async (req, res) => {
   try {
     const customerId = toNumber(req.params.id);
@@ -3247,8 +3334,10 @@ const deleteAdmin = async (req, res) => {
 
 module.exports = {
   getAdminDashboard,
+  getAdminRegions,
   getAdminMerchants,
   getAdminMerchantById,
+  updateAdminRegionPrice,
   settleAdminMerchant,
   markMerchantSettlementAsSent,
   getAuthenticatedAdminProfile,
