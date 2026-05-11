@@ -23,6 +23,7 @@ import DashboardPage from "../features/Admin/pages/DashboardPage";
 import ParcelDistributionPage from "../features/Admin/pages/ParcelDistributionPage";
 import ReturnedShipmentsPage from "../features/Admin/pages/ReturnedShipmentsPage";
 import MerchantsPage from "../features/Admin/pages/MerchantsPage";
+import DeliveryRegionsPage from "../features/Admin/pages/DeliveryRegionsPage";
 import DelegatesPage from "../features/Admin/pages/DelegatesPage";
 import HandoverRequestsPage from "../features/Admin/pages/HandoverRequestsPage";
 import ReportsPage from "../features/Admin/pages/ReportsPage";
@@ -104,6 +105,7 @@ export default function AppRoutes() {
           />
           <Route path="/admin/returned-shipments" element={<ReturnedShipmentsPage />} />
           <Route path="/admin/merchants" element={<MerchantsPage />} />
+          <Route path="/admin/regions" element={<DeliveryRegionsPage />} />
           <Route path="/admin/delegates" element={<DelegatesPage />} />
           <Route path="/admin/handover-requests" element={<HandoverRequestsPage />} />
           <Route path="/admin/content" element={<ContentManagementPage />} />

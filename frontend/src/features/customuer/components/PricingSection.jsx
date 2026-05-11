@@ -53,7 +53,6 @@ const pricingItems = [
       </svg>
     ),
   },
-
   {
     key: "inside",
     title: "الداخل",

@@ -1,0 +1,228 @@
+.phoenix-regions {
+  --phoenix-admin-bg: #f8fbff;
+  --phoenix-admin-surface: #ffffff;
+  --phoenix-admin-border: #e3edf9;
+  --phoenix-admin-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  --phoenix-admin-radius-xl: 18px;
+  --phoenix-admin-radius-lg: 16px;
+  --phoenix-admin-radius-md: 14px;
+  --phoenix-admin-title: 1.45rem;
+  --phoenix-admin-body: 0.84rem;
+  --phoenix-admin-caption: 0.76rem;
+  background: var(--phoenix-admin-bg);
+  color: #0f172a;
+}
+
+.phoenix-regions * {
+  box-sizing: border-box;
+}
+
+.phoenix-regions__hero {
+  margin-bottom: 20px;
+}
+
+.phoenix-regions__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 6px 11px;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.phoenix-regions__title {
+  margin: 12px 0 8px;
+  font-size: var(--phoenix-admin-title);
+  font-weight: 800;
+}
+
+.phoenix-regions__subtitle,
+.phoenix-regions__panel-subtitle,
+.phoenix-regions__region-key {
+  color: #64748b;
+  font-size: var(--phoenix-admin-body);
+  line-height: 1.7;
+}
+
+.phoenix-regions__summary-grid,
+.phoenix-regions__cards {
+  display: grid;
+  gap: 16px;
+}
+
+.phoenix-regions__summary-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 18px;
+}
+
+.phoenix-regions__summary-card,
+.phoenix-regions__panel,
+.phoenix-regions__region-card {
+  background: var(--phoenix-admin-surface);
+  border: 1px solid var(--phoenix-admin-border);
+  border-radius: var(--phoenix-admin-radius-xl);
+  box-shadow: var(--phoenix-admin-shadow);
+}
+
+.phoenix-regions__summary-card {
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.phoenix-regions__summary-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+}
+
+.phoenix-regions__summary-icon--blue {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.phoenix-regions__summary-icon--gold {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.phoenix-regions__summary-icon--orange {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.phoenix-regions__summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.phoenix-regions__summary-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.phoenix-regions__summary-label {
+  color: #64748b;
+  font-size: var(--phoenix-admin-caption);
+}
+
+.phoenix-regions__panel {
+  padding: 20px;
+}
+
+.phoenix-regions__panel-title,
+.phoenix-regions__region-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.phoenix-regions__feedback {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #ecfdf5;
+  color: #166534;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.phoenix-regions__feedback--error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.phoenix-regions__cards {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  margin-top: 18px;
+}
+
+.phoenix-regions__region-card {
+  padding: 18px;
+}
+
+.phoenix-regions__region-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.phoenix-regions__region-badge {
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 7px 11px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.phoenix-regions__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.phoenix-regions__input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  padding: 0 14px;
+  background: #fff;
+}
+
+.phoenix-regions__input-wrap input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 12px 0;
+  font: inherit;
+}
+
+.phoenix-regions__save-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  background: #1fa8f5;
+  color: #fff;
+  font-size: 0.84rem;
+  font-weight: 800;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+.phoenix-regions__save-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.phoenix-regions__empty {
+  padding: 28px 16px;
+  text-align: center;
+  color: #64748b;
+}
+
+@media (max-width: 768px) {
+  .phoenix-regions__title {
+    font-size: 1.2rem;
+  }
+
+  .phoenix-regions__panel {
+    padding: 16px;
+  }
+}
