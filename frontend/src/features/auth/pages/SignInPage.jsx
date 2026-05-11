@@ -25,7 +25,9 @@ const SignInPage = () => {
   const [password, setPassword] = useState("");
   const supportWhatsappMessage = "مرحباً فينوكس، أحتاج مساعدة بخصوص إنشاء حساب.";
   const supportWhatsappUrl = `https://web.whatsapp.com/send?phone=972592520083&text=${encodeURIComponent(supportWhatsappMessage)}`;
-
+  const phoneRegex = /^(056|059)\d{7}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
   const openSupportWhatsapp = () => {
     window.open(supportWhatsappUrl, "_blank", "noopener,noreferrer");
   };
@@ -45,6 +47,21 @@ const SignInPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!phoneRegex.test(phone)) {
+      showError("رقم الهاتف غير صالح", "يرجى إدخال رقم هاتف يبدأ بـ 056 أو 059 ويتكون من 10 أرقام.");
+      return;
+    }
+
+    if (!emailRegex.test(email)) {
+      showError("البريد الإلكتروني غير صالح", "يرجى إدخال بريد إلكتروني صحيح.");
+      return;
+    }
+
+    if (!passwordRegex.test(password)) {
+      showError("كلمة المرور غير صالحة", "يرجى إدخال كلمة مرور تتكون من 8 أحرف على الأقل وتحتوي على حرف واحد على الأقل ورقم واحد.");
+      return;
+    }
 
     try {
       const payload = {

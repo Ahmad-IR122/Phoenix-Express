@@ -21,6 +21,7 @@ const parcelStatusOptions = [
   { value: "urgent", label: "عاجل" },
   { value: "immediate", label: "فوري" },
 ];
+const phoneRegex = /^(056|059)\d{7}$/;
 
 const isAuthenticated = () =>
   Boolean(localStorage.getItem("token") || sessionStorage.getItem("token"));
@@ -88,6 +89,17 @@ const RequestDeliveryServicePage = () => {
         confirmButtonText: "تسجيل الدخول",
         confirmButtonColor: "#38b6ff",
       }).then(() => navigate("/login", { state: { from: "/request-delivery" } }));
+      return;
+    }
+
+    if(!phoneRegex.test(formData.senderPhone) || !phoneRegex.test(formData.receiverPhone)) {
+      Swal.fire({
+        icon: "warning",
+        title: "رقم الهاتف غير صحيح",
+        text: "يرجى إدخال رقم هاتف صحيح يبدأ بـ 056 أو 059.",
+        confirmButtonText: "حسنًا",
+        confirmButtonColor: "#38b6ff",
+      });
       return;
     }
 

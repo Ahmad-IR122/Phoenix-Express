@@ -21,6 +21,7 @@ const ForgotPasswordPage = () => {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const phoneRegex = /^(056|059)\d{7}$/;
 
   const openSupportWhatsapp = () => {
     const message = `مرحباً فينوكس، أحتاج مساعدة بخصوص استعادة كلمة المرور لحسابي المرتبط بالرقم: ${phone}`;
@@ -63,6 +64,17 @@ const ForgotPasswordPage = () => {
 
   const handleResetPassword = async (event) => {
     event.preventDefault();
+
+    if (!phoneRegex.test(phone)) {
+      Swal.fire({
+        icon: "warning",
+        title: "رقم الهاتف غير صحيح",
+        text: "يرجى إدخال رقم هاتف صحيح يبدأ بـ 056 أو 059.",
+        confirmButtonText: "حسنًا",
+        confirmButtonColor: "#38b6ff",
+      });
+      return;
+    }
 
     try {
       await resetPassword({ phone, code, newPassword });
