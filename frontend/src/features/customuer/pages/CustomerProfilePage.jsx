@@ -65,6 +65,10 @@ const mapCustomerOrder = (order) => {
   const status = order.shipment?.current_status || order.status || "pending";
   const isEditable =
     order.shipment?.current_status === "accepted" && !order.shipment?.driver_id;
+  const deliveryFee =
+    order.delivery_fee !== null && order.delivery_fee !== undefined
+      ? Number(order.delivery_fee)
+      : Number(order.region?.price || 0);
 
   return {
     id: order.id,
@@ -77,7 +81,7 @@ const mapCustomerOrder = (order) => {
     to: order.destination_city || "-",
     date: formatOrderDate(order.created_at || order.createdAt),
     canEdit: isEditable,
-    price: `${order.region?.price || 0} شيكل`,
+    price: `${deliveryFee} شيكل`,
   };
 };
 

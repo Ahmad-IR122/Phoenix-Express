@@ -65,6 +65,19 @@ const STATUS_FILTERS = [
 const moneyFormatter = new Intl.NumberFormat("en-US");
 
 const formatMoney = (value) => `${moneyFormatter.format(Number(value || 0))} ₪`;
+const ORDER_STATUS_LABELS = {
+  pending: "جديد",
+  confirmed: "مؤكد",
+  accepted: "مقبول",
+  picked_up: "تم الاستلام",
+  in_transit: "قيد التوصيل",
+  arrived_to_destination_city: "وصلت للمدينة",
+  out_for_delivery: "خارج للتسليم",
+  delivered: "تم التسليم",
+  returned: "مرتجعة",
+  cancelled: "ملغاة",
+};
+const getOrderStatusLabel = (status) => ORDER_STATUS_LABELS[status] || status || "جديد";
 
 const buildParams = (filters) => {
   const params = {};
@@ -396,7 +409,7 @@ function ParcelDistributionPage() {
                           <div className="admin-distribution__parcel-badges">
                             <span className="admin-distribution__priority">{parcel.priority}</span>
                             <span className="admin-distribution__status-chip admin-distribution__status-chip--muted">
-                              {parcel.orderStatus}
+                              {getOrderStatusLabel(parcel.orderStatus)}
                             </span>
                           </div>
                         </div>

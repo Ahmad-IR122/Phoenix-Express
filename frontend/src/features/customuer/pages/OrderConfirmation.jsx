@@ -1,12 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import API from "../../../apis/api";
+import { getDeliveryRegions } from "../services/customerService";
 import "./OrderConfirmation.css";
 
-const DELIVERY_REGION_PRICES = {
+const DEFAULT_DELIVERY_REGION_PRICES = {
   "west-bank": 20,
   jerusalem: 30,
   inside: 70,
+};
+const REGION_VALUE_BY_NAME = {
+  west_bank: "west-bank",
+  jerusalem: "jerusalem",
+  inside: "inside",
 };
 
 const DELIVERY_REGION_LABELS = {
@@ -54,11 +60,43 @@ const OrderConfirmation = () => {
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [confirmedOrder, setConfirmedOrder] = useState(null);
+  const [regionPrices, setRegionPrices] = useState(DEFAULT_DELIVERY_REGION_PRICES);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadRegions = async () => {
+      try {
+        const response = await getDeliveryRegions();
+        const items = Array.isArray(response?.data) ? response.data : [];
+
+        if (!isMounted || !items.length) {
+          return;
+        }
+
+        setRegionPrices(
+          items.reduce((accumulator, region) => {
+            const key = REGION_VALUE_BY_NAME[region.name] || region.name;
+            accumulator[key] = Number(region.price) || 0;
+            return accumulator;
+          }, { ...DEFAULT_DELIVERY_REGION_PRICES })
+        );
+      } catch {
+        // Keep fallback prices if the request fails.
+      }
+    };
+
+    loadRegions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const orderData = useMemo(() => {
     const state = location.state || {};
     const deliveryAmount =
-      state.deliveryAmount ?? DELIVERY_REGION_PRICES[state.selectedRegion] ?? 0;
+      state.deliveryAmount ?? regionPrices[state.selectedRegion] ?? 0;
 
     return {
       ...FALLBACK_ORDER,
@@ -77,7 +115,7 @@ const OrderConfirmation = () => {
           ? Number(state.orderPrice) || 0
           : deliveryAmount,
     };
-  }, [location.state]);
+  }, [location.state, regionPrices]);
 
   const hasOrderState = Boolean(location.state);
 

@@ -2,6 +2,7 @@ import React from "react";
 import "./style/PricingSection.css";
 import { useNavigate } from "react-router-dom";
 import API from "../../../apis/api";
+import { getDeliveryRegions } from "../services/customerService";
 
 const REGION_KEY_MAP = {
   west_bank: "west_bank",
@@ -10,7 +11,7 @@ const REGION_KEY_MAP = {
   inside: "inside",
 };
 
-const pricingItems = [
+const defaultPricingItems = [
   {
     key: "west_bank",
     title: "الضفة الغربية",
@@ -76,6 +77,7 @@ const pricingItems = [
 const PricingSection = () => {
   const navigate = useNavigate();
   const [mostRequestedRegion, setMostRequestedRegion] = React.useState("");
+  const [pricingItems, setPricingItems] = React.useState(defaultPricingItems);
 
   const displayedPricingItems = React.useMemo(() => {
     if (!mostRequestedRegion) {
@@ -90,7 +92,7 @@ const PricingSection = () => {
 
     const otherItems = pricingItems.filter((item) => item.key !== mostRequestedRegion);
     return [otherItems[0], topItem, otherItems[1]].filter(Boolean);
-  }, [mostRequestedRegion]);
+  }, [mostRequestedRegion, pricingItems]);
 
   const goToRequest = () => {
     navigate("/request-delivery");
@@ -99,6 +101,34 @@ const PricingSection = () => {
 
   React.useEffect(() => {
     let isMounted = true;
+
+    const loadRegions = async () => {
+      try {
+        const response = await getDeliveryRegions();
+        const items = Array.isArray(response?.data) ? response.data : [];
+
+        if (!isMounted || !items.length) {
+          return;
+        }
+
+        setPricingItems((current) =>
+          current.map((item) => {
+            const matchedRegion = items.find((region) => region.name === item.key);
+
+            if (!matchedRegion) {
+              return item;
+            }
+
+            return {
+              ...item,
+              price: `${Number(matchedRegion.price) || 0} شيكل`,
+            };
+          })
+        );
+      } catch {
+        // Keep fallback prices if the request fails.
+      }
+    };
 
     const loadMostRequestedRegion = async () => {
       try {
@@ -116,6 +146,7 @@ const PricingSection = () => {
       }
     };
 
+    loadRegions();
     loadMostRequestedRegion();
 
     return () => {

@@ -95,6 +95,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
 
+      delivery_fee: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+      },
+
       package_description: {
         type: DataTypes.TEXT,
         allowNull: true,
