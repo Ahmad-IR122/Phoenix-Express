@@ -132,12 +132,15 @@ const formatLocationUpdatedAt = (value) => {
 const TrackingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const trackingNumberFromQuery =
+    new URLSearchParams(location.search).get("trackingNumber") || "";
   const trackingNumberFromState = location.state?.trackingNumber || "";
-  const [trackingNumber, setTrackingNumber] = useState(trackingNumberFromState);
+  const initialTrackingNumber = trackingNumberFromQuery || trackingNumberFromState;
+  const [trackingNumber, setTrackingNumber] = useState(initialTrackingNumber);
   const [shipment, setShipment] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [hasSearched, setHasSearched] = useState(Boolean(trackingNumberFromState));
+  const [hasSearched, setHasSearched] = useState(Boolean(initialTrackingNumber));
   const [showSupportOptions, setShowSupportOptions] = useState(false);
   const supportPhoneDisplay = "+972 59-252-0083";
   const supportWhatsappUrl = `https://web.whatsapp.com/send?phone=972592520083&text=${encodeURIComponent(
@@ -223,10 +226,11 @@ const TrackingPage = () => {
   }, [shipment?.tracking_number]);
 
   useEffect(() => {
-    if (trackingNumberFromState) {
-      performSearch(trackingNumberFromState);
+    if (initialTrackingNumber) {
+      setTrackingNumber(initialTrackingNumber);
+      performSearch(initialTrackingNumber);
     }
-  }, [performSearch, trackingNumberFromState]);
+  }, [initialTrackingNumber, performSearch]);
 
   useEffect(() => {
     if (!shipment?.tracking_number) {
