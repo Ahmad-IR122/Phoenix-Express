@@ -1,7 +1,7 @@
 # 🚚 Phoenix Express (PERN Stack Delivery Platform)
 
 <p align="center">
-  <img src="frontend/src/Images/1.png" alt="Phoenix Express Logo" width="400" />
+  <img src="frontend/src/Images/1.png" alt="Phoenix Express Logo" width="800" />
 </p>
 
 Phoenix Express is a full-stack delivery management platform built with PostgreSQL, Express, React, and Node.js.  
