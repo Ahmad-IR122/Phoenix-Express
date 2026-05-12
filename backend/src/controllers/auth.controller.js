@@ -7,6 +7,7 @@ const nodemailer = require("nodemailer");
 const path = require("path");
 
 const resetCodes = {};
+let mailTransporter = null;
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
 const normalizePhone = (value) => String(value || '').trim();
 const normalizeName = (value) => String(value || '').trim();
@@ -21,6 +22,92 @@ const createMailTransport = () => {
     throw new Error('Email service is not configured');
   }
 
+  if (!mailTransporter) {
+    mailTransporter = nodemailer.createTransport({
+      pool: true,
+      maxConnections: 2,
+      maxMessages: 20,
+      host,
+      port,
+      secure: port === 465,
+      auth: { user, pass },
+    });
+  }
+
+  return mailTransporter;
+};
+
+const sendPasswordResetEmail = async (email, code) => {
+  const transporter = createMailTransport();
+  const fromEmail = process.env.MAIL_FROM || process.env.SMTP_USER;
+  const fromName = process.env.MAIL_FROM_NAME || "ظپظٹظ†ظˆظƒط³ ط¥ظƒط³ط¨ط±ط³";
+
+  return transporter.sendMail({
+    from: `"${fromName}" <${fromEmail}>`,
+    to: email,
+    subject: 'ط±ظ…ط² ط§ط³طھط¹ط§ط¯ط© ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± - ظپظٹظ†ظˆظƒط³ ط¥ظƒط³ط¨ط±ط³',
+    text: `ط±ظ…ط² ط§ط³طھط¹ط§ط¯ط© ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± ظپظٹ ظپظٹظ†ظˆظƒط³ ط¥ظƒط³ط¨ط±ط³ ظ‡ظˆ: ${code}. طµط§ظ„ط­ ظ„ظ…ط¯ط© 5 ط¯ظ‚ط§ط¦ظ‚.`,
+    html: `
+      <div dir="rtl" style="margin:0; padding:0; background:#f4f7fb; font-family:Arial, sans-serif;">
+        <div style="max-width:560px; margin:0 auto; padding:32px 16px;">
+          <div style="background:#ffffff; border-radius:18px; overflow:hidden; border:1px solid #e8eef6;">
+            <div style="background:#38B6FF; padding:28px 24px; text-align:center;">
+              <div style="display:inline-block; min-width:120px; padding:10px 18px; border-radius:999px; background:#ffffff; color:#38B6FF; font-size:16px; font-weight:800;">
+                Phoenix Express
+              </div>
+              <h1 style="margin:18px 0 0; color:#ffffff; font-size:24px; font-weight:800;">ط§ط³طھط¹ط§ط¯ط© ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±</h1>
+            </div>
+            <div style="padding:30px 26px; color:#1f2937; line-height:1.8;">
+              <p style="margin:0 0 14px; font-size:16px;">ظ…ط±ط­ط¨ط§ظ‹طŒ</p>
+              <p style="margin:0 0 20px; font-size:16px;">ط§ط³طھط®ط¯ظ… ط±ظ…ط² ط§ظ„طھط­ظ‚ظ‚ ط§ظ„طھط§ظ„ظٹ ظ„ط¥ط¹ط§ط¯ط© طھط¹ظٹظٹظ† ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± ط§ظ„ط®ط§طµط© ط¨ط­ط³ط§ط¨ظƒ ظپظٹ ظپظٹظ†ظˆظƒط³ ط¥ظƒط³ط¨ط±ط³:</p>
+              <div style="direction:ltr; text-align:center; margin:24px 0; padding:18px; border-radius:14px; background:#eef8ff; border:1px dashed #38B6FF; color:#0f172a; font-size:32px; font-weight:800; letter-spacing:8px;">
+                ${code}
+              </div>
+              <p style="margin:0 0 8px; font-size:14px; color:#64748b;">ظ‡ط°ط§ ط§ظ„ط±ظ…ط² طµط§ظ„ط­ ظ„ظ…ط¯ط© 5 ط¯ظ‚ط§ط¦ظ‚ ظپظ‚ط·.</p>
+              <p style="margin:0; font-size:14px; color:#64748b;">ط¥ط°ط§ ظ„ظ… طھط·ظ„ط¨ ط§ط³طھط¹ط§ط¯ط© ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±طŒ ظٹظ…ظƒظ†ظƒ طھط¬ط§ظ‡ظ„ ظ‡ط°ظ‡ ط§ظ„ط±ط³ط§ظ„ط©.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
+  });
+};
+
+const sendPasswordResetEmailClean = async (email, code) => {
+  const transporter = createMailTransport();
+  const fromEmail = process.env.MAIL_FROM || process.env.SMTP_USER;
+  const fromName = process.env.MAIL_FROM_NAME || "Phoenix Express";
+  const subject = "\u0631\u0645\u0632 \u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 - Phoenix Express";
+
+  return transporter.sendMail({
+    from: `"${fromName}" <${fromEmail}>`,
+    to: email,
+    subject,
+    text: `\u0631\u0645\u0632 \u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u0647\u0648: ${code}. \u0635\u0627\u0644\u062d \u0644\u0645\u062f\u0629 5 \u062f\u0642\u0627\u0626\u0642.`,
+    html: `
+      <div dir="rtl" style="margin:0; padding:0; background:#f4f7fb; font-family:Arial, sans-serif;">
+        <div style="max-width:560px; margin:0 auto; padding:32px 16px;">
+          <div style="background:#ffffff; border-radius:18px; overflow:hidden; border:1px solid #e8eef6;">
+            <div style="background:#38B6FF; padding:28px 24px; text-align:center;">
+              <div style="display:inline-block; min-width:120px; padding:10px 18px; border-radius:999px; background:#ffffff; color:#38B6FF; font-size:16px; font-weight:800;">Phoenix Express</div>
+              <h1 style="margin:18px 0 0; color:#ffffff; font-size:24px; font-weight:800;">\u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631</h1>
+            </div>
+            <div style="padding:30px 26px; color:#1f2937; line-height:1.8;">
+              <p style="margin:0 0 14px; font-size:16px;">\u0645\u0631\u062d\u0628\u0627\u064b\u060c</p>
+              <p style="margin:0 0 20px; font-size:16px;">\u0627\u0633\u062a\u062e\u062f\u0645 \u0631\u0645\u0632 \u0627\u0644\u062a\u062d\u0642\u0642 \u0627\u0644\u062a\u0627\u0644\u064a \u0644\u0625\u0639\u0627\u062f\u0629 \u062a\u0639\u064a\u064a\u0646 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631:</p>
+              <div style="direction:ltr; text-align:center; margin:24px 0; padding:18px; border-radius:14px; background:#eef8ff; border:1px dashed #38B6FF; color:#0f172a; font-size:32px; font-weight:800; letter-spacing:8px;">${code}</div>
+              <p style="margin:0 0 8px; font-size:14px; color:#64748b;">\u0647\u0630\u0627 \u0627\u0644\u0631\u0645\u0632 \u0635\u0627\u0644\u062d \u0644\u0645\u062f\u0629 5 \u062f\u0642\u0627\u0626\u0642 \u0641\u0642\u0637.</p>
+              <p style="margin:0; font-size:14px; color:#64748b;">\u0625\u0630\u0627 \u0644\u0645 \u062a\u0637\u0644\u0628 \u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631\u060c \u064a\u0645\u0643\u0646\u0643 \u062a\u062c\u0627\u0647\u0644 \u0647\u0630\u0647 \u0627\u0644\u0631\u0633\u0627\u0644\u0629.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
+  });
+};
+
+/*
+const createMailTransportOld = () => {
   return nodemailer.createTransport({
     host,
     port,
@@ -35,7 +122,7 @@ const sendPasswordResetEmail = async (email, code) => {
   const fromName = process.env.MAIL_FROM_NAME || "فينوكس إكسبرس";
   const logoPath = path.resolve(__dirname, "../../../frontend/src/Images/Phonex_logo.jpeg");
 
-  await transporter.sendMail({
+  return transporter.sendMail({
     from: `"${fromName}" <${fromEmail}>`,
     to: email,
     subject: 'رمز استعادة كلمة المرور - فينوكس إكسبرس',
@@ -70,6 +157,8 @@ const sendPasswordResetEmail = async (email, code) => {
     ],
   });
 };
+
+*/
 
 const register = async (req, res) => {
   const t = await sequelize.transaction();
@@ -237,8 +326,24 @@ const forgotPassword = async (req, res) => {
     };
 
     try {
-      await sendPasswordResetEmail(user.email, code);
+      sendPasswordResetEmailClean(user.email, code).catch((emailError) => {
+        console.error('Password reset email failed:', {
+          to: user.email,
+          message: emailError.message,
+          code: emailError.code,
+          command: emailError.command,
+          response: emailError.response,
+        });
+        delete resetCodes[normalizedPhone];
+      });
     } catch (smsError) {
+      console.error('Password reset email failed:', {
+        to: user.email,
+        message: smsError.message,
+        code: smsError.code,
+        command: smsError.command,
+        response: smsError.response,
+      });
       delete resetCodes[normalizedPhone];
 
       return res.status(503).json({
