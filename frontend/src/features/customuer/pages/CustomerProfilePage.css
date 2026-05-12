@@ -226,12 +226,32 @@
 }
 
 .customer-track-btn,
+.customer-print-order-btn,
 .customer-new-order-btn {
   width: 100%;
   min-height: 42px;
   border-radius: 9px;
   background: #38b6ff;
   font-size: 0.98rem;
+}
+
+.customer-print-order-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+  border: 0;
+  color: #ffffff;
+  font-family: inherit;
+  font-weight: 900;
+  background: #0f766e;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.customer-print-order-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.7rem 1.1rem rgba(15, 23, 42, 0.12);
 }
 
 .customer-order-actions {
@@ -644,6 +664,178 @@
   transform: none;
 }
 
+.customer-print-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.customer-print-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.customer-print-panel {
+  position: relative;
+  z-index: 1;
+  width: min(760px, 100%);
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 1.5rem 3rem rgba(15, 23, 42, 0.24);
+}
+
+.customer-print-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border-bottom: 1px solid #e5edf4;
+  background: #ffffff;
+}
+
+.customer-print-close,
+.customer-print-now {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  border: 0;
+  border-radius: 9px;
+  font-family: inherit;
+  font-weight: 900;
+}
+
+.customer-print-close {
+  width: 42px;
+  color: #475569;
+  background: #eef2f7;
+}
+
+.customer-print-now {
+  padding: 0.55rem 1rem;
+  color: #ffffff;
+  background: #38b6ff;
+}
+
+.customer-print-document {
+  padding: 1.5rem;
+  color: #0f172a;
+}
+
+.customer-print-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e5edf4;
+}
+
+.customer-print-header p {
+  margin: 0 0 0.25rem;
+  color: #38b6ff;
+  font-size: 0.95rem;
+  font-weight: 950;
+}
+
+.customer-print-header h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.45rem;
+  font-weight: 950;
+}
+
+.customer-print-content {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+  padding-top: 1.25rem;
+}
+
+.customer-print-qr {
+  justify-items: center;
+  padding: 1rem;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.customer-print-details {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+}
+
+.customer-print-details div {
+  display: grid;
+  grid-template-columns: 155px 1fr;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.customer-print-details dt,
+.customer-print-details dd {
+  margin: 0;
+  font-weight: 850;
+  line-height: 1.6;
+}
+
+.customer-print-details dt {
+  color: #64748b;
+}
+
+.customer-print-details dd {
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  .customer-print-modal,
+  .customer-print-modal * {
+    visibility: visible !important;
+  }
+
+  .customer-print-modal {
+    position: static;
+    display: block;
+    padding: 0;
+  }
+
+  .customer-print-backdrop,
+  .customer-print-toolbar {
+    display: none !important;
+  }
+
+  .customer-print-panel {
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .customer-print-document {
+    padding: 0;
+  }
+}
+
 @media (max-width: 1199.98px) {
   .customer-profile-grid {
     grid-template-columns: 1fr;
@@ -692,5 +884,14 @@
 
   .customer-password-actions button {
     width: 100%;
+  }
+
+  .customer-print-content {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-print-details div {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
   }
 }

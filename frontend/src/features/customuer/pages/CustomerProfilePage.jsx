@@ -12,9 +12,12 @@ import {
   FiMail,
   FiPackage,
   FiPhone,
+  FiPrinter,
   FiTrash2,
   FiUser,
+  FiX,
 } from "react-icons/fi";
+import TrackingQrCode from "../../../Components/common/TrackingQrCode";
 import { changePassword } from "../../auth/services/authService";
 import {
   confirmCustomerSettlement,
@@ -81,9 +84,54 @@ const mapCustomerOrder = (order) => {
     to: order.destination_city || "-",
     date: formatOrderDate(order.created_at || order.createdAt),
     canEdit: isEditable,
+    senderName: order.sender_name || "-",
+    senderPhone: order.sender_phone || "-",
+    senderAddress: order.sender_address || "-",
+    receiverName: order.receiver_name || "-",
+    receiverPhone: order.receiver_phone || "-",
+    receiverAddress: order.receiver_address || "-",
+    packageSize: order.package_size || "-",
+    deliverySpeed: order.delivery_speed || "-",
+    packageDescription: order.package_description || "-",
     price: `${deliveryFee} شيكل`,
   };
 };
+
+const packageSizeLabels = {
+  small: "\u0635\u063a\u064a\u0631",
+  medium: "\u0645\u062a\u0648\u0633\u0637",
+  large: "\u0643\u0628\u064a\u0631",
+};
+
+const deliverySpeedLabels = {
+  normal: "\u0639\u0627\u062f\u064a",
+  urgent: "\u0645\u0633\u062a\u0639\u062c\u0644",
+  express: "\u0633\u0631\u064a\u0639",
+};
+
+const getPrintableOrderRows = (order) => [
+  ["\u0631\u0642\u0645 \u0627\u0644\u062a\u062a\u0628\u0639", order.trackingNumber],
+  ["\u062d\u0627\u0644\u0629 \u0627\u0644\u0637\u0644\u0628", order.status],
+  ["\u0627\u0644\u062a\u0627\u0631\u064a\u062e", order.date],
+  ["\u0627\u0644\u0633\u0639\u0631", order.price],
+  ["\u0645\u0646", order.from],
+  ["\u0625\u0644\u0649", order.to],
+  ["\u0627\u0633\u0645 \u0627\u0644\u0645\u0631\u0633\u0644", order.senderName],
+  ["\u0647\u0627\u062a\u0641 \u0627\u0644\u0645\u0631\u0633\u0644", order.senderPhone],
+  ["\u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0645\u0631\u0633\u0644", order.senderAddress],
+  ["\u0627\u0633\u0645 \u0627\u0644\u0645\u0633\u062a\u0644\u0645", order.receiverName],
+  ["\u0647\u0627\u062a\u0641 \u0627\u0644\u0645\u0633\u062a\u0644\u0645", order.receiverPhone],
+  ["\u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0645\u0633\u062a\u0644\u0645", order.receiverAddress],
+  [
+    "\u062d\u062c\u0645 \u0627\u0644\u0637\u0631\u062f",
+    packageSizeLabels[order.packageSize] || order.packageSize,
+  ],
+  [
+    "\u0633\u0631\u0639\u0629 \u0627\u0644\u062a\u0648\u0635\u064a\u0644",
+    deliverySpeedLabels[order.deliverySpeed] || order.deliverySpeed,
+  ],
+  ["\u0648\u0635\u0641 \u0627\u0644\u0637\u0631\u062f", order.packageDescription],
+];
 
 const regionValueByName = {
   west_bank: "west-bank",
@@ -327,6 +375,7 @@ const CustomerProfilePage = () => {
   const [customerOrders, setCustomerOrders] = React.useState([]);
   const [isLoadingOrders, setIsLoadingOrders] = React.useState(true);
   const [ordersFilter, setOrdersFilter] = React.useState("all");
+  const [printOrder, setPrintOrder] = React.useState(null);
   const [settlementData, setSettlementData] = React.useState(null);
   const [isLoadingSettlements, setIsLoadingSettlements] = React.useState(true);
   const [isSubmittingSettlement, setIsSubmittingSettlement] = React.useState(false);
@@ -697,6 +746,10 @@ const CustomerProfilePage = () => {
     }
   };
 
+  const handlePrintOrder = () => {
+    window.print();
+  };
+
   const handleSettlementFormChange = (event) => {
     const { name, value } = event.target;
     setSettlementForm((current) => ({ ...current, [name]: value }));
@@ -822,6 +875,71 @@ const CustomerProfilePage = () => {
 
   return (
     <main className="customer-profile-page" dir="rtl">
+      {printOrder ? (
+        <div className="customer-print-modal" role="dialog" aria-modal="true">
+          <div className="customer-print-backdrop" onClick={() => setPrintOrder(null)} />
+          <section className="customer-print-panel">
+            <div className="customer-print-toolbar">
+              <button
+                type="button"
+                className="customer-print-close"
+                onClick={() => setPrintOrder(null)}
+                aria-label="\u0625\u063a\u0644\u0627\u0642"
+              >
+                <FiX aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className="customer-print-now"
+                onClick={handlePrintOrder}
+              >
+                <FiPrinter aria-hidden="true" />
+                {"\u0637\u0628\u0627\u0639\u0629"}
+              </button>
+            </div>
+
+            <div className="customer-print-document">
+              <header className="customer-print-header">
+                <div>
+                  <p>Phoenix Express</p>
+                  <h2>{"\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0637\u0644\u0628"}</h2>
+                </div>
+                <span className={`customer-order-status ${printOrder.statusType}`}>
+                  {printOrder.status}
+                </span>
+              </header>
+
+              <div className="customer-print-content">
+                <TrackingQrCode
+                  trackingNumber={printOrder.trackingNumber}
+                  title=""
+                  subtitle=""
+                  size="default"
+                  className="customer-print-qr"
+                />
+
+                <dl className="customer-print-details">
+                  {getPrintableOrderRows(printOrder).map(([label, value]) => (
+                    <div key={label}>
+                      <dt>{label}</dt>
+                      <dd
+                        dir={
+                          label === "\u0631\u0642\u0645 \u0627\u0644\u062a\u062a\u0628\u0639"
+                            ? "ltr"
+                            : "rtl"
+                        }
+                      >
+                        {value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
       <section className="customer-profile-shell">
         <div className="customer-profile-header">
           <h1>الملف الشخصي</h1>
@@ -1256,6 +1374,14 @@ const CustomerProfilePage = () => {
                       }
                     >
                       تتبع الطرد
+                    </button>
+                    <button
+                      type="button"
+                      className="customer-print-order-btn"
+                      onClick={() => setPrintOrder(order)}
+                    >
+                      <FiPrinter aria-hidden="true" />
+                      {"\u0637\u0628\u0627\u0639\u0629 \u0627\u0644\u0640 QR"}
                     </button>
                     {order.canEdit ? (
                       <div className="customer-order-actions">
