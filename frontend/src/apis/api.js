@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+const FALLBACK_API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || FALLBACK_API_BASE_URL;
+
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: API_BASE_URL,
 });
 
 API.interceptors.request.use((config) => {

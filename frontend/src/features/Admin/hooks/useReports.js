@@ -26,22 +26,22 @@ function normalize(value) {
 }
 
 function formatRangeDate(value) {
-  return new Intl.DateTimeFormat("ar-EG", {
+  return new Intl.DateTimeFormat("en-GB", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   }).format(new Date(value));
 }
 
-function formatArabicMonthYear(value) {
-  return new Intl.DateTimeFormat("ar-EG", {
+function formatEnglishMonthYear(value) {
+  return new Intl.DateTimeFormat("en-US", {
     month: "long",
     year: "numeric",
   }).format(new Date(value));
 }
 
-function formatArabicYear(value) {
-  return new Intl.DateTimeFormat("ar-EG", {
+function formatEnglishYear(value) {
+  return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
   }).format(new Date(value));
 }
@@ -142,13 +142,16 @@ export function useReports() {
   const [returnedOrders, setReturnedOrders] = useState([]);
   const [filters, setFilters] = useState(initialFilters);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
 
     const loadReports = async () => {
       try {
-        const [operationsData, returnedData] = await Promise.all([
+        setError("");
+
+        const [operationsResult, returnedResult] = await Promise.allSettled([
           getAdminReports(),
           getReturnedOrders(),
         ]);
@@ -157,8 +160,30 @@ export function useReports() {
           return;
         }
 
-        setReports(Array.isArray(operationsData) ? operationsData : []);
-        setReturnedOrders(Array.isArray(returnedData) ? returnedData : []);
+        const operationsData =
+          operationsResult.status === "fulfilled" && Array.isArray(operationsResult.value)
+            ? operationsResult.value
+            : [];
+        const returnedData =
+          returnedResult.status === "fulfilled" && Array.isArray(returnedResult.value)
+            ? returnedResult.value
+            : [];
+
+        setReports(operationsData);
+        setReturnedOrders(returnedData);
+
+        if (operationsResult.status === "rejected" && returnedResult.status === "rejected") {
+          setError(
+            "تعذر تحميل بيانات التقارير. تأكد من تشغيل الخادم الخلفي وتسجيل الدخول بحساب أدمن صالح."
+          );
+          return;
+        }
+
+        if (operationsResult.status === "rejected") {
+          setError("تعذر تحميل سجل العمليات الرئيسي، لكن بقية بيانات الصفحة ما زالت متاحة.");
+        } else if (returnedResult.status === "rejected") {
+          setError("تعذر تحميل بيانات المرتجعات، لكن سجل العمليات الرئيسي ما زال متاحًا.");
+        }
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -361,7 +386,7 @@ export function useReports() {
       },
       {
         id: "monthly-profit",
-        label: `أرباح ${formatArabicMonthYear(now)}`,
+        label: `أرباح ${formatEnglishMonthYear(now)}`,
         value: formatCurrency(monthlyProfit),
         note: `${formatRangeDate(monthStart)} - ${formatRangeDate(monthEnd)}`,
         period: `${formatRangeDate(monthStart)} - ${formatRangeDate(monthEnd)}`,
@@ -371,7 +396,7 @@ export function useReports() {
       },
       {
         id: "yearly-profit",
-        label: `أرباح ${formatArabicYear(now)}`,
+        label: `أرباح ${formatEnglishYear(now)}`,
         value: formatCurrency(yearlyProfit),
         note: `${formatRangeDate(yearStart)} - ${formatRangeDate(yearEnd)}`,
         period: `${formatRangeDate(yearStart)} - ${formatRangeDate(yearEnd)}`,
@@ -392,5 +417,6 @@ export function useReports() {
     filters,
     setFilters,
     isLoading,
+    error,
   };
 }

@@ -45,7 +45,7 @@ function formatCurrency(value) {
 function formatDateTime(value) {
   if (!value) return "-";
 
-  return new Intl.DateTimeFormat("ar-EG", {
+  return new Intl.DateTimeFormat("en-GB", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -58,7 +58,7 @@ function buildCsvRows(rows) {
   const headers = [
     "رقم الطلب",
     "التاجر",
-    "العميل",
+    "الزبون",
     "الهاتف",
     "المندوب",
     "الحالة",
@@ -106,11 +106,12 @@ function ReportsPage() {
   const {
     reports,
     filteredReports,
-      summaryCards,
+    summaryCards,
     cities,
     filters,
     setFilters,
     isLoading,
+    error,
   } = useReports();
 
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -214,7 +215,7 @@ function ReportsPage() {
               <tr>
                 <th>رقم الطلب</th>
                 <th>التاجر</th>
-                <th>العميل</th>
+                <th>الزبون</th>
                 <th>الهاتف</th>
                 <th>المندوب</th>
                 <th>الحالة</th>
@@ -292,6 +293,15 @@ function ReportsPage() {
         ))}
       </div>
 
+      {error ? (
+        <article className="phoenix-reports__notice phoenix-reports__notice--warning">
+          <div>
+            <h2 className="phoenix-reports__notice-title">يوجد خلل في تحميل بعض بيانات التقارير</h2>
+            <p className="phoenix-reports__notice-text">{error}</p>
+          </div>
+        </article>
+      ) : null}
+
       <article className="phoenix-reports__panel">
         <div className="phoenix-reports__panel-head">
           <div>
@@ -317,7 +327,7 @@ function ReportsPage() {
             <input
               type="text"
               value={filters.search}
-              placeholder="ابحث برقم الطلب، التاجر، العميل، المندوب، الهاتف، المدينة..."
+              placeholder="ابحث برقم الطلب، التاجر، الزبون، المندوب، الهاتف، المدينة..."
               onChange={(event) => handleFilterChange("search", event.target.value)}
             />
           </label>
@@ -343,11 +353,11 @@ function ReportsPage() {
           </label>
 
           <label className="phoenix-reports__field">
-            <span>البحث باسم العميل</span>
+            <span>البحث باسم الزبون</span>
             <input
               type="text"
               value={filters.customerName}
-              placeholder="اسم العميل"
+              placeholder="اسم الزبون"
               onChange={(event) => handleFilterChange("customerName", event.target.value)}
             />
           </label>
@@ -440,7 +450,7 @@ function ReportsPage() {
               <tr>
                 <th>رقم الطلب</th>
                 <th>التاجر</th>
-                <th>العميل</th>
+                <th>الزبون</th>
                 <th>الهاتف</th>
                 <th>المندوب</th>
                 <th>الحالة</th>
@@ -523,7 +533,7 @@ function ReportsPage() {
                     <strong>{report.merchantName}</strong>
                   </div>
                   <div>
-                    <span>العميل</span>
+                    <span>الزبون</span>
                     <strong>{report.customerName}</strong>
                   </div>
                   <div>
@@ -580,7 +590,7 @@ function ReportsPage() {
                 <strong>{selectedOrder.merchantName}</strong>
               </div>
               <div>
-                <span>العميل</span>
+                <span>الزبون</span>
                 <strong>{selectedOrder.customerName}</strong>
               </div>
               <div>
