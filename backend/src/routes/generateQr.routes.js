@@ -3,9 +3,13 @@ const router = express.Router();
 const QRCode = require("qrcode");
 
 router.get("/:trackingNumber", async (req, res) => {
+  const { trackingNumber } = req.params;
+  const frontendBaseUrl =
+    "http://localhost:3000".replace(/\/$/, "");
+  const qrData = `${frontendBaseUrl}/tracking?trackingNumber=${encodeURIComponent(
+    trackingNumber,
+  )}`;
   try {
-    const { trackingNumber } = req.params;
-    const qrData = `http://localhost:5000/track/${trackingNumber}`;
     const qrCodeImage = await QRCode.toDataURL(qrData);
     res.json({
       success: true,
