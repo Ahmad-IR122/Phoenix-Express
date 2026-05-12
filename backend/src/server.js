@@ -10,6 +10,7 @@ const authRoutes = require("./routes/auth.routes");
 const customerRoutes = require("./routes/customer.routes");
 const employeeRoutes = require("./routes/employee.routes");
 const feedbackRoutes = require("./routes/feedback.routes");
+const photoGalleryRoutes = require("./routes/photogallery.routes");
 const orderRoutes = require("./routes/order.routes");
 const shipmentRoutes = require("./routes/shipment.routes");
 const trackingRoutes = require("./routes/tracking.routes");
@@ -19,12 +20,13 @@ const supportChatRoutes = require("./routes/supportChat.routes");
 const newsletterRoutes = require("./routes/newsletter.routes");
 const notificationRoutes = require("./routes/notification.routes");
 const qrCodeRoutes = require("./routes/generateQr.routes");
+const siteContentRoutes = require("./routes/siteContent.routes");
 app.use(
   cors({
     origin: "http://localhost:3000",
   }),
 );
-app.use(express.json());
+app.use(express.json({ limit: "12mb" }));
 
 /*   <!-- AHMAD code  --> */
 app.use("/api/admin", adminRoutes);
@@ -35,6 +37,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/feedbacks', feedbackRoutes);
+app.use('/api/photogalleries', photoGalleryRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/shipments', shipmentRoutes);
 app.use('/api/tracking', trackingRoutes);
@@ -44,6 +47,7 @@ app.use('/api/support-chat', supportChatRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/generate-qr', qrCodeRoutes);
+app.use('/api/site-content', siteContentRoutes);
 /*   <!-- END of AHMAD code  --> */
 
 /*   <!-- RAGHAD  code  --> */

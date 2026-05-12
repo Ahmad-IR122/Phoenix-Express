@@ -3,6 +3,7 @@ import API from "../../../apis/api";
 import deliveryImg from "../../../Images/delivery.png";
 import fleetImg from "../../../Images/fleet.png";
 import customersImg from "../../../Images/customers.png";
+import { defaultAboutContent } from "../../customuer/pages/AboutPage";
 import "./ContentManagementPage.css";
 
 const emptyArticle = {
@@ -56,6 +57,69 @@ const legacyArticleSeeds = [
   },
 ];
 
+const legacyArticleContents = [
+  `العميل لا ينتظر الطرد فقط
+في التجارة الإلكترونية، العميل ينتظر الاطمئنان أيضًا. عندما يستطيع معرفة حالة طلبه بوضوح، تقل الأسئلة والقلق وتصبح تجربة الشراء أكثر راحة.
+
+التتبع يقلل ضغط خدمة العملاء
+كل تحديث واضح على الشحنة يعني رسالة أقل لفريق الدعم. بدل أن يسأل العميل أين وصل الطلب، يجد الإجابة أمامه مباشرة.
+
+ثقة أكبر بين التاجر والعميل
+التاجر الذي يوفر تتبعًا منظمًا يظهر بصورة أكثر احترافية. هذا لا يحسن تجربة الطلب الحالي فقط، بل يزيد فرصة عودة العميل للشراء مرة أخرى.
+
+الخلاصة
+التتبع اللحظي ليس ميزة إضافية، بل جزء أساسي من جودة خدمة التوصيل، خصوصًا للمشاريع التي تريد بناء علاقة طويلة مع عملائها.`,
+  `ابدأ من طبيعة المنتج
+المنتجات القابلة للكسر تحتاج طبقات حماية إضافية، بينما الملابس والإكسسوارات تحتاج تغليفًا يحافظ على الشكل والترتيب. لا يوجد تغليف واحد يناسب كل شيء.
+
+املأ الفراغ داخل الطرد
+الفراغ الداخلي يسمح للمنتج بالحركة أثناء النقل. استخدم ورقًا أو مواد حماية خفيفة لتثبيت المنتج وتقليل احتمالية التلف.
+
+اكتب البيانات بوضوح
+رقم الهاتف، اسم المستلم، المدينة، والعنوان يجب أن تكون واضحة. خطأ صغير في البيانات قد يؤخر الطلب أو يعيده للمرسل.
+
+الخلاصة
+التغليف الجيد يحمي المنتج ويحمي سمعة المتجر. كل طرد يصل مرتبًا هو رسالة صامتة تقول للعميل إنك تهتم بالتفاصيل.`,
+  `النمو يبدأ من القدرة على الوصول
+قد يملك المشروع منتجًا رائعًا، لكنه يحتاج طريقة مضمونة لإيصاله. التوصيل المنظم يفتح أبواب مدن ومناطق جديدة دون الحاجة لفرع جديد.
+
+وقت صاحب المشروع أهم من المشاوير
+عندما يتولى شريك التوصيل عمليات الاستلام والتسليم والمتابعة، يستطيع صاحب المشروع التركيز على التسويق، تطوير المنتجات، وخدمة العملاء.
+
+التجربة الجيدة تبيع مرة ثانية
+العميل قد يحب المنتج، لكن تجربة التوصيل السيئة قد تمنعه من العودة. لذلك، التوصيل جزء من المنتج وليس خطوة منفصلة عنه.
+
+الخلاصة
+المشاريع الصغيرة لا تحتاج حلولًا معقدة، بل تحتاج شريكًا يعرف كيف يحول كل طلب إلى تجربة مريحة وواضحة.`,
+  `السرعة لا تعني العشوائية
+التوصيل السريع يبدأ قبل خروج المندوب. ترتيب الطلبات، تحديد المناطق، وتوزيع المسارات كلها خطوات تصنع الفرق بين السرعة والفوضى.
+
+المندوب يحتاج معلومات دقيقة
+كلما كانت بيانات الطلب أوضح، كان التسليم أسرع. رقم هاتف صحيح، عنوان واضح، وملاحظات مختصرة تساعد المندوب على إنجاز المهمة من أول محاولة.
+
+التواصل يحل نصف المشاكل
+تأخير بسيط مع تحديث واضح أفضل من صمت كامل. التواصل الجيد يحافظ على ثقة العميل حتى عندما تحدث ظروف خارجة عن السيطرة.
+
+الخلاصة
+التوصيل السريع نتيجة نظام متكامل، وليس مجرد مندوب يتحرك بسرعة. النجاح الحقيقي يحدث عندما تعمل التفاصيل الصغيرة معًا.`,
+  `لماذا يفضله العملاء؟
+كثير من العملاء يشعرون براحة أكبر عندما يدفعون بعد استلام الطلب. هذا الخيار يقلل التردد عند الشراء، خصوصًا من المتاجر الجديدة.
+
+متى يصبح تحديًا؟
+الدفع عند الاستلام يحتاج متابعة دقيقة للمبالغ، الطلبات الراجعة، وحالات عدم الاستلام. بدون نظام واضح قد يصبح عبئًا ماليًا وتشغيليًا.
+
+كيف تستخدمه بذكاء؟
+حدد سياسات واضحة للتأكيد قبل الشحن، راقب الطلبات الراجعة، وتعامل مع شركة توصيل توفر سجلًا واضحًا للمبالغ والتحصيل.
+
+الخلاصة
+الدفع عند الاستلام أداة قوية لزيادة المبيعات، لكنه يحتاج تنظيمًا. عندما يكون التحصيل واضحًا، يصبح الخيار مفيدًا للتاجر والعميل معًا.`,
+];
+
+const legacyArticlesWithContent = legacyArticleSeeds.map((article, index) => ({
+  ...article,
+  content: legacyArticleContents[index] || article.description,
+}));
+
 const emptyPhoto = {
   name: "",
   image_url: "",
@@ -83,6 +147,7 @@ const legacyPhotoSeeds = [
 ];
 
 const tabs = [
+  { key: "about", label: "من نحن" },
   { key: "articles", label: "المدونة" },
   { key: "gallery", label: "معرض الصور" },
   { key: "reviews", label: "آراء الزبائن" },
@@ -98,6 +163,7 @@ export default function ContentManagementPage() {
   const [articles, setArticles] = React.useState([]);
   const [photos, setPhotos] = React.useState([]);
   const [reviews, setReviews] = React.useState([]);
+  const [aboutForm, setAboutForm] = React.useState(defaultAboutContent);
   const [articleForm, setArticleForm] = React.useState(emptyArticle);
   const [photoForm, setPhotoForm] = React.useState(emptyPhoto);
   const [editingArticleId, setEditingArticleId] = React.useState(null);
@@ -114,7 +180,7 @@ export default function ContentManagementPage() {
   }, [articles]);
   const legacyArticlesToImport = React.useMemo(
     () =>
-      legacyArticleSeeds.filter(
+      legacyArticlesWithContent.filter(
         (legacyArticle) =>
           !articles.some((article) => article.title === legacyArticle.title)
       ),
@@ -143,10 +209,11 @@ export default function ContentManagementPage() {
   const loadContent = React.useCallback(async () => {
     setIsLoading(true);
     try {
-      const [articlesResponse, photosResponse, reviewsResponse] = await Promise.all([
+      const [articlesResponse, photosResponse, reviewsResponse, aboutResponse] = await Promise.all([
         API.get("/articles"),
         API.get("/photogalleries?includeHidden=true"),
         API.get("/feedbacks"),
+        API.get("/site-content/about"),
       ]);
 
       const loadedArticles = Array.isArray(articlesResponse.data?.data)
@@ -155,6 +222,18 @@ export default function ContentManagementPage() {
       setArticles(loadedArticles);
       setPhotos(Array.isArray(photosResponse.data?.data) ? photosResponse.data.data : []);
       setReviews(Array.isArray(reviewsResponse.data?.data) ? reviewsResponse.data.data : []);
+      if (aboutResponse.data?.data?.content) {
+        setAboutForm({
+          ...defaultAboutContent,
+          ...aboutResponse.data.data.content,
+          values: aboutResponse.data.data.content.values?.length
+            ? aboutResponse.data.data.content.values
+            : defaultAboutContent.values,
+          stats: aboutResponse.data.data.content.stats?.length
+            ? aboutResponse.data.data.content.stats
+            : defaultAboutContent.stats,
+        });
+      }
     } catch (requestError) {
       showError(
         requestError.response?.data?.message ||
@@ -203,6 +282,40 @@ export default function ContentManagementPage() {
     } catch (requestError) {
       showError(requestError.response?.data?.message || "تعذر حفظ المقال.");
     }
+  };
+
+  const handleAboutSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      await API.put("/site-content/about", { content: aboutForm });
+      showMessage("تم حفظ محتوى صفحة من نحن بنجاح.");
+      await loadContent();
+    } catch (requestError) {
+      showError(requestError.response?.data?.message || "تعذر حفظ صفحة من نحن.");
+    }
+  };
+
+  const updateAboutField = (field, value) => {
+    setAboutForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const updateAboutValue = (index, field, value) => {
+    setAboutForm((current) => ({
+      ...current,
+      values: current.values.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [field]: value } : item
+      ),
+    }));
+  };
+
+  const updateAboutStat = (index, field, value) => {
+    setAboutForm((current) => ({
+      ...current,
+      stats: current.stats.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [field]: value } : item
+      ),
+    }));
   };
 
   const handleEditArticle = (article) => {
@@ -254,7 +367,7 @@ export default function ContentManagementPage() {
       for (const article of legacyArticlesToImport) {
         await API.post("/articles", {
           ...article,
-          content: article.description,
+          content: article.content || article.description,
           published_date: new Date().toISOString(),
         });
       }
@@ -270,7 +383,7 @@ export default function ContentManagementPage() {
     try {
       await API.post("/articles", {
         ...article,
-        content: article.description,
+        content: article.content || article.description,
         published_date: new Date().toISOString(),
       });
 
@@ -283,13 +396,22 @@ export default function ContentManagementPage() {
 
   const handlePhotoSubmit = async (event) => {
     event.preventDefault();
+    const payload = {
+      ...photoForm,
+      display_order: Number(photoForm.display_order) || photos.length + 1,
+    };
+
+    if (!payload.image_url) {
+      showError("يرجى اختيار صورة من الجهاز قبل الحفظ.");
+      return;
+    }
 
     try {
       if (editingPhotoId) {
-        await API.put(`/photogalleries/${editingPhotoId}`, photoForm);
+        await API.put(`/photogalleries/${editingPhotoId}`, payload);
         showMessage("تم تعديل الصورة بنجاح.");
       } else {
-        await API.post("/photogalleries", photoForm);
+        await API.post("/photogalleries", payload);
         showMessage("تمت إضافة الصورة بنجاح.");
       }
 
@@ -416,6 +538,110 @@ export default function ContentManagementPage() {
 
       {isLoading ? (
         <section className="admin-content-panel">جاري تحميل المحتوى...</section>
+      ) : null}
+
+      {!isLoading && activeTab === "about" ? (
+        <section className="admin-content-panel">
+          <form className="admin-content-form" onSubmit={handleAboutSubmit}>
+            <h2>تعديل صفحة من نحن</h2>
+            <p className="admin-content-note">
+              المفتاح ثابت: <strong>about</strong>. عدلي المحتوى فقط، وإذا لم تحفظي أي تعديل ستبقى الصفحة بالنص الأصلي.
+            </p>
+            <input
+              value={aboutForm.title}
+              onChange={(event) => updateAboutField("title", event.target.value)}
+              placeholder="عنوان الصفحة"
+              required
+            />
+            <textarea
+              rows="3"
+              value={aboutForm.subtitle}
+              onChange={(event) => updateAboutField("subtitle", event.target.value)}
+              placeholder="النص التعريفي أعلى الصفحة"
+            />
+            <input
+              value={aboutForm.storyTitle}
+              onChange={(event) => updateAboutField("storyTitle", event.target.value)}
+              placeholder="عنوان القصة"
+            />
+            <textarea
+              rows="6"
+              value={aboutForm.storyText}
+              onChange={(event) => updateAboutField("storyText", event.target.value)}
+              placeholder="نص القصة"
+            />
+            <input
+              value={aboutForm.visionTitle}
+              onChange={(event) => updateAboutField("visionTitle", event.target.value)}
+              placeholder="عنوان الرؤية"
+            />
+            <textarea
+              rows="5"
+              value={aboutForm.visionText}
+              onChange={(event) => updateAboutField("visionText", event.target.value)}
+              placeholder="نص الرؤية"
+            />
+            <input
+              value={aboutForm.valuesTitle}
+              onChange={(event) => updateAboutField("valuesTitle", event.target.value)}
+              placeholder="عنوان القيم"
+            />
+            <div className="admin-content-nested-list">
+              {aboutForm.values.map((value, index) => (
+                <div className="admin-content-nested-item" key={`value-${index}`}>
+                  <input
+                    value={value.title}
+                    onChange={(event) => updateAboutValue(index, "title", event.target.value)}
+                    placeholder={`عنوان القيمة ${index + 1}`}
+                  />
+                  <textarea
+                    rows="2"
+                    value={value.text}
+                    onChange={(event) => updateAboutValue(index, "text", event.target.value)}
+                    placeholder={`نص القيمة ${index + 1}`}
+                  />
+                </div>
+              ))}
+            </div>
+            <input
+              value={aboutForm.phoenixTitle}
+              onChange={(event) => updateAboutField("phoenixTitle", event.target.value)}
+              placeholder="عنوان فقرة الفونيكس"
+            />
+            <textarea
+              rows="6"
+              value={aboutForm.phoenixText}
+              onChange={(event) => updateAboutField("phoenixText", event.target.value)}
+              placeholder="نص فقرة الفونيكس"
+            />
+            <div className="admin-content-nested-list">
+              {aboutForm.stats.map((stat, index) => (
+                <div className="admin-content-nested-item" key={`stat-${index}`}>
+                  <input
+                    value={stat.number}
+                    onChange={(event) => updateAboutStat(index, "number", event.target.value)}
+                    placeholder={`رقم الإحصائية ${index + 1}`}
+                  />
+                  <input
+                    value={stat.label}
+                    onChange={(event) => updateAboutStat(index, "label", event.target.value)}
+                    placeholder={`عنوان الإحصائية ${index + 1}`}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="admin-content-actions">
+              <button type="submit">حفظ صفحة من نحن</button>
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => setAboutForm(defaultAboutContent)}
+              >
+                استرجاع النص الأصلي
+              </button>
+            </div>
+          </form>
+        </section>
       ) : null}
 
       {!isLoading && activeTab === "articles" ? (
@@ -574,10 +800,40 @@ export default function ContentManagementPage() {
               placeholder="عنوان الصورة"
               required
             />
+            <label className="admin-content-upload-box">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoFileChange}
+              />
+              <span>اختيار صورة من الجهاز</span>
+              <small>يفتح مجلدات الجهاز لاختيار صورة المعرض</small>
+            </label>
+            {photoForm.image_url ? (
+              <div className="admin-content-photo-preview">
+                <img src={photoForm.image_url} alt="معاينة الصورة" />
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() =>
+                    setPhotoForm((current) => ({ ...current, image_url: "" }))
+                  }
+                >
+                  إزالة الصورة
+                </button>
+              </div>
+            ) : null}
             <input
-              value={photoForm.image_url}
-              onChange={(event) => setPhotoForm((current) => ({ ...current, image_url: event.target.value }))}
-              placeholder="رابط الصورة"
+              type="number"
+              min="0"
+              value={photoForm.display_order}
+              onChange={(event) =>
+                setPhotoForm((current) => ({
+                  ...current,
+                  display_order: event.target.value,
+                }))
+              }
+              placeholder="ترتيب الصورة"
               required
             />
             <textarea
@@ -600,6 +856,11 @@ export default function ContentManagementPage() {
             </label>
             <div className="admin-content-actions">
               <button type="submit">{editingPhotoId ? "حفظ التعديل" : "إضافة الصورة"}</button>
+              {legacyPhotosToImport.length ? (
+                <button type="button" className="ghost" onClick={importLegacyPhotos}>
+                  استيراد الصور القديمة
+                </button>
+              ) : null}
               {editingPhotoId ? (
                 <button
                   type="button"
@@ -629,6 +890,29 @@ export default function ContentManagementPage() {
               </article>
             ))}
           </div>
+
+          {legacyPhotosToImport.length ? (
+            <section className="admin-content-legacy">
+              <div className="admin-content-legacy__header">
+                <h3>الصور القديمة الجاهزة للإضافة</h3>
+                <p>أضيفي الصور القديمة إلى قاعدة البيانات لتظهر ضمن ترتيب المعرض.</p>
+              </div>
+              <div className="admin-content-gallery">
+                {legacyPhotosToImport.map((photo) => (
+                  <article key={photo.name} className="admin-content-photo">
+                    <img src={photo.image_url} alt={photo.name} />
+                    <strong>{photo.name}</strong>
+                    <p>{photo.description}</p>
+                    <div className="admin-content-item-actions">
+                      <button type="button" onClick={() => importLegacyPhoto(photo)}>
+                        إضافة للداتا بيس
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </section>
       ) : null}
 
