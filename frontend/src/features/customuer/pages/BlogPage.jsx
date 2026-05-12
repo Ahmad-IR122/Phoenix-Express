@@ -7,6 +7,15 @@ import { subscribeToNewsletter } from "../../../services/newsletterService";
 import API from "../../../apis/api";
 import "./BlogPage.css";
 
+const ALL_CATEGORY = "\u0627\u0644\u0643\u0644";
+const ORIGINAL_ARTICLE_TITLES = [
+  "\u0623\u0647\u0645\u064a\u0629 \u0627\u0644\u062a\u062a\u0628\u0639 \u0627\u0644\u0644\u062d\u0638\u064a \u0644\u0644\u0634\u062d\u0646\u0627\u062a",
+  "\u0627\u0644\u062a\u063a\u0644\u064a\u0641 \u0627\u0644\u0622\u0645\u0646: \u062f\u0644\u064a\u0644 \u0633\u0631\u064a\u0639 \u0642\u0628\u0644 \u0627\u0644\u0634\u062d\u0646",
+  "\u0643\u064a\u0641 \u064a\u0633\u0627\u0639\u062f \u0627\u0644\u062a\u0648\u0635\u064a\u0644 \u0627\u0644\u0645\u0646\u0638\u0645 \u0627\u0644\u0645\u0634\u0627\u0631\u064a\u0639 \u0627\u0644\u0635\u063a\u064a\u0631\u0629",
+  "\u0645\u0627 \u0627\u0644\u0630\u064a \u064a\u062c\u0639\u0644 \u0627\u0644\u062a\u0648\u0635\u064a\u0644 \u0627\u0644\u0633\u0631\u064a\u0639 \u0645\u0645\u0643\u0646\u0627\u064b\u061f",
+  "\u0627\u0644\u062f\u0641\u0639 \u0639\u0646\u062f \u0627\u0644\u0627\u0633\u062a\u0644\u0627\u0645: \u0645\u062a\u0649 \u064a\u0643\u0648\u0646 \u0627\u0644\u062e\u064a\u0627\u0631 \u0627\u0644\u0623\u0641\u0636\u0644\u061f",
+];
+
 const articles = [
   {
     icon: "📍",
@@ -174,16 +183,31 @@ const BlogPage = () => {
   const [showFeaturedArticle, setShowFeaturedArticle] = React.useState(false);
   const [selectedArticle, setSelectedArticle] = React.useState(null);
   const [newsletterEmail, setNewsletterEmail] = React.useState("");
-  const [activeCategory, setActiveCategory] = React.useState("الكل");
+  const [activeCategory, setActiveCategory] = React.useState(ALL_CATEGORY);
   const [cmsArticles, setCmsArticles] = React.useState([]);
-  const visibleArticles = cmsArticles.length ? cmsArticles : articles;
-  const visibleCategories = [
-    "الكل",
-    ...Array.from(new Set(visibleArticles.map((article) => article.category).filter(Boolean))),
-  ];
-  const filteredArticles = activeCategory === "الكل"
+  const visibleArticles = React.useMemo(
+    () =>
+      cmsArticles.length
+        ? cmsArticles.filter((article) => ORIGINAL_ARTICLE_TITLES.includes(article.title))
+        : articles,
+    [cmsArticles]
+  );
+  const visibleCategories = React.useMemo(
+    () => [
+      ALL_CATEGORY,
+      ...Array.from(new Set(visibleArticles.map((article) => article.category).filter(Boolean))),
+    ],
+    [visibleArticles]
+  );
+  const filteredArticles = activeCategory === ALL_CATEGORY
     ? visibleArticles
     : visibleArticles.filter((article) => article.category === activeCategory);
+
+  React.useEffect(() => {
+    if (!visibleCategories.includes(activeCategory)) {
+      setActiveCategory(ALL_CATEGORY);
+    }
+  }, [activeCategory, visibleCategories]);
 
   React.useEffect(() => {
     API.get("/articles")
