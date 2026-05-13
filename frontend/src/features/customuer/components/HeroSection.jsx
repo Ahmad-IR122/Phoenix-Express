@@ -32,10 +32,6 @@ const HeroSection = () => {
     }
 
     const normalizedTrackingNumber = trackingNumber.trim();
-    if (!normalizedTrackingNumber) {
-      return;
-    }
-
     navigate("/tracking", {
       state: {
         trackingNumber: normalizedTrackingNumber,
