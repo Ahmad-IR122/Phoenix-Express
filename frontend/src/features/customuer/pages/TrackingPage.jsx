@@ -241,9 +241,27 @@ const TrackingPage = () => {
 
     return () => window.clearInterval(intervalId);
   }, [refreshTrackingLocation, shipment?.tracking_number]);
-
+  const showError = (title,message) => {
+    Swal.fire({
+      icon: "error",
+      title: title,
+      text: message,
+      confirmButtonText: "حسناً",
+      confirmButtonColor: "#38b6ff",
+    });
+    
+  };
   const handleSubmit = (event) => {
     event.preventDefault();
+    const emptyRegex = /^\s*$/;
+    const trackingNumberRegex = /^[A-Z0-9]{8,30}$/;
+      if (emptyRegex.test(trackingNumber)) {
+      showError("خطأ في الإدخال", "يرجى إدخال رقم التتبع .");
+      return;
+    } else if (!trackingNumberRegex.test(trackingNumber)) {
+      showError("خطأ في الإدخال", "رقم التتبع غير صالح. يجب أن يكون بين 8 و30 حرفًا أو رقمًا.");
+      return;
+    }
     performSearch(trackingNumber);
   };
 
