@@ -62,7 +62,8 @@ app.get("/", (req, res) => {
 });
 
 const server = app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`✅ Server started successfully`);
+  console.log(`🚀 Running on: http://localhost:${port}`);
 });
 
 server.on("error", (err) => {
