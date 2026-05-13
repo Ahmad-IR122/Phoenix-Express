@@ -803,6 +803,23 @@
 }
 
 @media print {
+  @page {
+    margin: 10mm;
+  }
+
+  html,
+  body {
+    height: auto !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+  }
+
+  body.customer-print-active .customer-site-layout > :not(.customer-profile-page),
+  body.customer-print-active .customer-profile-page > :not(.customer-print-modal),
+  body.customer-print-active .phoenix-scroll-top {
+    display: none !important;
+  }
+
   body * {
     visibility: hidden !important;
   }
@@ -813,9 +830,12 @@
   }
 
   .customer-print-modal {
-    position: static;
+    position: static !important;
+    inset: auto !important;
     display: block;
     padding: 0;
+    width: 100% !important;
+    min-height: 0 !important;
   }
 
   .customer-print-backdrop,
@@ -824,15 +844,18 @@
   }
 
   .customer-print-panel {
-    width: 100%;
-    max-height: none;
-    overflow: visible;
-    border-radius: 0;
-    box-shadow: none;
+    position: static !important;
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
   }
 
   .customer-print-document {
-    padding: 0;
+    padding: 0 !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }
 

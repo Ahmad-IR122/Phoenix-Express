@@ -480,6 +480,14 @@ const CustomerProfilePage = () => {
     loadSettlements();
   }, [loadSettlements]);
 
+  React.useEffect(() => {
+    document.body.classList.toggle("customer-print-active", Boolean(printOrder));
+
+    return () => {
+      document.body.classList.remove("customer-print-active");
+    };
+  }, [printOrder]);
+
   const handleProfileChange = (event) => {
     const { name, value } = event.target;
     setProfileForm((current) => ({ ...current, [name]: value }));

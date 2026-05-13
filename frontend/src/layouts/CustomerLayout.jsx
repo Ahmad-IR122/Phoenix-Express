@@ -7,7 +7,7 @@ import ChatbotWidget from '../Components/ChatbotWidget';
 
 const CustomerLayout = () => {
   return (
-    <div>
+    <div className="customer-site-layout">
       <TopBar />
       <Navbar />
       <Outlet />
