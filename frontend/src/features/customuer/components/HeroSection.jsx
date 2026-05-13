@@ -2,13 +2,34 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./style/HeroSection.css";
 import logo from "../../../Images/Phonex_logo.jpeg";
+import Swal from "sweetalert2";
 
 const HeroSection = () => {
   const navigate = useNavigate();
   const [trackingNumber, setTrackingNumber] = useState("");
-
+  const showError = (title,message) => {
+    Swal.fire({
+      icon: "error",
+      title: title,
+      text: message,
+      confirmButtonText: "حسناً",
+      confirmButtonColor: "#38b6ff",
+    });
+    
+  };
   const handleTrackingSubmit = (event) => {
     event.preventDefault();
+    const emptyRegex = /^\s*$/;
+    const trackingNumberRegex = /^[A-Z0-9]{8,30}$/;
+
+
+    if (emptyRegex.test(trackingNumber)) {
+      showError("خطأ في الإدخال", "يرجى إدخال رقم التتبع .");
+      return;
+    } else if (!trackingNumberRegex.test(trackingNumber)) {
+      showError("خطأ في الإدخال", "رقم التتبع غير صالح. يجب أن يكون بين 8 و30 حرفًا أو رقمًا.");
+      return;
+    }
 
     const normalizedTrackingNumber = trackingNumber.trim();
     if (!normalizedTrackingNumber) {
