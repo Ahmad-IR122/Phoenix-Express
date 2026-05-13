@@ -95,11 +95,13 @@ export default function useDashboardNotifications({ enabled = true, pollInterval
     };
 
     window.addEventListener("focus", handleWindowFocus);
+    window.addEventListener("phoenix:notifications-refresh", loadNotifications);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.clearInterval(intervalId);
       window.removeEventListener("focus", handleWindowFocus);
+      window.removeEventListener("phoenix:notifications-refresh", loadNotifications);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [enabled, loadNotifications, pollInterval]);

@@ -8,7 +8,10 @@ const {
   SupportConversation,
   SupportMessage,
 } = require('../models');
-const { notifyEmployee } = require('../services/notification.service');
+const {
+  markEntityNotificationsAsRead,
+  notifyEmployee,
+} = require('../services/notification.service');
 
 const { Op } = Sequelize;
 
@@ -62,6 +65,7 @@ const mapConversation = (conversation) => {
         id: String(message.id),
         role: message.sender_role,
         text: message.message,
+        readAt: message.read_at ? new Date(message.read_at).getTime() : null,
         createdAt: new Date(message.created_at || message.createdAt).getTime(),
       })),
   };
@@ -157,6 +161,17 @@ const sendCustomerMessage = async (req, res) => {
     }
 
     const conversation = await findOrCreateCustomerConversation(req.user.id);
+
+    await SupportMessage.update(
+      { read_at: new Date() },
+      {
+        where: {
+          conversation_id: conversation.id,
+          sender_role: 'employee',
+          read_at: null,
+        },
+      }
+    );
 
     await SupportMessage.create({
       conversation_id: conversation.id,
@@ -271,6 +286,12 @@ const sendEmployeeMessage = async (req, res) => {
       assigned_employee_id: employee?.id || conversation.assigned_employee_id,
     });
 
+    await markEntityNotificationsAsRead({
+      role: 'employee',
+      entityType: 'support_conversation',
+      entityId: conversation.id,
+    });
+
     const fullConversation = await SupportConversation.findByPk(conversation.id, {
       include: conversationInclude,
       order: [[{ model: SupportMessage, as: 'messages' }, 'created_at', 'ASC']],
@@ -320,9 +341,61 @@ const deleteEmployeeConversation = async (req, res) => {
   }
 };
 
+const markCustomerConversationRead = async (req, res) => {
+  try {
+    const customer = await findCustomerForUser(req.user.id);
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: 'Customer profile not found',
+      });
+    }
+
+    const conversation = await SupportConversation.findOne({
+      where: {
+        id: req.params.id,
+        customer_id: customer.id,
+        customer_user_id: req.user.id,
+      },
+    });
+
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Support conversation not found',
+      });
+    }
+
+    const [updatedCount] = await SupportMessage.update(
+      { read_at: new Date() },
+      {
+        where: {
+          conversation_id: conversation.id,
+          sender_role: 'employee',
+          read_at: null,
+        },
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        updatedCount,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to mark support conversation as read',
+    });
+  }
+};
+
 module.exports = {
   getCustomerConversation,
   sendCustomerMessage,
+  markCustomerConversationRead,
   getEmployeeConversations,
   sendEmployeeMessage,
   deleteEmployeeConversation,
