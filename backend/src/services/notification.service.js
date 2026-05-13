@@ -190,6 +190,29 @@ const markAllNotificationsAsRead = async ({ role, userId, employeeId }) => {
   return updatedCount;
 };
 
+const markEntityNotificationsAsRead = async ({ role, entityType, entityId }) => {
+  if (!role || !entityType || !entityId) {
+    return 0;
+  }
+
+  const [updatedCount] = await Notification.update(
+    {
+      is_read: true,
+      read_at: new Date(),
+    },
+    {
+      where: {
+        target_role: role,
+        entity_type: entityType,
+        entity_id: entityId,
+        is_read: false,
+      },
+    }
+  );
+
+  return updatedCount;
+};
+
 module.exports = {
   createNotification,
   notifyAdmins,
@@ -198,4 +221,5 @@ module.exports = {
   getUnreadCountForRecipient,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  markEntityNotificationsAsRead,
 };

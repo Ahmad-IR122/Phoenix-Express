@@ -37,8 +37,8 @@ const formatTime = (value) =>
   }).format(new Date(value));
 
 const SupportChatsPage = () => {
-  const [threads, setThreads] = React.useState(() => getThreads());
-  const [selectedThreadId, setSelectedThreadId] = React.useState(() => getThreads()[0]?.id || null);
+  const [threads, setThreads] = React.useState([]);
+  const [selectedThreadId, setSelectedThreadId] = React.useState(null);
   const [replyText, setReplyText] = React.useState("");
   const [isSendingReply, setIsSendingReply] = React.useState(false);
 
@@ -49,7 +49,7 @@ const SupportChatsPage = () => {
         const response = await getEmployeeSupportConversations();
         nextThreads = response.data || [];
       } catch {
-        nextThreads = getThreads();
+        nextThreads = [];
       }
 
       nextThreads = nextThreads.filter(hasCustomerMessage);
@@ -103,6 +103,7 @@ const SupportChatsPage = () => {
       saveThreads(nextThreads);
       setThreads(nextThreads);
       setReplyText("");
+      window.dispatchEvent(new Event("phoenix:notifications-refresh"));
       setIsSendingReply(false);
       return;
     } catch {
@@ -130,6 +131,7 @@ const SupportChatsPage = () => {
     saveThreads(nextThreads);
     setThreads(nextThreads);
     setReplyText("");
+    window.dispatchEvent(new Event("phoenix:notifications-refresh"));
     setIsSendingReply(false);
   };
 

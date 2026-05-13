@@ -10,6 +10,11 @@ export async function sendCustomerSupportMessage(message) {
   return response.data;
 }
 
+export async function markCustomerSupportConversationRead(conversationId) {
+  const response = await API.patch(`/support-chat/customer/conversations/${conversationId}/read`);
+  return response.data;
+}
+
 export async function getEmployeeSupportConversations() {
   const response = await API.get("/support-chat/employee/conversations");
   return response.data;

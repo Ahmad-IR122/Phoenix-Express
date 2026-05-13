@@ -14,6 +14,7 @@ import {
 import API from "../apis/api";
 import {
   getCustomerSupportConversation,
+  markCustomerSupportConversationRead,
   sendCustomerSupportMessage,
 } from "../services/supportChatService";
 import { getDeliveryRegions } from "../features/customuer/services/customerService";
@@ -21,9 +22,7 @@ import "../styles/ChatbotWidget.css";
 
 const CHAT_STORAGE_KEY = "phoenix_assistant_history";
 const CHAT_LANGUAGE_KEY = "phoenix_assistant_language";
-const EMPLOYEE_CHAT_STORAGE_KEY = "phoenix_employee_chat_threads";
 const ACTIVE_EMPLOYEE_THREAD_KEY = "phoenix_active_employee_thread";
-const EMPLOYEE_SEEN_MESSAGES_KEY = "phoenix_seen_employee_messages";
 const PENDING_EMPLOYEE_THREAD_ID = "pending-employee-thread";
 
 const statusLabels = {
@@ -95,23 +94,15 @@ const createMessage = (role, text, options = {}) => ({
 const getEmployeeMessageSourceId = (message) =>
   message.sourceId || message.id || `employee-${message.createdAt}-${message.text}`;
 
+const isUnreadEmployeeMessage = (message) => message.role === "employee" && !message.readAt;
+const isAssistantHistoryMessage = (message) => message.channel !== "employee" && !message.sourceId;
+
 const createInitialMessages = (language = "ar") => [
   createMessage("bot", welcomeMessages[language], { channel: "assistant", id: "welcome" }),
 ];
 
-const getEmployeeThreads = () => {
-  try {
-    const stored = localStorage.getItem(EMPLOYEE_CHAT_STORAGE_KEY);
-    const parsed = stored ? JSON.parse(stored) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
-
-const saveEmployeeThreads = (threads) => {
-  localStorage.setItem(EMPLOYEE_CHAT_STORAGE_KEY, JSON.stringify(threads));
-};
+const getEmployeeThreads = () => [];
+const saveEmployeeThreads = () => {};
 
 const getQuickQuestionResponse = (rawText, respondArabic, regionPrices = DEFAULT_REGION_PRICES) => {
   const question = rawText.trim();
@@ -162,24 +153,6 @@ const getQuickQuestionResponse = (rawText, respondArabic, regionPrices = DEFAULT
   return respondArabic ? arabicAnswers[question] || "" : englishAnswers[question] || "";
 };
 
-const findCustomerThread = (preferredThreadId) => {
-  const threads = getEmployeeThreads();
-  const user = getStoredUser();
-
-  if (preferredThreadId) {
-    const preferredThread = threads.find((thread) => thread.id === preferredThreadId);
-    if (preferredThread) return preferredThread;
-  }
-
-  if (!user) return null;
-
-  return (
-    threads.find((thread) => thread.customerId && thread.customerId === user.id) ||
-    threads.find((thread) => thread.customerEmail && thread.customerEmail === user.email) ||
-    null
-  );
-};
-
 const getStoredUser = () => {
   const stored = localStorage.getItem("user") || sessionStorage.getItem("user");
   if (!stored) return null;
@@ -199,26 +172,6 @@ const getUserChatStorageKey = (user = getStoredUser()) =>
 
 const getUserActiveThreadKey = (user = getStoredUser()) =>
   `${ACTIVE_EMPLOYEE_THREAD_KEY}_${getUserStorageId(user)}`;
-
-const getUserSeenEmployeeMessagesKey = (user = getStoredUser()) =>
-  `${EMPLOYEE_SEEN_MESSAGES_KEY}_${getUserStorageId(user)}`;
-
-const getSeenEmployeeMessageIds = (user = getStoredUser()) => {
-  try {
-    const stored = localStorage.getItem(getUserSeenEmployeeMessagesKey(user));
-    const parsed = stored ? JSON.parse(stored) : [];
-    return new Set(Array.isArray(parsed) ? parsed : []);
-  } catch {
-    return new Set();
-  }
-};
-
-const saveSeenEmployeeMessageIds = (ids, user = getStoredUser()) => {
-  localStorage.setItem(
-    getUserSeenEmployeeMessagesKey(user),
-    JSON.stringify(Array.from(ids).slice(-200))
-  );
-};
 
 const isUserAuthenticated = () =>
   Boolean(
@@ -286,6 +239,7 @@ const ChatbotWidget = () => {
   const inputRef = React.useRef(null);
   const sendLockRef = React.useRef(false);
   const syncedEmployeeSourceIdsRef = React.useRef(new Set());
+  const widgetOpenedOnceRef = React.useRef(false);
   const activeEmployeeThreadIdRef = React.useRef(null);
   const [userStorageId, setUserStorageId] = React.useState(() => getUserStorageId());
   const [language, setLanguage] = React.useState(
@@ -310,7 +264,10 @@ const ChatbotWidget = () => {
 
     try {
       const parsed = JSON.parse(stored);
-      return Array.isArray(parsed) && parsed.length > 0 ? parsed : createInitialMessages("ar");
+      const assistantMessages = Array.isArray(parsed)
+        ? parsed.filter(isAssistantHistoryMessage)
+        : [];
+      return assistantMessages.length > 0 ? assistantMessages : createInitialMessages("ar");
     } catch {
       return createInitialMessages("ar");
     }
@@ -417,7 +374,10 @@ const ChatbotWidget = () => {
   React.useEffect(() => {
     if (!isAuthenticated) return;
 
-    localStorage.setItem(getUserChatStorageKey(), JSON.stringify(messages.slice(-40)));
+    localStorage.setItem(
+      getUserChatStorageKey(),
+      JSON.stringify(messages.filter(isAssistantHistoryMessage).slice(-40))
+    );
   }, [isAuthenticated, messages, userStorageId]);
 
   React.useEffect(() => {
@@ -439,9 +399,12 @@ const ChatbotWidget = () => {
 
       try {
         const parsedMessages = storedMessages ? JSON.parse(storedMessages) : null;
+        const assistantMessages = Array.isArray(parsedMessages)
+          ? parsedMessages.filter(isAssistantHistoryMessage)
+          : [];
         setMessages(
-          Array.isArray(parsedMessages) && parsedMessages.length > 0
-            ? parsedMessages
+          assistantMessages.length > 0
+            ? assistantMessages
             : createInitialMessages(language)
         );
       } catch {
@@ -465,15 +428,23 @@ const ChatbotWidget = () => {
 
   React.useEffect(() => {
     if (isOpen && !isMinimized) {
+      widgetOpenedOnceRef.current = true;
       setUnreadCount(0);
+      const activeThreadId = activeEmployeeThreadIdRef.current;
+      if (activeThreadId && activeThreadId !== PENDING_EMPLOYEE_THREAD_ID) {
+        markCustomerSupportConversationRead(activeThreadId).catch(() => {});
+      }
       window.setTimeout(() => inputRef.current?.focus(), 180);
     }
   }, [isOpen, isMinimized]);
 
   React.useEffect(() => {
-    syncedEmployeeSourceIdsRef.current = new Set(
-      messages.map((message) => message.sourceId).filter(Boolean)
-    );
+    const sourceIds = new Set(syncedEmployeeSourceIdsRef.current);
+    messages
+      .map((message) => message.sourceId)
+      .filter(Boolean)
+      .forEach((sourceId) => sourceIds.add(sourceId));
+    syncedEmployeeSourceIdsRef.current = sourceIds;
   }, [messages]);
 
   React.useEffect(() => {
@@ -498,94 +469,74 @@ const ChatbotWidget = () => {
 
   React.useEffect(() => {
     const syncEmployeeReplies = () => {
-      const currentActiveThreadId = activeEmployeeThreadIdRef.current;
       if (!isAuthenticated) return;
 
       const syncFromThread = (thread) => {
-      const activeThreadId = activeEmployeeThreadIdRef.current;
+        const activeThreadId = activeEmployeeThreadIdRef.current;
 
-      if (!thread) {
-        if (activeThreadId && activeThreadId !== PENDING_EMPLOYEE_THREAD_ID) {
-          setActiveEmployeeThreadId(null);
-          localStorage.removeItem(getUserActiveThreadKey());
+        if (!thread) {
+          if (activeThreadId && activeThreadId !== PENDING_EMPLOYEE_THREAD_ID) {
+            setActiveEmployeeThreadId(null);
+            localStorage.removeItem(getUserActiveThreadKey());
+          }
+          return;
         }
-        return;
-      }
 
-      if (activeThreadId === PENDING_EMPLOYEE_THREAD_ID) return;
+        if (activeThreadId === PENDING_EMPLOYEE_THREAD_ID) return;
 
-      if (activeThreadId && thread.id !== activeThreadId) {
-        return;
-      }
+        if (!activeThreadId) {
+          return;
+        }
 
-      const currentMessages = JSON.parse(localStorage.getItem(getUserChatStorageKey()) || "[]");
-      const allKnownMessages = [...messages, ...(Array.isArray(currentMessages) ? currentMessages : [])];
-      const existingSourceIds = new Set(
-        allKnownMessages
-          .map((message) => message.sourceId || message.id)
-          .filter(Boolean)
-      );
-      const seenEmployeeSourceIds = getSeenEmployeeMessageIds();
-      const existingEmployeeTexts = new Set(
-        allKnownMessages
-          .filter((message) => message.role === "bot")
-          .map((message) => message.text)
-      );
-      const newEmployeeMessages = thread.messages.filter(
-        (message) =>
-          message.role === "employee" &&
-          !existingSourceIds.has(getEmployeeMessageSourceId(message)) &&
-          !seenEmployeeSourceIds.has(getEmployeeMessageSourceId(message)) &&
-          !syncedEmployeeSourceIdsRef.current.has(getEmployeeMessageSourceId(message)) &&
-          !existingEmployeeTexts.has(message.text)
-      );
+        if (activeThreadId && thread.id !== activeThreadId) {
+          return;
+        }
 
-      if (newEmployeeMessages.length === 0) return;
+        setMessages((current) => {
+          const unreadEmployeeMessages = thread.messages.filter((message) => {
+            const sourceId = getEmployeeMessageSourceId(message);
+            return isUnreadEmployeeMessage(message) && !syncedEmployeeSourceIdsRef.current.has(sourceId);
+          });
 
-      newEmployeeMessages.forEach((message) => {
-        const sourceId = getEmployeeMessageSourceId(message);
-        syncedEmployeeSourceIdsRef.current.add(sourceId);
-        seenEmployeeSourceIds.add(sourceId);
-      });
-      saveSeenEmployeeMessageIds(seenEmployeeSourceIds);
+          if (unreadEmployeeMessages.length > 0) {
+            unreadEmployeeMessages.forEach((message) => {
+              syncedEmployeeSourceIdsRef.current.add(getEmployeeMessageSourceId(message));
+            });
 
-      if (!activeThreadId && thread.id) {
-        setActiveEmployeeThreadId(thread.id);
-        localStorage.setItem(getUserActiveThreadKey(), thread.id);
-      }
+            if ((!isOpen || isMinimized) && widgetOpenedOnceRef.current) {
+              setUnreadCount(Math.min(unreadEmployeeMessages.length, 9));
+              playSoftPing();
+            }
 
-      setMessages((current) => [
-        ...current,
-        ...newEmployeeMessages.map((message) =>
-          createMessage("bot", message.text, {
-            channel: "employee",
-            sourceId: getEmployeeMessageSourceId(message),
-          })
-        ),
-      ]);
+            markCustomerSupportConversationRead(thread.id).catch(() => {});
+          }
 
-      if (!isOpen || isMinimized || !activeThreadId) {
-        setUnreadCount((current) => Math.min(current + newEmployeeMessages.length, 9));
-        playSoftPing();
-      }
+          const nonEmployeeMessages = current.filter(
+            (message) => message.channel !== "employee" && !message.sourceId
+          );
+          const supportMessages = thread.messages.map((message) =>
+            createMessage(message.role === "employee" ? "employee" : "user", message.text, {
+              channel: "employee",
+              id: `support-${message.id}`,
+              sourceId: getEmployeeMessageSourceId(message),
+              createdAt: message.createdAt,
+            })
+          );
+
+          return [...nonEmployeeMessages, ...supportMessages];
+        });
       };
       
       getCustomerSupportConversation()
         .then((response) => syncFromThread(response.data))
-        .catch(() =>
-          syncFromThread(
-            findCustomerThread(
-              currentActiveThreadId || localStorage.getItem(getUserActiveThreadKey())
-            )
-          )
-        );
+        .catch(() => {});
     };
 
     const intervalId = window.setInterval(syncEmployeeReplies, 2500);
     syncEmployeeReplies();
 
     return () => window.clearInterval(intervalId);
-  }, [activeEmployeeThreadId, isAuthenticated, isMinimized, isOpen, messages]);
+  }, [activeEmployeeThreadId, isAuthenticated, isMinimized, isOpen]);
 
   const addBotMessage = React.useCallback((text, options = {}) => {
     const messageOptions = {
@@ -777,13 +728,15 @@ const saveSupportMessage = (rawText) => {
     const user = getStoredUser();
     if (shouldStoreMessage) {
       try {
-      const response = await sendCustomerSupportMessage(rawText);
-      const conversation = response.data;
-      setActiveEmployeeThreadId(conversation.id);
-      localStorage.setItem(getUserActiveThreadKey(), conversation.id);
-      return conversation;
+        const response = await sendCustomerSupportMessage(rawText);
+        const conversation = response.data;
+        setActiveEmployeeThreadId(conversation.id);
+        localStorage.setItem(getUserActiveThreadKey(), conversation.id);
+        return conversation;
       } catch {
-        // Fallback for local development before running the new database migrations.
+        setActiveEmployeeThreadId(null);
+        localStorage.removeItem(getUserActiveThreadKey());
+        return null;
       }
     }
 
@@ -857,14 +810,8 @@ const saveSupportMessage = (rawText) => {
         setActiveEmployeeThreadId(PENDING_EMPLOYEE_THREAD_ID);
       }
     } catch {
-      const existingThread = findCustomerThread(localStorage.getItem(getUserActiveThreadKey()));
-
-      if (existingThread?.id) {
-        setActiveEmployeeThreadId(existingThread.id);
-        localStorage.setItem(getUserActiveThreadKey(), existingThread.id);
-      } else {
-        setActiveEmployeeThreadId(PENDING_EMPLOYEE_THREAD_ID);
-      }
+      setActiveEmployeeThreadId(null);
+      localStorage.removeItem(getUserActiveThreadKey());
     }
 
   };
@@ -901,9 +848,7 @@ const saveSupportMessage = (rawText) => {
     }
 
     if (activeEmployeeThreadId) {
-      return respondArabic
-        ? "أنت حالياً في وضع محادثة الموظف. يرجى كتابة رسالتك للموظف، أو اختيار العودة للمساعد للرجوع إلى الردود التلقائية."
-        : "You are currently in employee chat mode. Please type your message to the employee, or go back to the assistant for automated replies.";
+      return "";
     }
 
     const wantsTracking =
