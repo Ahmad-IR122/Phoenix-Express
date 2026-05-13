@@ -431,6 +431,6 @@ Frontend runs at: `http://localhost:3000`
 | Name   | GitHub | LinkedIn |
 |--------|--------|----------|
 | Ahmad  | [Ahmad-IR122](https://github.com/Ahmad-IR122/) |[ِAhmad Irshaid](https://www.linkedin.com/in/ahmadikirshaid/) |
-| Ammal  | Add your GitHub link here | Add your LinkedIn link here |
+| Ammal  | [Amaal2005](https://github.com/amaal2005) | [Aamaal Jumaa‏](https://www.linkedin.com/in/amaal-feras-425067382/)  |
 | Raghad | [Raghad Shaar](https://github.com/raghadshaar) | [Raghad Shaar](https://www.linkedin.com/in/raghad-shaar/) |
 
