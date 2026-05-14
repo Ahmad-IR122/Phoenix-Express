@@ -10,6 +10,7 @@ const {
 } = require('../models');
 const { fn, col, literal, Op } = require('sequelize');
 const { notifyAdmins } = require('../services/notification.service');
+const { buildLimitOption } = require('../utils/pagination');
 
 const REGION_NAME_MAP = {
   'west-bank': 'west_bank',
@@ -173,6 +174,7 @@ const getAuthenticatedCustomerOrders = async (req, res) => {
       where: { customer_id: customer.id },
       include: orderIncludes,
       order: [['created_at', 'DESC']],
+      ...buildLimitOption(req.query.limit, 100),
     });
 
     return res.status(200).json({
@@ -362,6 +364,7 @@ const getAllOrders = async (req, res) => {
     const orders = await Order.findAll({
       include: orderIncludes,
       order: [['id', 'DESC']],
+      ...buildLimitOption(req.query.limit, 100),
     });
 
     return res.status(200).json({

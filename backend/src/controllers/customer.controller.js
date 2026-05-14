@@ -11,6 +11,7 @@ const {
   sequelize,
 } = require("../models");
 const { notifyAdmins } = require("../services/notification.service");
+const { buildLimitOption } = require("../utils/pagination");
 
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase();
 const normalizePhone = (value) => String(value || "").trim();
@@ -113,8 +114,8 @@ const mapMerchantSettlement = (settlement) => ({
 
 const OPEN_SETTLEMENT_STATUSES = ["pending", "requested"];
 
-const getCustomerSettlementSummary = async (customerId) => {
-  const [deliveredFinancials, settlements] = await Promise.all([
+const getCustomerSettlementSummary = async (customerId, limit = null) => {
+  const [deliveredFinancials, settledAmount, pendingAmount, settlements] = await Promise.all([
     Order.findAll({
       attributes: [
         [
@@ -146,9 +147,22 @@ const getCustomerSettlementSummary = async (customerId) => {
       ],
       raw: true,
     }),
+    MerchantSettlement.sum("amount", {
+      where: {
+        customer_id: customerId,
+        status: "settled",
+      },
+    }),
+    MerchantSettlement.sum("amount", {
+      where: {
+        customer_id: customerId,
+        status: OPEN_SETTLEMENT_STATUSES,
+      },
+    }),
     MerchantSettlement.findAll({
       where: { customer_id: customerId },
       order: [["createdAt", "DESC"]],
+      ...buildLimitOption(limit, 100),
     }),
   ]);
 
@@ -156,21 +170,17 @@ const getCustomerSettlementSummary = async (customerId) => {
   const merchantDue = toNumber(financialRow.merchant_due);
   const phoenixCommission = toNumber(financialRow.phoenix_commission);
   const totalCollected = merchantDue + phoenixCommission;
-  const settledAmount = settlements
-    .filter((settlement) => settlement.status === "settled")
-    .reduce((sum, settlement) => sum + toNumber(settlement.amount), 0);
-  const pendingAmount = settlements
-    .filter((settlement) => OPEN_SETTLEMENT_STATUSES.includes(settlement.status))
-    .reduce((sum, settlement) => sum + toNumber(settlement.amount), 0);
-  const remainingAmount = Math.max(merchantDue - settledAmount, 0);
-  const availableRequestAmount = Math.max(merchantDue - settledAmount - pendingAmount, 0);
+  const settledTotal = toNumber(settledAmount);
+  const pendingTotal = toNumber(pendingAmount);
+  const remainingAmount = Math.max(merchantDue - settledTotal, 0);
+  const availableRequestAmount = Math.max(merchantDue - settledTotal - pendingTotal, 0);
 
   return {
     total_collected: totalCollected,
     merchant_due: merchantDue,
     phoenix_commission: phoenixCommission,
-    total_settled_amount: settledAmount,
-    pending_settlement_amount: pendingAmount,
+    total_settled_amount: settledTotal,
+    pending_settlement_amount: pendingTotal,
     remaining_settlement_amount: remainingAmount,
     available_settlement_request_amount: availableRequestAmount,
     settlements: settlements.map(mapMerchantSettlement),
@@ -331,6 +341,7 @@ const getAllCustomers = async (req, res) => {
     const customers = await Customer.findAll({
       include: customerIncludes,
       order: [["id", "DESC"]],
+      ...buildLimitOption(req.query.limit, 100),
     });
 
     return res.status(200).json({
@@ -560,7 +571,7 @@ const getAuthenticatedCustomerSettlements = async (req, res) => {
       });
     }
 
-    const summary = await getCustomerSettlementSummary(customer.id);
+    const summary = await getCustomerSettlementSummary(customer.id, req.query.limit);
 
     return res.status(200).json({
       success: true,

@@ -21,6 +21,7 @@ const {
   sequelize,
 } = require("../models");
 const { notifyEmployee } = require("../services/notification.service");
+const { buildLimitOption } = require("../utils/pagination");
 
 const ACTIVE_SHIPMENT_STATUSES = [
   "accepted",
@@ -1835,6 +1836,7 @@ const getAdminReports = async (req, res) => {
         },
       ],
       order: [["createdAt", "DESC"]],
+      ...buildLimitOption(req.query.limit, 100),
     });
 
     const data = orders.map((order) => {

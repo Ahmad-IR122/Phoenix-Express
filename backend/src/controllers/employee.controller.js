@@ -24,6 +24,7 @@ const {
   getEmployeeWalletData,
   createEmployeeWithdrawalRequest,
 } = require('../services/employee-portal.service');
+const { parsePositiveInteger } = require('../utils/pagination');
 
 const employeeIncludes = [
   {
@@ -205,6 +206,7 @@ const getEmployeeDashboard = async (req, res) => {
   try {
     const dashboardData = await getEmployeeDashboardData({
       userId: req.user.id,
+      limit: parsePositiveInteger(req.query.limit, 25, 100),
     });
 
     if (!dashboardData) {
@@ -385,6 +387,7 @@ const getAuthenticatedEmployeeOrders = async (req, res) => {
   try {
     const ordersData = await getEmployeeOrdersData({
       userId: req.user.id,
+      limit: parsePositiveInteger(req.query.limit, null, 100),
     });
 
     return res.status(200).json({

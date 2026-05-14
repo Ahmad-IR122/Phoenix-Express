@@ -1,6 +1,7 @@
 'use strict';
 
 const { Shipment, Order, Employee, TrackingUpdate } = require('../models');
+const { buildLimitOption } = require('../utils/pagination');
 
 const shipmentIncludes = [
   {
@@ -60,6 +61,7 @@ const getAllShipments = async (req, res) => {
     const shipments = await Shipment.findAll({
       include: shipmentIncludes,
       order: [['id', 'DESC']],
+      ...buildLimitOption(req.query.limit, 100),
     });
 
     return res.status(200).json({
