@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Swal from "sweetalert2";
 import {
   getEmployeeNewsletter,
+  getEmployeeNewsletterSendStatus,
   sendEmployeeNewsletter,
 } from "../../../services/newsletterService";
 import "./NewsletterPage.css";
@@ -19,6 +20,11 @@ const formatDate = (value) => {
 const defaultBody =
   "مرحباً،\n\nنشارككم في نشرة فينوكس لهذا الشهر مجموعة نصائح عملية لتحسين تجربة التوصيل، تقليل المرتجعات، وتجهيز الطرود بطريقة أكثر احترافية.\n\nفريق فينوكس إكسبرس";
 
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isFinalSendStatus = (status) =>
+  ["completed", "partial", "failed"].includes(status);
+
 const NewsletterPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
@@ -28,6 +34,9 @@ const NewsletterPage = () => {
     subject: "نشرة فينوكس الشهرية",
     body: defaultBody,
   });
+
+  const deliverableSubscribersCount = status?.deliverableSubscribersCount ?? subscribers.length;
+  const skippedSubscribersCount = status?.skippedSubscribersCount ?? 0;
 
   const loadNewsletter = async () => {
     setIsLoading(true);
@@ -71,6 +80,23 @@ const NewsletterPage = () => {
     setForm((current) => ({ ...current, [name]: value }));
   };
 
+  const waitForSendJob = async (jobId) => {
+    let job = null;
+
+    do {
+      await wait(1500);
+      const response = await getEmployeeNewsletterSendStatus(jobId);
+      job = response.data;
+
+      Swal.update({
+        title: "جاري إرسال النشرة",
+        html: `تم إرسال ${job.sentCount || 0} من ${job.totalCount || deliverableSubscribersCount} بريد. الفاشل: ${job.failedCount || 0}`,
+      });
+    } while (job && !isFinalSendStatus(job.status));
+
+    return job;
+  };
+
   const handleSend = async (event) => {
     event.preventDefault();
 
@@ -88,7 +114,7 @@ const NewsletterPage = () => {
     const result = await Swal.fire({
       icon: "question",
       title: "إرسال النشرة",
-      text: `سيتم إرسال النشرة إلى ${subscribers.length} مشترك. هل تريد المتابعة؟`,
+      text: `سيتم إرسال النشرة إلى ${deliverableSubscribersCount} بريد قابل للإرسال. سيتم تجاهل ${skippedSubscribersCount} عنوان اختبار أو غير صالح. هل تريد المتابعة؟`,
       confirmButtonText: "إرسال",
       cancelButtonText: "إلغاء",
       showCancelButton: true,
@@ -101,20 +127,41 @@ const NewsletterPage = () => {
 
     try {
       const response = await sendEmployeeNewsletter(form);
+      const jobId = response.data?.id;
+
+      if (!jobId) {
+        throw new Error("لم يتم إنشاء متابعة للإرسال.");
+      }
+
+      Swal.fire({
+        title: "جاري إرسال النشرة",
+        html: `بدأ الإرسال إلى ${response.data?.totalCount || deliverableSubscribersCount} بريد...`,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      const sendJob = await waitForSendJob(jobId);
       await loadNewsletter();
+
+      if (sendJob.status === "failed") {
+        throw new Error(sendJob.error || "تعذر إرسال النشرة.");
+      }
 
       Swal.fire({
         icon: "success",
-        title: "تم إرسال النشرة",
-        text: `تم إرسالها إلى ${response.data?.recipientsCount || subscribers.length} مشترك.`,
+        title: sendJob.status === "partial" ? "تم الإرسال مع بعض الإخفاقات" : "تم إرسال النشرة",
+        text: `تم إرسالها إلى ${sendJob.sentCount || 0} مشترك. الفاشل: ${sendJob.failedCount || 0}.`,
         confirmButtonText: "تمام",
         confirmButtonColor: "#38B6FF",
       });
+      return;
     } catch (error) {
       Swal.fire({
         icon: "error",
         title: "تعذر إرسال النشرة",
-        text: error.response?.data?.message || "تأكدي من إعدادات البريد والمحاولة مرة أخرى.",
+        text: error.response?.data?.message || error.message || "تأكدي من إعدادات البريد والمحاولة مرة أخرى.",
         confirmButtonText: "حسناً",
         confirmButtonColor: "#38B6FF",
       });
@@ -136,6 +183,18 @@ const NewsletterPage = () => {
           <span>مشترك نشط</span>
         </div>
       </section>
+
+      {skippedSubscribersCount > 0 && (
+        <section className="employee-newsletter-page__reminder employee-newsletter-page__reminder--due">
+          <i className="bi bi-exclamation-triangle" aria-hidden="true" />
+          <div>
+            <h2>تنبيه على عناوين النشرة</h2>
+            <p>
+              يوجد {skippedSubscribersCount} عنوان اختبار أو غير صالح لن يتم الإرسال إليه. الإرسال الفعلي سيكون إلى {deliverableSubscribersCount} بريد.
+            </p>
+          </div>
+        </section>
+      )}
 
       <section
         className={`employee-newsletter-page__reminder ${
@@ -179,7 +238,7 @@ const NewsletterPage = () => {
               />
             </label>
 
-            <button type="submit" disabled={isSending || isLoading || subscribers.length === 0}>
+            <button type="submit" disabled={isSending || isLoading || deliverableSubscribersCount === 0}>
               {isSending ? "جاري الإرسال..." : "إرسال لجميع المشتركين"}
             </button>
           </form>
