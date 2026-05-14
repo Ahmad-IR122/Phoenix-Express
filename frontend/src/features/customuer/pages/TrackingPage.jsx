@@ -255,14 +255,16 @@ const TrackingPage = () => {
     event.preventDefault();
     const emptyRegex = /^\s*$/;
     const trackingNumberRegex = /^[A-Z0-9]{8,30}$/;
-      if (emptyRegex.test(trackingNumber)) {
+    const normalizedTrackingNumber = trackingNumber.trim();
+
+    if (emptyRegex.test(normalizedTrackingNumber)) {
       showError("خطأ في الإدخال", "يرجى إدخال رقم التتبع .");
       return;
-    } else if (!trackingNumberRegex.test(trackingNumber)) {
+    } else if (!trackingNumberRegex.test(normalizedTrackingNumber)) {
       showError("خطأ في الإدخال", "رقم التتبع غير صالح. يجب أن يكون بين 8 و30 حرفًا أو رقمًا.");
       return;
     }
-    performSearch(trackingNumber);
+    performSearch(normalizedTrackingNumber);
   };
 
   return (
