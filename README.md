@@ -426,11 +426,145 @@ Frontend runs at: `http://localhost:3000`
 - Add Docker-based local setup for backend/frontend/PostgreSQL.
 - Improve CI pipeline to include linting and backend checks.
 
-## 15) Authors & Contributors
+## 15) Performance & Load Testing with k6
+
+The project includes a k6 performance testing suite under `performance/k6/phoenix-load-test.js`.
+The goal is to evaluate backend stability, latency, and behavior under realistic traffic patterns.
+
+### Test Coverage
+
+The suite covers the mandatory scenarios:
+
+- `read-heavy`: incident/operations listing, orders, shipments, tracking, public content, and lookup endpoints.
+- `write-heavy`: report submissions through feedback and customer order creation.
+- `mixed`: normal operational traffic combining reads, customer/employee journeys, and report submissions.
+- `spike`: sudden traffic increase up to 80 virtual users.
+- `soak`: sustained full-system load over time.
+- `full-system`: auth, admin, customer, employee, tracking, reports, orders, newsletter, and public content.
+
+Main covered areas:
+
+```text
+Auth:       POST /api/auth/login
+Admin:      /api/admin/dashboard, /api/admin/reports, /api/admin/regions,
+            /api/admin/delegates, /api/admin/merchants,
+            /api/admin/parcel-distribution, /api/admin/returned-shipments,
+            /api/admin/handover-requests
+Customer:   /api/customers/profile/me, /api/orders/me,
+            /api/customers/settlements/me, /api/notifications/me,
+            /api/notifications/unread-count
+Employee:   /api/employees/dashboard, /api/employees/profile,
+            /api/employees/orders, /api/employees/wallet
+Operations: /api/orders, /api/shipments, /api/orders/regions,
+            /api/feedbacks/summary, /api/wallets
+Tracking:   /api/tracking/number/:trackingNumber
+Public:     /, /api/articles, /api/photogalleries,
+            /api/site-content/about, /api/vehicles
+Writes:     POST /api/feedbacks, POST /api/orders,
+            POST /api/newsletter/subscribe
+```
+
+### Running Tests
+
+Start the backend first:
+
+```bash
+cd backend
+npm start
+```
+
+Then run from the project root:
+
+```bash
+npm run perf:smoke
+npm run perf:read
+npm run perf:write
+npm run perf:mixed
+npm run perf:full
+npm run perf:spike
+npm run perf:soak
+```
+
+Short soak test used during local validation:
+
+```bash
+k6 run -e PROFILE=soak -e SOAK_DURATION=5m -e SOAK_VUS=10 performance/k6/phoenix-load-test.js
+```
+
+### Thresholds
+
+The k6 script uses these acceptance thresholds:
+
+- Failed requests must stay below `5%`.
+- Overall p95 latency must stay below `1200ms`.
+- Read p95 latency must stay below `900ms`.
+- Write p95 latency must stay below `1500ms`.
+- Auth p95 latency must stay below `1000ms`.
+- Admin/customer/employee p95 latency must stay below `1200ms`.
+- Tracking p95 latency must stay below `1000ms`.
+
+### Results
+
+Test environment:
+
+```text
+Date: 2026-05-14
+Machine: local development machine
+Backend URL: http://localhost:5000
+Database: local development PostgreSQL
+k6 version: 1.7.1
+```
+
+| Scenario | Result | Failed Requests | Checks Passed | p95 Overall Latency | p95 Read | p95 Write | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| smoke | PASS | 0.00% | 100.00% | 109.84ms | 110.17ms | 31.66ms | Full-system validation before longer runs |
+| read-heavy | PASS | 0.00% | 100.00% | 134.59ms | 133.91ms | N/A | Read-heavy latency improved after limiting heavy list endpoints |
+| write-heavy | PASS | 0.00% | 100.00% | 18.89ms | N/A | 18.79ms | Created feedback reports and test orders |
+| mixed | PASS | 0.00% | 100.00% | 229.88ms | 240.04ms | 177.58ms | Simulates normal customer/employee usage |
+| spike | PASS | 0.00% | 100.00% | 334.32ms | 341.32ms | 186.98ms | System stayed responsive at 80 virtual users |
+| soak | STABLE / READ LATENCY THRESHOLD EXCEEDED | 0.00% | 100.00% | 1.09s | 1096.64ms | 25.44ms | 5-minute sustained load stayed available; read p95 was slightly above the strict target |
+
+Detailed run metrics:
+
+| Scenario | Max VUs | Duration | HTTP Requests | Iterations | Data Received |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| smoke | 1 | 10s | 293 | 9 | 9.5 MB |
+| read-heavy | 25 | 2m | 16986 | 1306 | 111 MB |
+| write-heavy | 18 | 2m | 2841 | 1133 | 3.3 MB |
+| mixed | 25 | 3m | 9344 | 2155 | 939 MB |
+| spike | 80 | 1m55s | 18340 | 4231 | 130 MB |
+| soak | 10 | 5m | 33451 | 1060 | 1.0 GB |
+
+### Performance Improvements Applied
+
+During testing, bottlenecks were found in heavy read endpoints. The following optimizations were applied:
+
+- Added optional `limit` support to heavy list endpoints such as orders, shipments, admin reports, customer orders, customer lists, and employee orders.
+- Updated k6 to request bounded list sizes using `LIST_LIMIT=25`.
+- Optimized `/api/feedbacks/summary` to use aggregate queries instead of loading all feedback rows.
+- Optimized customer settlement calculations using database `SUM` queries.
+- Limited employee dashboard task loading.
+- Adjusted full-system soak traffic to avoid repeatedly hitting every heavy admin endpoint on every iteration.
+
+### Interpretation
+
+- The system showed strong functional stability: all scenarios reported `0.00%` failed requests and `100.00%` successful checks.
+- Read-heavy performance improved from about `1.16s` p95 to `133.91ms` p95 after endpoint limiting.
+- Spike performance improved from about `3.33s` p95 to `334.32ms` p95 after backend and k6 tuning.
+- The only remaining strict-threshold issue was the soak read p95, which was `1096.64ms` against a `900ms` target. The system stayed available, but this indicates future work for caching and indexing.
+
+Recommended next improvements:
+
+- Add indexes for frequently sorted/filterable columns.
+- Cache admin dashboard and report summaries.
+- Add proper pagination metadata for frontend list pages.
+- Run tests again on a staging server closer to production conditions.
+
+
+## 16) Authors & Contributors
 
 | Name   | GitHub | LinkedIn |
 |--------|--------|----------|
 | Ahmad  | [Ahmad-IR122](https://github.com/Ahmad-IR122/) |[ِAhmad Irshaid](https://www.linkedin.com/in/ahmadikirshaid/) |
 | Ammal  | [Amaal2005](https://github.com/amaal2005) | [Aamaal Jumaa‏](https://www.linkedin.com/in/amaal-feras-425067382/)  |
 | Raghad | [Raghad Shaar](https://github.com/raghadshaar) | [Raghad Shaar](https://www.linkedin.com/in/raghad-shaar/) |
-

@@ -7,6 +7,7 @@ const {
   IndividualCustomerProfile,
   CompanyCustomerProfile,
 } = require('../models');
+const { Op } = require('sequelize');
 
 const feedbackIncludes = [
   {
@@ -155,23 +156,31 @@ const createAuthenticatedFeedback = async (req, res) => {
 
 const getFeedbackSummary = async (req, res) => {
   try {
-    const feedbacks = await Feedback.findAll({
-      where: { is_visible: true },
-      include: feedbackIncludes,
-      order: [['createdAt', 'DESC']],
-    });
+    const [total, ratingSum, satisfiedCount, recentFeedbacks] = await Promise.all([
+      Feedback.count({ where: { is_visible: true } }),
+      Feedback.sum('rating', { where: { is_visible: true } }),
+      Feedback.count({
+        where: {
+          is_visible: true,
+          rating: { [Op.gte]: 4 },
+        },
+      }),
+      Feedback.findAll({
+        where: { is_visible: true },
+        include: feedbackIncludes,
+        order: [['createdAt', 'DESC']],
+        limit: 6,
+      }),
+    ]);
 
-    const total = feedbacks.length;
-    const ratingSum = feedbacks.reduce((sum, feedback) => sum + Number(feedback.rating || 0), 0);
-    const averageRating = total ? Number((ratingSum / total).toFixed(1)) : 0;
-    const satisfiedCount = feedbacks.filter((feedback) => Number(feedback.rating) >= 4).length;
+    const averageRating = total ? Number((Number(ratingSum || 0) / total).toFixed(1)) : 0;
     const satisfactionRate = total ? Math.round((satisfiedCount / total) * 100) : 0;
 
     return res.status(200).json({
       success: true,
       message: 'Feedback summary fetched successfully',
       data: {
-        reviews: feedbacks.slice(0, 6).map(formatPublicFeedback),
+        reviews: recentFeedbacks.map(formatPublicFeedback),
         stats: {
           total,
           averageRating,

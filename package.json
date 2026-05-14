@@ -1,4 +1,13 @@
 {
+  "scripts": {
+    "perf:smoke": "k6 run -e PROFILE=smoke performance/k6/phoenix-load-test.js",
+    "perf:read": "k6 run -e PROFILE=read-heavy performance/k6/phoenix-load-test.js",
+    "perf:write": "k6 run -e PROFILE=write-heavy performance/k6/phoenix-load-test.js",
+    "perf:mixed": "k6 run -e PROFILE=mixed performance/k6/phoenix-load-test.js",
+    "perf:full": "k6 run -e PROFILE=full-system performance/k6/phoenix-load-test.js",
+    "perf:spike": "k6 run -e PROFILE=spike performance/k6/phoenix-load-test.js",
+    "perf:soak": "k6 run -e PROFILE=soak performance/k6/phoenix-load-test.js"
+  },
   "dependencies": {
     "pg": "^8.20.0",
     "pg-hstore": "^2.3.4",

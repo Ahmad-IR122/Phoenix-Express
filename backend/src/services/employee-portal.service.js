@@ -592,7 +592,7 @@ const updateEmployeeShipmentLocation = async ({ userId, shipmentId, latitude, lo
   return mapOrderCard(updatedShipment);
 };
 
-const getAssignedEmployeeShipments = async ({ employeeId }) =>
+const getAssignedEmployeeShipments = async ({ employeeId, limit = null }) =>
   Shipment.findAll({
     where: { driver_id: employeeId },
     include: [
@@ -613,11 +613,12 @@ const getAssignedEmployeeShipments = async ({ employeeId }) =>
       ['updatedAt', 'DESC'],
       ['id', 'DESC'],
     ],
+    ...(limit ? { limit } : {}),
   });
 
-const getEmployeeOrdersData = async ({ userId }) => {
+const getEmployeeOrdersData = async ({ userId, limit = null }) => {
   const employee = await ensureAuthenticatedEmployee({ userId });
-  const shipments = await getAssignedEmployeeShipments({ employeeId: employee.id });
+  const shipments = await getAssignedEmployeeShipments({ employeeId: employee.id, limit });
   const orders = shipments.map(mapOrderCard);
   const activeOrdersCount = orders.filter((order) => order.status === 'in_progress').length;
   const availableOrdersCount = orders.filter((order) => order.status === 'available').length;
@@ -642,9 +643,9 @@ const getEmployeeOrdersData = async ({ userId }) => {
   };
 };
 
-const getEmployeeDashboardData = async ({ userId }) => {
+const getEmployeeDashboardData = async ({ userId, limit = 25 }) => {
   const employee = await ensureAuthenticatedEmployee({ userId });
-  const ordersData = await getEmployeeOrdersData({ userId });
+  const ordersData = await getEmployeeOrdersData({ userId, limit });
   const { start, end } = getDayRange();
   const completedToday = await Shipment.count({
     where: {
