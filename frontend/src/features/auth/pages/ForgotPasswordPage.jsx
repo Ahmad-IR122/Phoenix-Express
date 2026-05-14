@@ -73,7 +73,7 @@ const ForgotPasswordPage = () => {
       Swal.fire({
         icon: "warning",
         title: "رقم الهاتف غير صحيح",
-        text: "يرجى إدخال رقم هاتف صحيح يبدأ بـ 056 أو 059.",
+        text: "يرجى إدخال رقم هاتف صحيح يبدأ بـ 05 ويتكون من 10 أرقام.",
         confirmButtonText: "حسنًا",
         confirmButtonColor: "#38b6ff",
       });

@@ -1,4 +1,4 @@
-export const AUTH_PHONE_REGEX = /^(056|059)\d{7}$/;
+export const AUTH_PHONE_REGEX = /^(05)/;
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const MIN_PASSWORD_LENGTH = 8;
 

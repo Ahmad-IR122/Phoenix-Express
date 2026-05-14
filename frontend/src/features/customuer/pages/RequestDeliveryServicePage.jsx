@@ -133,7 +133,7 @@ const RequestDeliveryServicePage = () => {
     const invalidReceiverPhone = !isValidAuthPhone(formData.receiverPhone);
     if (invalidSenderPhone || invalidReceiverPhone) {
       let title = "";
-      let text = "يرجى إدخال رقم هاتف صحيح يبدأ بـ 056 أو 059.";
+      let text = "يرجى إدخال رقم هاتف صحيح يبدأ بـ 05 .";
       if (invalidSenderPhone && invalidReceiverPhone) {
         title = "رقما هاتفي المرسل والمستلم غير صحيحين";
       } else if (invalidSenderPhone) {
