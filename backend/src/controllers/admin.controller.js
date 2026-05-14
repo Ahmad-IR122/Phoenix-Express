@@ -59,6 +59,7 @@ const ARABIC_DAY_NAMES = [
 const DASHBOARD_TIME_ZONE = process.env.DASHBOARD_TIME_ZONE || "Asia/Hebron";
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase();
 const normalizePhone = (value) => String(value || "").trim();
+const PHONE_NUMBER_REGEX = /^05\d{8}$/;
 const buildDelegateAddress = ({ city, area }) =>
   [String(city || "").trim(), String(area || "").trim()].filter(Boolean).join(" - ");
 
@@ -1262,10 +1263,20 @@ const REGION_LABELS = {
   inside: "الداخل",
 };
 
+const normalizeRegionKey = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/-+/g, "_");
+
+const isNumericOnlyRegionLabel = (value) =>
+  /^\d+$/.test(String(value || "").replace(/[\s_-]+/g, ""));
+
 const getAdminRegions = async (req, res) => {
   try {
     const regions = await Region.findAll({
-      attributes: ["id", "name", "price"],
+      attributes: ["id", "name", "label", "price", "is_active"],
       order: [["id", "ASC"]],
     });
 
@@ -1275,8 +1286,9 @@ const getAdminRegions = async (req, res) => {
       data: regions.map((region) => ({
         id: region.id,
         name: region.name,
-        label: REGION_LABELS[region.name] || region.name,
+        label: region.label || REGION_LABELS[region.name] || region.name,
         price: toNumber(region.price),
+        is_active: Boolean(region.is_active),
         created_at: region.createdAt || region.created_at || null,
         updated_at: region.updatedAt || region.updated_at || null,
       })),
@@ -1290,11 +1302,94 @@ const getAdminRegions = async (req, res) => {
   }
 };
 
+const createAdminRegion = async (req, res) => {
+  try {
+    const label = String(req.body?.label || "").trim();
+    const name = normalizeRegionKey(req.body?.name || label);
+    const rawPrice = req.body?.price;
+    const nextPrice = Number(rawPrice);
+
+    if (!label) {
+      return res.status(400).json({
+        success: false,
+        message: "Region label is required",
+      });
+    }
+
+    if (isNumericOnlyRegionLabel(label)) {
+      return res.status(400).json({
+        success: false,
+        message: "Region name must contain text and cannot be numbers only",
+      });
+    }
+
+    if (!Number.isFinite(nextPrice) || nextPrice < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Region price must be a valid number greater than or equal to zero",
+      });
+    }
+
+    const existingRegion = await Region.findOne({ where: { name } });
+
+    if (existingRegion) {
+      return res.status(409).json({
+        success: false,
+        message: "Region already exists",
+      });
+    }
+
+    const region = await Region.create({
+      name,
+      label,
+      price: nextPrice,
+      is_active: true,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Region created successfully",
+      data: {
+        id: region.id,
+        name: region.name,
+        label: region.label || label || region.name,
+        price: toNumber(region.price),
+        is_active: Boolean(region.is_active),
+        created_at: region.createdAt || region.created_at || null,
+        updated_at: region.updatedAt || region.updated_at || null,
+      },
+    });
+  } catch (error) {
+    if (error?.name === "SequelizeUniqueConstraintError") {
+      return res.status(409).json({
+        success: false,
+        message: "Region already exists",
+      });
+    }
+
+    if (error?.name === "SequelizeValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid region data",
+        error: error.errors?.[0]?.message || error.message,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create region",
+      error: error.message,
+    });
+  }
+};
+
 const updateAdminRegionPrice = async (req, res) => {
   try {
     const regionId = toNumber(req.params.id);
     const rawPrice = req.body?.price;
     const nextPrice = Number(rawPrice);
+    const hasPrice = rawPrice !== undefined;
+    const hasStatus = typeof req.body?.is_active === "boolean";
 
     if (!regionId) {
       return res.status(400).json({
@@ -1303,7 +1398,14 @@ const updateAdminRegionPrice = async (req, res) => {
       });
     }
 
-    if (!Number.isFinite(nextPrice) || nextPrice < 0) {
+    if (!hasPrice && !hasStatus) {
+      return res.status(400).json({
+        success: false,
+        message: "Nothing to update",
+      });
+    }
+
+    if (hasPrice && (!Number.isFinite(nextPrice) || nextPrice < 0)) {
       return res.status(400).json({
         success: false,
         message: "Region price must be a valid number greater than or equal to zero",
@@ -1319,18 +1421,27 @@ const updateAdminRegionPrice = async (req, res) => {
       });
     }
 
-    await region.update({
-      price: nextPrice,
-    });
+    const updatePayload = {};
+
+    if (hasPrice) {
+      updatePayload.price = nextPrice;
+    }
+
+    if (hasStatus) {
+      updatePayload.is_active = req.body.is_active;
+    }
+
+    await region.update(updatePayload);
 
     return res.status(200).json({
       success: true,
-      message: "Region price updated successfully",
+      message: "Region updated successfully",
       data: {
         id: region.id,
         name: region.name,
-        label: REGION_LABELS[region.name] || region.name,
+        label: region.label || REGION_LABELS[region.name] || region.name,
         price: toNumber(region.price),
+        is_active: Boolean(region.is_active),
         updated_at: region.updatedAt,
       },
     });
@@ -1728,6 +1839,13 @@ const updateAuthenticatedAdminProfile = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Admin profile not found",
+      });
+    }
+
+    if (phone && !PHONE_NUMBER_REGEX.test(phone)) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number must start with 05 and contain exactly 10 digits",
       });
     }
 
@@ -3341,6 +3459,7 @@ const deleteAdmin = async (req, res) => {
 module.exports = {
   getAdminDashboard,
   getAdminRegions,
+  createAdminRegion,
   getAdminMerchants,
   getAdminMerchantById,
   updateAdminRegionPrice,

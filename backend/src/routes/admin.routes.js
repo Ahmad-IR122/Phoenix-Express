@@ -16,6 +16,7 @@ router.patch('/profile', authenticateAdmin, adminController.updateAuthenticatedA
 router.get('/reports', authenticateAdmin, adminController.getAdminReports);
 router.get('/reports/returned', authenticateAdmin, adminController.getAdminReturnedOrdersReport);
 router.get('/regions', authenticateAdmin, adminController.getAdminRegions);
+router.post('/regions', authenticateAdmin, adminController.createAdminRegion);
 router.patch('/regions/:id', authenticateAdmin, adminController.updateAdminRegionPrice);
 router.get('/merchants', adminController.getAdminMerchants);
 router.get('/merchants/:id', adminController.getAdminMerchantById);

@@ -877,12 +877,20 @@ const getEmployeeProfileData = async ({ userId }) => {
   return mapEmployeeProfileData(employee);
 };
 
+const EMPLOYEE_PHONE_REGEX = /^05\d{8}$/;
+
 const updateEmployeeProfileData = async ({ userId, payload }) => {
   const employee = await ensureAuthenticatedEmployee({ userId });
   const { full_name, address, phone, email } = payload || {};
 
   if (full_name !== undefined && !String(full_name).trim()) {
     const error = new Error('Full name is required');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (phone !== undefined && !EMPLOYEE_PHONE_REGEX.test(String(phone).trim())) {
+    const error = new Error('Phone number must start with 05 and contain exactly 10 digits');
     error.statusCode = 400;
     throw error;
   }

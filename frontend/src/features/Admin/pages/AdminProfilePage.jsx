@@ -5,11 +5,14 @@ import {
   updateAdminProfile,
 } from "../services/adminService";
 import "../../employee/pages/profilePage.css";
+import { isValidAuthPhone } from "../../../utils/validators";
 
 const mapProfileToForm = (data) => ({
   email: data?.user?.email || "",
   phone: data?.user?.phone || "",
 });
+
+const normalizePhoneInput = (value) => String(value || "").replace(/\D/g, "").slice(0, 10);
 
 function AdminProfilePage() {
   const [profile, setProfile] = useState(null);
@@ -100,6 +103,14 @@ function AdminProfilePage() {
   };
 
   const handleSaveProfile = async () => {
+    if (!isValidAuthPhone(form.phone)) {
+      setFeedback({
+        message: "رقم الهاتف يجب أن يبدأ بـ 05 ويتكون من 10 أرقام.",
+        type: "error",
+      });
+      return;
+    }
+
     try {
       setIsSavingProfile(true);
       setFeedback({ message: "", type: "" });
@@ -275,7 +286,10 @@ function AdminProfilePage() {
                     onChange={(event) =>
                       setForm((current) => ({
                         ...current,
-                        [row.field]: event.target.value,
+                        [row.field]:
+                          row.field === "phone"
+                            ? normalizePhoneInput(event.target.value)
+                            : event.target.value,
                       }))
                     }
                   />
