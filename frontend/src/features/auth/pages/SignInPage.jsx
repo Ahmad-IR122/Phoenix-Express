@@ -85,15 +85,21 @@ const SignInPage = () => {
       return;
     }
 
-    if (!isValidAuthPhone(normalizedPhone)) {
-      showError("رقم الهاتف غير صالح"," يرجى إدخال رقم هاتف يبدأ بـ 05");
+      if (emptyRegex.test(normalizedPhone)) {
+      showError("حقل رقم الهاتف فارغ", "يرجى إدخال رقم الهاتف.");
       return;
     }
 
-    if(normalizedPhone.length !== 10) {
+    if (normalizedPhone.length !== 10) {
       showError("رقم الهاتف غير صالح", "يرجى إدخال رقم هاتف مكون من 10 أرقام.");
       return;
     }
+
+    if (!isValidAuthPhone(normalizedPhone)) {
+      showError("رقم الهاتف غير صالح", "يرجى إدخال رقم هاتف يبدأ بـ 05");
+      return;
+    }
+
     if (!isValidEmail(normalizedEmail)) {
       showError("البريد الإلكتروني غير صالح", "يرجى إدخال بريد إلكتروني صحيح.");
       return;

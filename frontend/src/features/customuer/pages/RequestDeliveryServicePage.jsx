@@ -133,7 +133,7 @@ const RequestDeliveryServicePage = () => {
     const invalidReceiverPhone = !isValidAuthPhone(formData.receiverPhone);
     if (invalidSenderPhone || invalidReceiverPhone) {
       let title = "";
-      let text = "يرجى إدخال رقم هاتف صحيح يبدأ بـ 05 .";
+      let text = "يرجى إدخال رقم هاتف صحيح مكوّن من 10 أرقام ويبدأ بـ 05.";
       if (invalidSenderPhone && invalidReceiverPhone) {
         title = "رقما هاتفي المرسل والمستلم غير صحيحين";
       } else if (invalidSenderPhone) {
@@ -247,8 +247,8 @@ const RequestDeliveryServicePage = () => {
                           key={region.value}
                           type="button"
                           className={`request-delivery-service-page__region-option${formData.selectedRegion === region.value
-                              ? " is-selected"
-                              : ""
+                            ? " is-selected"
+                            : ""
                             }`}
                           onClick={() =>
                             handleChange("selectedRegion", region.value)
