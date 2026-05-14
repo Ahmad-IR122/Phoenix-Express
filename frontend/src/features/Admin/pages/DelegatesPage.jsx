@@ -35,6 +35,17 @@ const emptyForm = {
   isActive: true,
 };
 
+const emptyFormErrors = {
+  fullName: "",
+  phone: "",
+  area: "",
+  city: "",
+  vehicleType: "",
+  nationalId: "",
+  licenseNumber: "",
+  form: "",
+};
+
 const statusFilterOptions = [
   { value: "all", label: "كل الحالات" },
   { value: "available", label: "متاح" },
@@ -96,16 +107,63 @@ function buildFormFromCourier(courier) {
     return emptyForm;
   }
 
+  const area = courier.address || courier.area || "";
+  const city = courier.city && courier.city !== area ? courier.city : "";
+
   return {
-    fullName: courier.name,
-    phone: courier.phone,
-    area: courier.address || courier.area,
-    city: courier.city === courier.area ? "" : courier.city,
-    vehicleType: courier.vehicleType,
-    nationalId: courier.nationalId === "-" ? "" : courier.nationalId,
-    licenseNumber: courier.licenseNumber === "-" ? "" : courier.licenseNumber,
+    fullName: courier.name || courier.fullName || "",
+    phone: courier.phone === "-" ? "" : courier.phone || "",
+    area,
+    city,
+    vehicleType: courier.vehicleType || courier.vehicle?.type || "motorcycle",
+    nationalId: courier.nationalId === "-" ? "" : courier.nationalId || "",
+    licenseNumber: courier.licenseNumber === "-" ? "" : courier.licenseNumber || "",
     isActive: courier.isActive,
   };
+}
+
+function validateCourierForm(formData) {
+  const errors = { ...emptyFormErrors };
+  const normalizedPhone = formData.phone.replace(/\D/g, "");
+  const normalizedNationalId = formData.nationalId.replace(/\D/g, "");
+
+  if (!formData.fullName.trim()) {
+    errors.fullName = "الاسم الكامل مطلوب.";
+  } else if (formData.fullName.trim().length < 3) {
+    errors.fullName = "الاسم الكامل يجب أن يكون 3 أحرف على الأقل.";
+  }
+
+  if (!formData.phone.trim()) {
+    errors.phone = "رقم الهاتف مطلوب.";
+  } else if (!/^05\d{8}$/.test(normalizedPhone)) {
+    errors.phone = "أدخل رقم هاتف صحيح يبدأ بـ 05 ويتكون من 10 أرقام.";
+  }
+
+  if (!formData.area.trim()) {
+    errors.area = "المنطقة مطلوبة.";
+  }
+
+  if (!formData.city.trim()) {
+    errors.city = "المدينة مطلوبة.";
+  }
+
+  if (!formData.vehicleType) {
+    errors.vehicleType = "نوع المركبة مطلوب.";
+  }
+
+  if (formData.nationalId.trim() && !/^\d{8,10}$/.test(normalizedNationalId)) {
+    errors.nationalId = "رقم الهوية يجب أن يكون من 8 إلى 10 أرقام.";
+  }
+
+  if (formData.licenseNumber.trim() && formData.licenseNumber.trim().length < 4) {
+    errors.licenseNumber = "رقم الرخصة غير صالح.";
+  }
+
+  return errors;
+}
+
+function hasFormErrors(errors) {
+  return Object.values(errors).some(Boolean);
 }
 
 function DelegatesPage() {
@@ -128,6 +186,7 @@ function DelegatesPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCourier, setEditingCourier] = useState(null);
   const [formData, setFormData] = useState(emptyForm);
+  const [formErrors, setFormErrors] = useState(emptyFormErrors);
   const [selectedCourierDetails, setSelectedCourierDetails] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
@@ -163,19 +222,35 @@ function DelegatesPage() {
   const openCreateModal = () => {
     setEditingCourier(null);
     setFormData(emptyForm);
+    setFormErrors(emptyFormErrors);
     setIsFormOpen(true);
   };
 
-  const openEditModal = (courier) => {
+  const openEditModal = async (courier) => {
     setEditingCourier(courier);
     setFormData(buildFormFromCourier(courier));
+    setFormErrors(emptyFormErrors);
     setIsFormOpen(true);
+
+    try {
+      const details = await loadCourierDetails(courier.id);
+      if (details) {
+        setEditingCourier(details);
+        setFormData(buildFormFromCourier(details));
+      }
+    } catch (error) {
+      setFormErrors((current) => ({
+        ...current,
+        form: error?.response?.data?.message || "تعذر تحميل بيانات المندوب الكاملة.",
+      }));
+    }
   };
 
   const closeFormModal = () => {
     setIsFormOpen(false);
     setEditingCourier(null);
     setFormData(emptyForm);
+    setFormErrors(emptyFormErrors);
   };
 
   const handleFormChange = (event) => {
@@ -185,34 +260,49 @@ function DelegatesPage() {
       ...current,
       [name]: type === "checkbox" ? checked : value,
     }));
+
+    setFormErrors((current) => ({
+      ...current,
+      [name]: "",
+      form: "",
+    }));
   };
 
   const handleSubmitForm = async (event) => {
     event.preventDefault();
 
-    if (!formData.fullName.trim() || !formData.phone.trim() || !formData.area.trim() || !formData.city.trim()) {
-      window.alert("الرجاء تعبئة الاسم ورقم الهاتف والمنطقة والمدينة");
+    const validationErrors = validateCourierForm(formData);
+
+    if (hasFormErrors(validationErrors)) {
+      setFormErrors(validationErrors);
       return;
     }
 
     const payload = {
       fullName: formData.fullName.trim(),
-      phone: formData.phone.trim(),
+      phone: formData.phone.replace(/\D/g, ""),
       area: formData.area.trim(),
       city: formData.city.trim(),
       vehicleType: formData.vehicleType,
-      nationalId: formData.nationalId.trim(),
+      nationalId: formData.nationalId.replace(/\D/g, ""),
       licenseNumber: formData.licenseNumber.trim(),
       isActive: Boolean(formData.isActive),
     };
 
-    if (editingCourier) {
-      await submitUpdateCourier(editingCourier.id, payload);
-    } else {
-      await submitCreateCourier(payload);
-    }
+    try {
+      if (editingCourier) {
+        await submitUpdateCourier(editingCourier.id, payload);
+      } else {
+        await submitCreateCourier(payload);
+      }
 
-    closeFormModal();
+      closeFormModal();
+    } catch (error) {
+      setFormErrors((current) => ({
+        ...current,
+        form: error?.response?.data?.message || "\u062a\u0639\u0630\u0631 \u062d\u0641\u0638 \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0645\u0646\u062f\u0648\u0628 \u062d\u0627\u0644\u064a\u064b\u0627. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.",
+      }));
+    }
   };
 
   const handleToggleCourierStatus = async (courier) => {
@@ -581,6 +671,12 @@ function DelegatesPage() {
             </div>
 
             <form className="phoenix-delegates__form-grid" onSubmit={handleSubmitForm}>
+              {formErrors.form ? (
+                <div className="phoenix-delegates__form-error" role="alert">
+                  {formErrors.form}
+                </div>
+              ) : null}
+
               <label className="phoenix-delegates__field">
                 <span>الاسم الكامل</span>
                 <input
@@ -588,7 +684,9 @@ function DelegatesPage() {
                   value={formData.fullName}
                   onChange={handleFormChange}
                   placeholder="مثال: أحمد محمد"
+                  className={formErrors.fullName ? "phoenix-delegates__input--error" : ""}
                 />
+                {formErrors.fullName ? <small className="phoenix-delegates__field-error">{formErrors.fullName}</small> : null}
               </label>
 
               <label className="phoenix-delegates__field">
@@ -598,7 +696,9 @@ function DelegatesPage() {
                   value={formData.phone}
                   onChange={handleFormChange}
                   placeholder="05xxxxxxxx"
+                  className={formErrors.phone ? "phoenix-delegates__input--error" : ""}
                 />
+                {formErrors.phone ? <small className="phoenix-delegates__field-error">{formErrors.phone}</small> : null}
               </label>
 
               <label className="phoenix-delegates__field">
@@ -608,7 +708,9 @@ function DelegatesPage() {
                   value={formData.area}
                   onChange={handleFormChange}
                   placeholder="حي الطيرة"
+                  className={formErrors.area ? "phoenix-delegates__input--error" : ""}
                 />
+                {formErrors.area ? <small className="phoenix-delegates__field-error">{formErrors.area}</small> : null}
               </label>
 
               <label className="phoenix-delegates__field">
@@ -618,18 +720,26 @@ function DelegatesPage() {
                   value={formData.city}
                   onChange={handleFormChange}
                   placeholder="رام الله"
+                  className={formErrors.city ? "phoenix-delegates__input--error" : ""}
                 />
+                {formErrors.city ? <small className="phoenix-delegates__field-error">{formErrors.city}</small> : null}
               </label>
 
               <label className="phoenix-delegates__field">
                 <span>نوع المركبة</span>
-                <select name="vehicleType" value={formData.vehicleType} onChange={handleFormChange}>
+                <select
+                  name="vehicleType"
+                  value={formData.vehicleType}
+                  onChange={handleFormChange}
+                  className={formErrors.vehicleType ? "phoenix-delegates__input--error" : ""}
+                >
                   {Object.entries(vehicleTypeLabels).map(([value, label]) => (
                     <option key={value} value={value}>
                       {label}
                     </option>
                   ))}
                 </select>
+                {formErrors.vehicleType ? <small className="phoenix-delegates__field-error">{formErrors.vehicleType}</small> : null}
               </label>
 
               <label className="phoenix-delegates__field">
@@ -639,7 +749,9 @@ function DelegatesPage() {
                   value={formData.nationalId}
                   onChange={handleFormChange}
                   placeholder="اختياري"
+                  className={formErrors.nationalId ? "phoenix-delegates__input--error" : ""}
                 />
+                {formErrors.nationalId ? <small className="phoenix-delegates__field-error">{formErrors.nationalId}</small> : null}
               </label>
 
               <label className="phoenix-delegates__field">
@@ -649,7 +761,9 @@ function DelegatesPage() {
                   value={formData.licenseNumber}
                   onChange={handleFormChange}
                   placeholder="اختياري"
+                  className={formErrors.licenseNumber ? "phoenix-delegates__input--error" : ""}
                 />
+                {formErrors.licenseNumber ? <small className="phoenix-delegates__field-error">{formErrors.licenseNumber}</small> : null}
               </label>
 
               <label className="phoenix-delegates__field phoenix-delegates__field--checkbox">

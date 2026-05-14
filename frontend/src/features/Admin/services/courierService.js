@@ -554,6 +554,56 @@ function buildShipmentRecord({
   };
 }
 
+function normalizeDelegatePayload(delegate) {
+  const vehicle = delegate?.vehicle || {};
+  const city =
+    delegate?.city ||
+    delegate?.city_name ||
+    delegate?.profile?.city ||
+    delegate?.address ||
+    "-";
+  const area =
+    delegate?.area ||
+    delegate?.area_name ||
+    delegate?.region ||
+    delegate?.address ||
+    city ||
+    "-";
+
+  return {
+    id: delegate?.id,
+    userId: delegate?.userId || delegate?.user_id,
+    name: delegate?.name || delegate?.full_name || delegate?.fullName || "-",
+    phone: delegate?.phone || "-",
+    city,
+    area,
+    address: delegate?.address || area || city || "-",
+    vehicleType: vehicle?.type || delegate?.vehicleType || "motorcycle",
+    nationalId:
+      delegate?.nationalId ||
+      delegate?.national_id ||
+      delegate?.identity_number ||
+      delegate?.id_number ||
+      "-",
+    licenseNumber:
+      delegate?.licenseNumber ||
+      delegate?.license_number ||
+      vehicle?.plate_number ||
+      vehicle?.license_number ||
+      "-",
+    isActive: Boolean(delegate?.is_active ?? delegate?.isActive),
+    activityState: (delegate?.is_active ?? delegate?.isActive) ? "active" : "inactive",
+    status: delegate?.availability_status || delegate?.status || "offline",
+    activeOrdersCount: Number(delegate?.activeOrdersCount || delegate?.active_orders_count || 0),
+    totalDeliveries: Number(delegate?.deliveredOrdersCount || delegate?.delivered_orders_count || 0),
+    returnedOrders: Number(delegate?.returnedOrdersCount || delegate?.returned_orders_count || 0),
+    collectedAmount: Number(delegate?.collectedAmount || delegate?.collected_amount || 0),
+    lastActivity: delegate?.lastActivity || null,
+    walletBalance: Number(delegate?.collectedAmount || delegate?.collected_amount || 0),
+    vehicle,
+  };
+}
+
 function getEmployeeWallet(employeeId) {
   return employeeWalletsTable.find((wallet) => wallet.employeeId === employeeId) || {
     employeeId,
@@ -781,28 +831,7 @@ export async function getAllCouriers() {
   const payload = response.data?.data || { delegates: [], summary: {} };
 
   return {
-    delegates: (payload.delegates || []).map((delegate) => ({
-      id: delegate.id,
-      userId: delegate.userId,
-      name: delegate.full_name,
-      phone: delegate.phone || "-",
-      city: delegate.address || "-",
-      area: delegate.address || "-",
-      address: delegate.address || "-",
-      vehicleType: delegate.vehicle?.type || "motorcycle",
-      nationalId: "-",
-      licenseNumber: delegate.vehicle?.plate_number || "-",
-      isActive: Boolean(delegate.is_active),
-      activityState: delegate.is_active ? "active" : "inactive",
-      status: delegate.availability_status,
-      activeOrdersCount: Number(delegate.activeOrdersCount || 0),
-      totalDeliveries: Number(delegate.deliveredOrdersCount || 0),
-      returnedOrders: Number(delegate.returnedOrdersCount || 0),
-      collectedAmount: Number(delegate.collectedAmount || 0),
-      lastActivity: null,
-      walletBalance: Number(delegate.collectedAmount || 0),
-      vehicle: delegate.vehicle,
-    })),
+    delegates: (payload.delegates || []).map(normalizeDelegatePayload),
     summary: payload.summary || {},
   };
 }
@@ -833,6 +862,7 @@ export async function getCourierDetails(courierId) {
   }
 
   return {
+    ...normalizeDelegatePayload(payload),
     ...payload,
     returnedOrdersCount: Number(payload.returnedOrdersCount || 0),
     collectedAmount: Number(payload.collectedAmount || 0),

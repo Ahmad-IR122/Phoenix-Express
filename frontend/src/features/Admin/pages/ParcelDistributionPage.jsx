@@ -79,6 +79,45 @@ const ORDER_STATUS_LABELS = {
 };
 const getOrderStatusLabel = (status) => ORDER_STATUS_LABELS[status] || status || "جديد";
 
+const REGION_NAME_ALIASES = {
+  "west bank": "الضفة الغربية",
+  west_bank: "الضفة الغربية",
+  "الضفه الغربيه": "الضفة الغربية",
+  "الضفة": "الضفة الغربية",
+
+  jerusalem: "القدس",
+  "al quds": "القدس",
+  quds: "القدس",
+  "القدس الشريف": "القدس",
+
+  inside: "الداخل",
+  interior: "الداخل",
+  "48": "الداخل",
+  "الداخل الفلسطيني": "الداخل",
+};
+
+function normalizeRegionName(value) {
+  const rawValue = String(value || "").trim();
+
+  if (!rawValue) {
+    return "-";
+  }
+
+  const aliasMatch = REGION_NAME_ALIASES[rawValue.toLowerCase()];
+  if (aliasMatch) {
+    return aliasMatch;
+  }
+
+  if (rawValue.includes("-")) {
+    return rawValue
+      .split("-")
+      .map((part) => normalizeRegionName(part))
+      .join(" - ");
+  }
+
+  return rawValue;
+}
+
 const buildParams = (filters) => {
   const params = {};
 
@@ -162,7 +201,10 @@ function ParcelDistributionPage() {
 
     [...newParcels, ...assignedParcels].forEach((parcel) => {
       if (parcel.region?.id) {
-        regionsMap.set(parcel.region.id, parcel.region.name || parcel.regionName || "-");
+        regionsMap.set(
+          parcel.region.id,
+          normalizeRegionName(parcel.region.name || parcel.regionName || "-"),
+        );
       }
     });
 

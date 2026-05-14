@@ -17,9 +17,13 @@ const initialFilters = {
 };
 
 const vehicleTypeLabels = {
-  motorcycle: "دراجة نارية",
-  sedan: "سيارة سيدان",
-  van: "فان",
+  motorcycle: "\u062f\u0631\u0627\u062c\u0629 \u0646\u0627\u0631\u064a\u0629",
+  sedan: "\u0633\u064a\u0627\u0631\u0629 \u0633\u064a\u062f\u0627\u0646",
+  van: "\u0641\u0627\u0646",
+  car: "\u0633\u064a\u0627\u0631\u0629",
+  bicycle: "\u062f\u0631\u0627\u062c\u0629",
+  pickup: "\u0628\u064a\u0643 \u0623\u0628",
+  truck: "\u0634\u0627\u062d\u0646\u0629",
 };
 
 function formatNumber(value) {

@@ -9,6 +9,7 @@ import {
   updateEmployeeProfile,
   updateEmployeeVehicle,
 } from '../services/employeeService';
+import { isValidAuthPhone } from '../../../utils/validators';
 
 const DOCUMENT_TONE_MAP = {
   valid: 'valid',
@@ -36,6 +37,8 @@ const EMPTY_DOCUMENT_FORM = {
   file_name: '',
   file_data: '',
 };
+
+const normalizePhoneInput = (value) => String(value || '').replace(/\D/g, '').slice(0, 10);
 
 const mapProfileToForms = (data) => ({
   personal: {
@@ -315,12 +318,23 @@ function EmployeeProfilePage() {
       ...current,
       [section]: {
         ...current[section],
-        [field]: value,
+        [field]:
+          section === 'personal' && field === 'phone'
+            ? normalizePhoneInput(value)
+            : value,
       },
     }));
   };
 
   const handleSavePersonal = async () => {
+    if (!isValidAuthPhone(forms.personal.phone)) {
+      setFeedback({
+        message: 'رقم الهاتف يجب أن يبدأ بـ 05 ويتكون من 10 أرقام.',
+        type: 'error',
+      });
+      return;
+    }
+
     try {
       setSavingSection('personal');
       setFeedback({ message: '', type: '' });

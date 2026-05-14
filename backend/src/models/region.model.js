@@ -18,9 +18,18 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
+      label: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       price: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
+      },
+      is_active: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true,
       },
     },
     {

@@ -47,6 +47,8 @@ const initialFormData = {
   orderDescription: "",
 };
 
+const normalizePhoneInput = (value) => String(value || "").replace(/\D/g, "").slice(0, 10);
+
 const RequestDeliveryServicePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -104,7 +106,10 @@ const RequestDeliveryServicePage = () => {
   const handleChange = (field, value) => {
     setFormData((prevData) => ({
       ...prevData,
-      [field]: value,
+      [field]:
+        field === "senderPhone" || field === "receiverPhone"
+          ? normalizePhoneInput(value)
+          : value,
     }));
   };
 

@@ -19,12 +19,21 @@ const REGION_NAME_MAP = {
   inside: 'inside',
 };
 
+const normalizeRegionLookupValue = (value) =>
+  String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/-+/g, '_');
+
 const DELIVERY_SPEED_MAP = {
   normal: 'normal',
   urgent: 'urgent',
   immediate: 'express',
   express: 'express',
 };
+
+const CUSTOMER_PHONE_REGEX = /^05\d{8}$/;
 
 const TRACKING_CHARSET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const REGION_LABEL_MAP = {
@@ -80,14 +89,18 @@ const resolveRegionId = async (payload, transaction) => {
     return payload.region_id;
   }
 
-  const normalizedRegionName = REGION_NAME_MAP[payload.selectedRegion];
+  const selectedRegion = normalizeRegionLookupValue(payload.selectedRegion);
+  const normalizedRegionName = REGION_NAME_MAP[selectedRegion] || selectedRegion;
 
   if (!normalizedRegionName) {
     return null;
   }
 
   const region = await Region.findOne({
-    where: { name: normalizedRegionName },
+    where: {
+      name: normalizedRegionName,
+      is_active: true,
+    },
     transaction,
   });
 
@@ -248,6 +261,8 @@ const normalizeCreatePayload = async (req, transaction) => {
   const regionId = await resolveRegionId(payload, transaction);
   const customerId = await resolveCustomerId(req, payload, transaction);
   const deliveryFee = await resolveRegionPrice({ regionId, transaction });
+  const senderPhone = String(payload.sender_phone || payload.senderPhone || '').trim();
+  const receiverPhone = String(payload.receiver_phone || payload.receiverPhone || '').trim();
 
   if (!regionId) {
     throw new Error('A valid delivery region is required');
@@ -257,14 +272,26 @@ const normalizeCreatePayload = async (req, transaction) => {
     throw new Error('A customer account is required before creating an order');
   }
 
+  if (!CUSTOMER_PHONE_REGEX.test(senderPhone)) {
+    const error = new Error('Sender phone must start with 05 and contain exactly 10 digits');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (!CUSTOMER_PHONE_REGEX.test(receiverPhone)) {
+    const error = new Error('Receiver phone must start with 05 and contain exactly 10 digits');
+    error.statusCode = 400;
+    throw error;
+  }
+
   return {
     customer_id: customerId,
     region_id: regionId,
     sender_name: payload.sender_name || payload.senderName || '',
-    sender_phone: payload.sender_phone || payload.senderPhone || '',
+    sender_phone: senderPhone,
     sender_address: payload.sender_address || payload.senderAddress || '',
     receiver_name: payload.receiver_name || payload.receiverName || '',
-    receiver_phone: payload.receiver_phone || payload.receiverPhone || '',
+    receiver_phone: receiverPhone,
     receiver_address: payload.receiver_address || payload.receiverAddress || '',
     origin_city: payload.origin_city || payload.originalCity || '',
     destination_city: payload.destination_city || payload.destinationCity || '',
@@ -426,7 +453,8 @@ const getMostRequestedRegion = async (req, res) => {
 const getAvailableRegions = async (req, res) => {
   try {
     const regions = await Region.findAll({
-      attributes: ['id', 'name', 'price'],
+      attributes: ['id', 'name', 'label', 'price'],
+      where: { is_active: true },
       order: [['id', 'ASC']],
     });
 
@@ -436,7 +464,7 @@ const getAvailableRegions = async (req, res) => {
       data: regions.map((region) => ({
         id: region.id,
         name: region.name,
-        label: REGION_LABEL_MAP[region.name] || region.name,
+        label: region.label || REGION_LABEL_MAP[region.name] || region.name,
         price: Number(region.price || 0),
       })),
     });
