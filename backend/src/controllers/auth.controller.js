@@ -168,17 +168,20 @@ const register = async (req, res) => {
     const normalizedEmail = normalizeEmail(email);
     const normalizedPhone = normalizePhone(phone);
     const normalizedFullName = normalizeName(fullName);
-    const safeAccountName =
-      normalizedFullName ||
-      (role === 'company'
-        ? "\u0634\u0631\u0643\u0629 \u0641\u064A\u0646\u0648\u0643\u0633"
-        : "\u0639\u0645\u064A\u0644 \u0641\u064A\u0646\u0648\u0643\u0633");
+
+    if (!normalizedFullName) {
+      throw new Error(
+        role === 'company'
+          ? 'اسم الشركة مطلوب'
+          : 'الاسم الكامل مطلوب'
+      );
+    }
 
     const user = await User.create(
       {
         email: normalizedEmail,
         phone: normalizedPhone,
-        full_name: safeAccountName,
+        full_name: normalizedFullName,
         password,
         role,
       },
@@ -189,7 +192,7 @@ const register = async (req, res) => {
       await Employee.create(
         {
           user_id: user.id,
-          full_name: safeAccountName,
+          full_name: normalizedFullName,
           address: address || '',
         },
         { transaction: t }
@@ -207,7 +210,7 @@ const register = async (req, res) => {
         await sequelize.models.CompanyCustomerProfile.create(
           {
             customer_id: customer.id,
-            company_name: safeAccountName,
+            company_name: normalizedFullName,
             company_phone: normalizedPhone,
             company_location: address || '',
           },
@@ -217,7 +220,7 @@ const register = async (req, res) => {
         await sequelize.models.IndividualCustomerProfile.create(
           {
             customer_id: customer.id,
-            full_name: safeAccountName,
+            full_name: normalizedFullName,
           },
           { transaction: t }
         );

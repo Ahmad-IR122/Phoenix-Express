@@ -34,6 +34,7 @@ const SignInPage = () => {
   const openSupportWhatsapp = () => {
     window.open(supportWhatsappUrl, "_blank", "noopener,noreferrer");
   };
+    const emptyRegex = /^\s*$/;
 
   const showError = (title, message) => {
     Swal.fire({
@@ -51,29 +52,80 @@ const SignInPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isValidAuthPhone(phone)) {
-      showError("رقم الهاتف غير صالح", "يرجى إدخال رقم هاتف يبدأ بـ 056 أو 059 ويتكون من 10 أرقام.");
+    const normalizedFullName = fullName.trim();
+    const normalizedCompanyName = companyName.trim();
+    const normalizedCompanyLocation = companyLocation.trim();
+    const normalizedEmail = email.trim();
+    const normalizedPhone = phone.trim();
+    const normalizedPassword = password.trim();
+
+    const isNameFieldEmpty =
+      accountType === "individual"
+        ? emptyRegex.test(normalizedFullName)
+        : emptyRegex.test(normalizedCompanyName);
+
+    if (
+      isNameFieldEmpty &&
+      emptyRegex.test(normalizedEmail) &&
+      emptyRegex.test(normalizedPhone) &&
+      emptyRegex.test(normalizedPassword) &&
+      (accountType !== "company" || emptyRegex.test(normalizedCompanyLocation))
+    ) {
+      showError("جميع الحقول فارغة", "يرجى تعبئة بيانات إنشاء الحساب.");
       return;
     }
 
-    if (!isValidEmail(email)) {
+    if (accountType === "individual" && emptyRegex.test(normalizedFullName)) {
+      showError("حقل الاسم فارغ", "يرجى إدخال الاسم الكامل.");
+      return;
+    }
+
+    if (accountType === "company" && emptyRegex.test(normalizedCompanyName)) {
+      showError("حقل اسم الشركة فارغ", "يرجى إدخال اسم الشركة.");
+      return;
+    }
+
+      if (emptyRegex.test(normalizedPhone)) {
+      showError("حقل رقم الهاتف فارغ", "يرجى إدخال رقم الهاتف.");
+      return;
+    }
+
+    if (normalizedPhone.length !== 10) {
+      showError("رقم الهاتف غير صالح", "يرجى إدخال رقم هاتف مكون من 10 أرقام.");
+      return;
+    }
+
+    if (!isValidAuthPhone(normalizedPhone)) {
+      showError("رقم الهاتف غير صالح", "يرجى إدخال رقم هاتف يبدأ بـ 05");
+      return;
+    }
+
+    if (!isValidEmail(normalizedEmail)) {
       showError("البريد الإلكتروني غير صالح", "يرجى إدخال بريد إلكتروني صحيح.");
       return;
     }
-
-    if (!hasMinPasswordLength(password)) {
+        if(emptyRegex.test(normalizedPassword)){
+      showError("حقل كلمة المرور فارغ", "يرجى إدخال كلمة مرور.");
+      return;
+    }
+    if (!hasMinPasswordLength(normalizedPassword)) {
       showError("كلمة المرور غير صالحة", `يرجى إدخال كلمة مرور مكونة من ${MIN_PASSWORD_LENGTH} أحرف على الأقل.`);
       return;
     }
 
+
+
     try {
       const payload = {
-        email,
-        phone,
-        password,
+        email: normalizedEmail,
+        phone: normalizedPhone,
+        password: normalizedPassword,
         role: accountType === "company" ? "company" : "customer",
-        fullName: accountType === "individual" ? fullName : companyName,
-        address: companyLocation,
+        fullName:
+          accountType === "individual"
+            ? normalizedFullName
+            : normalizedCompanyName,
+        address: normalizedCompanyLocation,
       };
 
       await registerUser(payload);
@@ -152,7 +204,7 @@ const SignInPage = () => {
             </button>
           </div>
 
-          <form dir="rtl" onSubmit={handleSubmit}>
+          <form dir="rtl" onSubmit={handleSubmit} noValidate>
             {accountType === "individual" ? (
               <div className="input-field-wrapper">
                 <label className="field-label d-flex align-items-center">

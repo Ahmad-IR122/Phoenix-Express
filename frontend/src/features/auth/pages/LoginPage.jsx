@@ -14,6 +14,7 @@ const LoginPage = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
+  const emptyRegex = /^\s*$/;
   const supportWhatsappMessage = "مرحباً فينوكس، أحتاج مساعدة بخصوص تسجيل الدخول.";
   const supportWhatsappUrl = `https://web.whatsapp.com/send?phone=972592520083&text=${encodeURIComponent(supportWhatsappMessage)}`;
 
@@ -36,6 +37,11 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    if (emptyRegex.test(phone) && emptyRegex.test(password)) {
+      showError("جميع الحقول فارغة", "يرجى إدخال رقم الهاتف وكلمة المرور.");
+      return;
+    }
 
     try {
       const response = await loginUser({ phone, password });
@@ -113,7 +119,7 @@ const LoginPage = () => {
             <p className="sub-title">مرحباً بك في فينوكس إكسبرس</p>
           </div>
 
-          <form onSubmit={handleLogin} dir="rtl">
+          <form onSubmit={handleLogin} dir="rtl" noValidate>
             <div className="input-field-wrapper">
               <label className="field-label d-flex align-items-center">
                 <LuPhone className="icon-blue ms-2" />
