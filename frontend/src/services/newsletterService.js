@@ -19,3 +19,8 @@ export const sendEmployeeNewsletter = async (payload) => {
   const response = await API.post("/newsletter/employee/send", payload);
   return response.data;
 };
+
+export const getEmployeeNewsletterSendStatus = async (jobId) => {
+  const response = await API.get(`/newsletter/employee/send-status/${jobId}`);
+  return response.data;
+};
