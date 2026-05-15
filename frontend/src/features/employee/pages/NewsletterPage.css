@@ -224,6 +224,42 @@
   font-size: 1.25rem;
 }
 
+.employee-newsletter-page__subscriber-actions {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.employee-newsletter-page__subscriber-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border: 1px solid rgba(239, 68, 68, 0.24);
+  border-radius: 0.7rem;
+  background: #fff5f5;
+  color: #dc2626;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.employee-newsletter-page__subscriber-actions button i {
+  color: currentColor;
+  font-size: 1rem;
+}
+
+.employee-newsletter-page__subscriber-actions button:hover:not(:disabled) {
+  transform: translateY(-0.08rem);
+  border-color: rgba(239, 68, 68, 0.45);
+  background: #fee2e2;
+}
+
+.employee-newsletter-page__subscriber-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .employee-newsletter-page__empty {
   margin: 0;
   padding: 1.2rem;

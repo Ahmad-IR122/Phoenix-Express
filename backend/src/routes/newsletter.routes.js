@@ -10,5 +10,6 @@ router.get('/employee', mockEmployeeAuth, newsletterController.getEmployeeNewsle
 router.get('/employee/status', mockEmployeeAuth, newsletterController.getNewsletterStatus);
 router.get('/employee/send-status/:jobId', mockEmployeeAuth, newsletterController.getNewsletterSendStatus);
 router.post('/employee/send', mockEmployeeAuth, newsletterController.sendNewsletter);
+router.delete('/employee/subscribers/:subscriberId', mockEmployeeAuth, newsletterController.deleteNewsletterSubscriber);
 
 module.exports = router;

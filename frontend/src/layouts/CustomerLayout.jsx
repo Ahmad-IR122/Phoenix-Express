@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import Footer from '../Components/Footer';
 import TopBar from '../Components/TopBar';
 import ChatbotWidget from '../Components/ChatbotWidget';
+import ScrollTopButton from '../Components/common/ScrollTopButton';
 
 const CustomerLayout = () => {
   return (
@@ -13,6 +14,7 @@ const CustomerLayout = () => {
       <Outlet />
       <Footer/>
       <ChatbotWidget />
+      <ScrollTopButton />
     </div>
   );
 }
