@@ -452,6 +452,41 @@ const getNewsletterStatus = async (req, res) => {
   }
 };
 
+const deleteNewsletterSubscriber = async (req, res) => {
+  try {
+    const subscriber = await NewsletterSubscriber.findOne({
+      where: {
+        id: req.params.subscriberId,
+        is_active: true,
+      },
+    });
+
+    if (!subscriber) {
+      return res.status(404).json({
+        success: false,
+        message: 'Newsletter subscriber not found',
+      });
+    }
+
+    await subscriber.update({
+      is_active: false,
+      unsubscribed_at: new Date(),
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Newsletter subscriber removed successfully',
+      data: subscriber,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to remove newsletter subscriber',
+      errors: [error.message],
+    });
+  }
+};
+
 const sendNewsletter = async (req, res) => {
   try {
     cleanupExpiredNewsletterJobs();
@@ -564,6 +599,7 @@ module.exports = {
   subscribe,
   getEmployeeNewsletter,
   getNewsletterStatus,
+  deleteNewsletterSubscriber,
   sendNewsletter,
   getNewsletterSendStatus,
 };

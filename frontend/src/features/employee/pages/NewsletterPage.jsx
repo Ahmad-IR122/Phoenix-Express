@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Swal from "sweetalert2";
 import {
+  deleteEmployeeNewsletterSubscriber,
   getEmployeeNewsletter,
   getEmployeeNewsletterSendStatus,
   sendEmployeeNewsletter,
@@ -28,6 +29,7 @@ const isFinalSendStatus = (status) =>
 const NewsletterPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [deletingSubscriberId, setDeletingSubscriberId] = useState(null);
   const [subscribers, setSubscribers] = useState([]);
   const [status, setStatus] = useState(null);
   const [form, setForm] = useState({
@@ -170,6 +172,47 @@ const NewsletterPage = () => {
     }
   };
 
+  const handleDeleteSubscriber = async (subscriber) => {
+    if (!subscriber?.id) return;
+
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "حذف البريد من النشرة",
+      text: `سيتم حذف ${subscriber.email} من قائمة إيميلات النشرة ولن تصله النشرات القادمة. هل تريد المتابعة؟`,
+      confirmButtonText: "حذف",
+      cancelButtonText: "إلغاء",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+    });
+
+    if (!result.isConfirmed) return;
+
+    setDeletingSubscriberId(subscriber.id);
+
+    try {
+      await deleteEmployeeNewsletterSubscriber(subscriber.id);
+      await loadNewsletter();
+
+      Swal.fire({
+        icon: "success",
+        title: "تم حذف البريد",
+        text: "تمت إزالة البريد من قائمة النشرة.",
+        confirmButtonText: "تمام",
+        confirmButtonColor: "#38B6FF",
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "تعذر حذف البريد",
+        text: error.response?.data?.message || "حاولي مرة أخرى بعد قليل.",
+        confirmButtonText: "حسناً",
+        confirmButtonColor: "#38B6FF",
+      });
+    } finally {
+      setDeletingSubscriberId(null);
+    }
+  };
+
   return (
     <main className="employee-newsletter-page" dir="rtl">
       <section className="employee-newsletter-page__hero">
@@ -260,7 +303,18 @@ const NewsletterPage = () => {
                     <strong>{subscriber.email}</strong>
                     <span>اشترك بتاريخ {formatDate(subscriber.subscribed_at || subscriber.subscribedAt)}</span>
                   </div>
-                  <i className="bi bi-envelope-check" aria-hidden="true" />
+                  <div className="employee-newsletter-page__subscriber-actions">
+                    <i className="bi bi-envelope-check" aria-hidden="true" />
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteSubscriber(subscriber)}
+                      disabled={deletingSubscriberId === subscriber.id || isSending}
+                      aria-label={`حذف ${subscriber.email} من النشرة`}
+                      title="حذف البريد"
+                    >
+                      <i className="bi bi-trash" aria-hidden="true" />
+                    </button>
+                  </div>
                 </article>
               ))
             ) : (
