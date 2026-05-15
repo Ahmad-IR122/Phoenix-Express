@@ -148,9 +148,16 @@ const makeWithdrawalRequest = ({
   ...buildTimestamps(requestedOffset),
 });
 
-const makeRegion = ({ id, name, price }) => ({
+const REGION_LABELS = {
+  west_bank: 'الضفة الغربية',
+  jerusalem: 'القدس',
+  inside: 'الداخل',
+};
+
+const makeRegion = ({ id, name, price, label = REGION_LABELS[name] || name }) => ({
   id,
   name,
+  label,
   price,
   ...buildTimestamps({ days: -20 }),
 });

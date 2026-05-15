@@ -28,7 +28,6 @@ app.use(
 );
 app.use(express.json({ limit: "12mb" }));
 
-/*   <!-- AHMAD code  --> */
 app.use("/api/admin", adminRoutes);
 app.use("/api/admins", adminRoutes);
 app.use('/api/users', userRoutes);
@@ -48,15 +47,7 @@ app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/generate-qr', qrCodeRoutes);
 app.use('/api/site-content', siteContentRoutes);
-/*   <!-- END of AHMAD code  --> */
 
-/*   <!-- RAGHAD  code  --> */
-
-/*   <!-- END of RAGHAD code  --> */
-
-/*   <!-- AMAAL code  --> */
-
-/*   <!-- END of AMAAL code  --> */
 app.get("/", (req, res) => {
   res.send("Hello from the backend server!");
 });
